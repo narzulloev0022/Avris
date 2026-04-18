@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Avris AI • Hyperion Labs</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --font:'Nunito',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --green:#0d9e7e;--green-l:#17b591;--green-ll:#eaf8f4;
+  --iodine:#1990a3;--sky:#38b6e8;
+  --ok:#0d9e7e;--warn:#d48a00;--danger:#d93f4c;
+  --bg:#f2f7f6;--bg2:#e8f2ef;
+  --card:#fff;--card2:#f5fbf9;
+  --text:#0c2720;--text2:#2b5046;--muted:#6a8f86;
+  --border:rgba(13,158,126,.13);--border2:rgba(13,158,126,.3);
+  --ghost:rgba(13,158,126,.07);
+  --safe-bg:rgba(13,158,126,.1);--warn-bg:rgba(212,138,0,.1);--danger-bg:rgba(217,63,76,.1);
+  --tag-bg:rgba(25,144,163,.12);--tag-c:#1990a3;
+  --sh:0 2px 14px rgba(10,90,70,.07);--sh2:0 6px 32px rgba(10,90,70,.12);
+  --glow:0 0 22px rgba(13,158,126,.16);
+  --sidebar:258px;--topbar:60px;
+  --r:10px;--r2:16px;--r3:7px;
+  --hero:linear-gradient(135deg,#0a7862 0%,#0d9e7e 45%,#1990a3 75%,#38b6e8 100%);
+}
+[data-theme="dark"]{
+  --bg:#091918;--bg2:#0d201e;
+  --card:#102420;--card2:#162e29;
+  --text:#ddf0ec;--text2:#9dc8be;--muted:#4e7870;
+  --border:rgba(13,158,126,.16);--border2:rgba(13,158,126,.32);
+  --ghost:rgba(13,158,126,.09);
+  --safe-bg:rgba(13,158,126,.14);--warn-bg:rgba(212,138,0,.13);--danger-bg:rgba(217,63,76,.13);
+  --tag-bg:rgba(56,182,232,.13);--tag-c:#4fc3f7;
+  --sh:0 2px 18px rgba(0,0,0,.36);--sh2:0 6px 36px rgba(0,0,0,.48);
+  --glow:0 0 24px rgba(13,158,126,.2);
+  --hero:linear-gradient(135deg,#052a22 0%,#083c2e 45%,#093b4e 75%,#0c5070 100%);
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden;transition:background .3s,color .3s}
+.hidden{display:none!important}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ── COMPONENTS ── */
+.card{background:var(–card);border-radius:var(–r2);padding:20px;border:1px solid var(–border);box-shadow:var(–sh);position:relative;overflow:hidden;transition:box-shadow .22s,border-color .22s,background .3s}
+.card::after{content:””;position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,var(–green),var(–iodine),var(–sky));opacity:0;transition:opacity .22s;border-radius:var(–r2) var(–r2) 0 0}
+.card:hover{box-shadow:var(–sh2),var(–glow);border-color:var(–border2)}.card:hover::after{opacity:1}
+
+.btn{border:none;border-radius:var(–r);padding:0 18px;height:40px;font-weight:700;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:all .18s;white-space:nowrap;font-family:var(–font)}
+.btn:active{transform:scale(.97)}.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:linear-gradient(135deg,var(–green),var(–iodine));color:#fff;box-shadow:0 3px 14px rgba(13,158,126,.28)}
+.btn.primary:hover{box-shadow:0 5px 22px rgba(13,158,126,.42);transform:translateY(-1px)}
+.btn.ghost{background:var(–ghost);color:var(–green);border:1px solid var(–border2)}
+.btn.ghost:hover{background:rgba(13,158,126,.14)}
+.btn.danger{background:linear-gradient(135deg,var(–danger),#b53040);color:#fff}
+.btn.sm{height:32px;padding:0 12px;font-size:.78rem}
+
+.icon-btn{width:36px;height:36px;border-radius:var(–r3);border:1px solid var(–border);background:var(–card2);color:var(–text2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;font-size:.95rem}
+.icon-btn:hover{border-color:var(–border2);color:var(–green);background:var(–ghost)}
+
+input,select,textarea{width:100%;border-radius:var(–r);border:1.5px solid var(–border);padding:9px 13px;background:var(–card2);color:var(–text);font-size:.85rem;font-family:var(–font);transition:all .2s;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(–green);box-shadow:0 0 0 3px rgba(13,158,126,.11)}
+select option{background:var(–card2);color:var(–text)}
+label{font-size:.7rem;font-weight:700;color:var(–muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.08em;font-family:var(–mono)}
+textarea{resize:vertical;min-height:90px}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:999px;font-size:.7rem;font-weight:700;font-family:var(–mono)}
+.badge.safe{background:var(–safe-bg);color:var(–ok)}.badge.warn{background:var(–warn-bg);color:var(–warn)}
+.badge.danger{background:var(–danger-bg);color:var(–danger)}.badge.info{background:var(–tag-bg);color:var(–tag-c)}
+
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:var(–mono);background:linear-gradient(135deg,var(–green),var(–iodine));color:#fff;flex-shrink:0}
+.tag{display:inline-flex;padding:2px 8px;border-radius:5px;font-size:.74rem;font-weight:600;background:var(–tag-bg);color:var(–tag-c)}
+.tag.danger{background:var(–danger-bg);color:var(–danger)}
+.score-pill{min-width:64px;text-align:center;border-radius:var(–r3);padding:4px 9px;font-weight:700;font-size:.76rem;font-family:var(–mono)}
+.score-pill.danger{background:var(–danger-bg);color:var(–danger)}.score-pill.warn{background:var(–warn-bg);color:var(–warn)}.score-pill.safe{background:var(–safe-bg);color:var(–ok)}
+
+/* ── THEME TOGGLE ── */
+.theme-pill{display:flex;align-items:center;background:var(–bg2);border:1.5px solid var(–border);border-radius:999px;padding:3px;cursor:pointer;gap:2px;transition:border-color .2s}
+.theme-pill:hover{border-color:var(–border2)}
+.theme-pip{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.82rem;transition:all .22s;color:var(–muted)}
+.theme-pip.on{background:linear-gradient(135deg,var(–green),var(–iodine));color:#fff;box-shadow:0 2px 8px rgba(13,158,126,.35)}
+
+/* ── LOGIN ── */
+.login-screen{min-height:100vh;display:flex;background:var(–bg);position:relative;overflow:hidden}
+[data-theme=“dark”] .login-screen{background:var(–bg)}
+
+.login-left{flex:1;display:flex;flex-direction:column;justify-content:center;padding:64px;z-index:2}
+.login-left h1{font-size:3rem;font-weight:800;line-height:1.1;color:var(–text);margin-bottom:16px}
+.login-left h1 em{font-style:normal;background:linear-gradient(135deg,var(–green),var(–iodine),var(–sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.login-left p{font-size:.93rem;color:var(–text2);line-height:1.7;max-width:400px}
+.login-feats{display:flex;flex-direction:column;gap:12px;margin-top:30px}
+.login-feat{display:flex;align-items:center;gap:12px;color:var(–text2);font-size:.88rem}
+.login-fi{width:36px;height:36px;border-radius:var(–r3);background:var(–green-ll);border:1px solid var(–border2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+[data-theme=“dark”] .login-fi{background:var(–ghost)}
+
+.login-right{width:460px;display:flex;align-items:center;justify-content:center;padding:50px;z-index:2}
+.login-card{width:100%;background:var(–card);border:1.5px solid var(–border2);border-radius:20px;padding:38px;box-shadow:var(–sh2);transition:background .3s}
+[data-theme=“dark”] .login-card{background:var(–card)}
+
+.login-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}
+.llogo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:1.05rem;color:var(–text)}
+.llogo-m{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(–green),var(–iodine));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.88rem;font-family:var(–mono);box-shadow:0 3px 12px rgba(13,158,126,.35)}
+
+.lang-sel{display:flex;gap:2px;background:var(–bg2);border-radius:var(–r3);padding:2px;border:1px solid var(–border)}
+.lang-sel button{padding:5px 10px;border:none;background:transparent;color:var(–muted);border-radius:5px;cursor:pointer;font-size:.72rem;font-weight:700;transition:all .15s;font-family:var(–mono)}
+.lang-sel button.active{background:var(–green);color:#fff}
+
+@media(max-width:860px){
+.login-left{display:none}
+.login-right{width:100%;padding:20px;min-height:100vh;align-items:center;justify-content:center}
+}
+
+/* ── SIDEBAR ── */
+.app-shell{display:flex;min-height:100vh}
+.sidebar{position:fixed;top:0;left:calc(-1*var(–sidebar));width:var(–sidebar);height:100%;background:var(–card);border-right:1px solid var(–border);padding:18px 12px;z-index:1000;transition:left .3s,background .3s;display:flex;flex-direction:column;box-shadow:var(–sh2)}
+.sidebar.open{left:0}
+.sb-logo{display:flex;align-items:center;gap:10px;padding:6px 8px;margin-bottom:24px}
+.sb-logo-i{width:34px;height:34px;border-radius:var(–r3);background:linear-gradient(135deg,var(–green),var(–iodine));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.88rem;font-family:var(–mono);flex-shrink:0}
+.sb-logo span{font-weight:800;font-size:.95rem;color:var(–text)}
+.sb-logo small{font-size:.64rem;color:var(–muted);display:block;font-family:var(–mono)}
+.nav-sec{margin-bottom:6px}
+.nav-sec-t{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(–muted);padding:0 10px;margin-bottom:5px;font-family:var(–mono)}
+.nav-list{display:flex;flex-direction:column;gap:1px}
+.nav-link{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(–r3);border:none;background:transparent;color:var(–muted);cursor:pointer;font-weight:600;font-size:.84rem;transition:all .18s;text-align:left;width:100%;font-family:var(–font);position:relative}
+.nav-link:hover{background:var(–ghost);color:var(–text)}
+.nav-link.active{background:var(–green-ll);color:var(–green);font-weight:700;border:1px solid var(–border2)}
+[data-theme=“dark”] .nav-link.active{background:rgba(13,158,126,.16);color:var(–green-l)}
+.nav-link.active::before{content:””;position:absolute;left:-1px;top:22%;bottom:22%;width:3px;border-radius:0 2px 2px 0;background:linear-gradient(to bottom,var(–green),var(–iodine))}
+.nav-link svg{width:17px;height:17px;flex-shrink:0}
+.sb-footer{margin-top:auto;padding:14px 8px;border-top:1px solid var(–border)}
+.sb-user{display:flex;align-items:center;gap:9px}
+.sb-user strong{font-size:.8rem;color:var(–text);display:block}
+.sb-user span{font-size:.7rem;color:var(–muted);font-family:var(–mono)}
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .3s;z-index:900}
+.sidebar-overlay.vis{opacity:1;pointer-events:auto}
+
+/* ── TOPBAR ── */
+.content-area{flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{position:sticky;top:0;height:var(–topbar);border-bottom:1px solid var(–border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:800;backdrop-filter:blur(18px);transition:background .3s}
+[data-theme=“light”] .topbar{background:rgba(242,247,246,.9)}
+[data-theme=“dark”] .topbar{background:rgba(9,25,24,.9)}
+.topbar-l{display:flex;align-items:center;gap:12px}
+.topbar-l h1{font-size:.95rem;font-weight:700;color:var(–text2)}
+.topbar-r{display:flex;align-items:center;gap:6px}
+.rec-ind{display:none;align-items:center;gap:5px;padding:3px 10px;border-radius:var(–r3);background:var(–danger-bg);color:var(–danger);font-size:.7rem;font-weight:700;font-family:var(–mono);animation:blink 1.2s ease infinite}
+.rec-ind.on{display:inline-flex}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+.clock{font-size:.8rem;font-family:var(–mono);color:var(–muted);padding:0 2px}
+
+/* ── SCREENS ── */
+.main{padding:20px;max-width:1400px;margin:0 auto;width:100%}
+.screen{display:none;animation:fadeUp .3s ease}.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── HERO ── */
+.hero{border-radius:var(–r2);padding:28px 32px;background:var(–hero);border:1px solid rgba(13,158,126,.2);position:relative;overflow:hidden;margin-bottom:20px;box-shadow:var(–sh2)}
+.hero::before{content:””;position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.09),transparent 70%);top:-150px;right:-90px}
+.hero>*{position:relative;z-index:1}
+.hero-ey{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.75);font-family:var(–mono);margin-bottom:5px;display:flex;align-items:center;gap:7px}
+.hero-ey::before{content:””;width:16px;height:1.5px;background:rgba(255,255,255,.6);border-radius:1px}
+.hero-t{font-size:1.85rem;font-weight:800;margin-bottom:5px;color:#fff}
+.hero-sub{font-size:.8rem;color:rgba(255,255,255,.65)}
+.hero-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px;margin-top:20px}
+.hero-stat{background:rgba(255,255,255,.13);backdrop-filter:blur(10px);border-radius:var(–r);padding:14px;border:1px solid rgba(255,255,255,.1);transition:all .2s}
+.hero-stat:hover{background:rgba(255,255,255,.2);transform:translateY(-2px)}
+.hero-stat-l{font-size:.65rem;color:rgba(255,255,255,.6);margin-bottom:4px;font-family:var(–mono);text-transform:uppercase;letter-spacing:.08em}
+.hero-stat-v{font-size:1.65rem;font-weight:800;font-family:var(–mono);color:#fff}
+.hero-stat-s{font-size:.65rem;color:rgba(255,255,255,.5);margin-top:1px;font-family:var(–mono)}
+
+/* ── METRICS ── */
+.metrics-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:14px;margin-bottom:20px}
+.metric-c{border-radius:var(–r2);padding:20px;position:relative;overflow:hidden;border:1.5px solid transparent;transition:all .22s}
+.metric-c::before{content:””;position:absolute;right:-18px;bottom:-18px;width:78px;height:78px;border-radius:50%;background:rgba(255,255,255,.1)}
+.metric-c:nth-child(1){background:linear-gradient(135deg,rgba(217,63,76,.14),rgba(217,63,76,.06));border-color:rgba(217,63,76,.24)}
+.metric-c:nth-child(2){background:linear-gradient(135deg,rgba(13,158,126,.14),rgba(13,158,126,.06));border-color:rgba(13,158,126,.24)}
+.metric-c:nth-child(3){background:linear-gradient(135deg,rgba(25,144,163,.14),rgba(25,144,163,.06));border-color:rgba(25,144,163,.24)}
+.metric-c:hover{transform:translateY(-2px);box-shadow:var(–sh2)}
+.metric-l{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-family:var(–mono);color:var(–text2);opacity:.8;margin-bottom:6px}
+.metric-v{font-size:2rem;font-weight:800;font-family:var(–mono);color:var(–text)}
+.metric-s{font-size:.69rem;color:var(–muted);margin-top:2px;font-family:var(–mono)}
+
+/* ── LAYOUT ── */
+.cg{display:grid;grid-template-columns:1fr;gap:16px}
+.card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-h h3{font-size:.9rem;font-weight:700;color:var(–text)}
+.filter-bar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.filter-bar>div{flex:1;min-width:140px}
+.filter-bar input,.filter-bar select{height:36px;font-size:.82rem}
+.filter-count{font-size:.75rem;color:var(–muted);margin-bottom:10px;font-family:var(–mono)}
+
+/* ── PATIENT LIST ── */
+.p-list{display:flex;flex-direction:column;gap:5px}
+.p-item{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:var(–r3);border:1.5px solid var(–border);background:var(–card2);cursor:pointer;transition:all .18s}
+.p-item:hover{border-color:var(–border2);background:var(–green-ll);transform:translateX(3px)}
+[data-theme=“dark”] .p-item:hover{background:var(–ghost)}
+.p-item.fh{display:none}
+.p-info{flex:1;min-width:0}
+.p-name{font-weight:700;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(–text)}
+.p-det{font-size:.73rem;color:var(–muted);margin-top:2px;font-family:var(–mono)}
+.p-empty{text-align:center;padding:28px;color:var(–muted);display:none}
+
+.trend-bars{display:flex;gap:4px;align-items:flex-end;height:80px}
+.trend-bar{flex:1;border-radius:4px 4px 0 0;position:relative;min-height:6px;cursor:pointer;transition:all .3s;opacity:.85}
+.trend-bar:hover{opacity:1;transform:scaleY(1.05);transform-origin:bottom}
+.trend-tip{position:absolute;top:-28px;left:50%;transform:translateX(-50%);background:var(–card);color:var(–text);padding:2px 7px;border-radius:4px;font-size:.63rem;font-weight:700;font-family:var(–mono);white-space:nowrap;opacity:0;transition:opacity .15s;pointer-events:none;border:1px solid var(–border2);box-shadow:var(–sh)}
+.trend-bar:hover .trend-tip{opacity:1}
+
+.timeline{display:flex;flex-direction:column;gap:13px}
+.tl-item{display:flex;gap:10px}
+.tl-dot-w{display:flex;flex-direction:column;align-items:center}
+.tl-dot{width:8px;height:8px;border-radius:50%;background:var(–green);flex-shrink:0;margin-top:5px;box-shadow:0 0 7px rgba(13,158,126,.55)}
+.tl-line{width:1.5px;flex:1;background:var(–border);margin-top:4px}
+.tl-body h4{font-size:.82rem;font-weight:700;margin-bottom:2px;color:var(–text)}
+.tl-body p{font-size:.75rem;color:var(–muted)}
+.tl-body time{font-size:.67rem;color:var(–muted);font-family:var(–mono)}
+
+/* ── CONSULTATION ── */
+.consult-g{display:grid;grid-template-columns:1fr;gap:16px}
+.mic-area{display:flex;flex-direction:column;align-items:center;gap:14px;padding:16px 0}
+.mic-btn{width:72px;height:72px;border-radius:50%;border:none;background:linear-gradient(135deg,var(–green),var(–iodine));color:#fff;font-size:1.35rem;cursor:pointer;position:relative;transition:all .3s;box-shadow:0 4px 20px rgba(13,158,126,.38)}
+.mic-btn:hover{transform:scale(1.06)}
+.mic-btn.rec{background:linear-gradient(135deg,var(–danger),#b53040);box-shadow:0 4px 20px rgba(217,63,76,.42)}
+.mic-ring{position:absolute;inset:-10px;border-radius:50%;border:2px solid rgba(13,158,126,.3);animation:rp 2s ease infinite;opacity:0;pointer-events:none}
+.mic-btn.rec .mic-ring{border-color:rgba(217,63,76,.3);opacity:1;animation-duration:1s}
+@keyframes rp{from{transform:scale(.82);opacity:.8}to{transform:scale(1.45);opacity:0}}
+.timer{font-size:1.9rem;font-weight:700;font-family:var(–mono);color:var(–text);letter-spacing:.08em}
+.wave{display:flex;align-items:center;gap:2px;height:36px}
+.wave span{width:2.5px;border-radius:2px;background:var(–green);opacity:.45;transition:height .1s}
+.wave.rec span{animation:wv .7s ease infinite;opacity:1}
+@keyframes wv{0%,100%{transform:scaleY(.2)}50%{transform:scaleY(1)}}
+.transcript{border-radius:var(–r);border:1.5px dashed var(–border2);padding:14px;background:var(–card2);min-height:100px;white-space:pre-wrap;line-height:1.7;font-size:.83rem;color:var(–text2);font-family:var(–mono)}
+.soap-g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.soap-c{border-radius:var(–r);padding:14px;border:1.5px solid var(–border);background:var(–card2)}
+.soap-c h5{font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;color:var(–green);margin-bottom:8px;font-family:var(–mono);font-weight:700}
+.soap-c textarea{min-height:70px;border:none;background:transparent;padding:0;font-size:.82rem}
+.soap-c textarea:focus{box-shadow:none;border:none}
+
+/* ── WARD / NIGHT ── */
+.ward-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.ward-c{border-radius:var(–r);border:1.5px solid var(–border);padding:14px;background:var(–card2);cursor:pointer;transition:all .18s;display:flex;flex-direction:column;gap:6px}
+.ward-c:hover{border-color:var(–border2);transform:translateY(-2px);box-shadow:var(–sh2)}
+.ward-c.sel{border-color:var(–green);background:var(–green-ll);box-shadow:0 0 0 3px rgba(13,158,126,.12)}
+[data-theme=“dark”] .ward-c.sel{background:var(–ghost)}
+
+/* ── HISTORY ── */
+.hist-list{display:flex;flex-direction:column;gap:6px}
+.hist-item{border-radius:var(–r3);border:1.5px solid var(–border);padding:13px;background:var(–card2);display:flex;align-items:flex-start;gap:10px;transition:all .18s}
+.hist-item:hover{border-color:var(–border2);background:var(–green-ll)}
+[data-theme=“dark”] .hist-item:hover{background:var(–ghost)}
+.hist-icon{width:32px;height:32px;border-radius:var(–r3);background:var(–green-ll);border:1px solid var(–border2);display:flex;align-items:center;justify-content:center;font-size:.88rem;flex-shrink:0}
+[data-theme=“dark”] .hist-icon{background:var(–ghost)}
+.hist-body strong{font-size:.85rem;color:var(–text)}
+.hist-body p{font-size:.75rem;color:var(–muted);margin-top:3px}
+
+/* ── ICU ── */
+.icu-sec-t{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(–green);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(–border);font-family:var(–mono);display:flex;align-items:center;gap:8px}
+.icu-sec-t::before{content:””;width:4px;height:4px;border-radius:50%;background:var(–green);box-shadow:0 0 6px rgba(13,158,126,.7)}
+.icu-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:28px}
+.icu-c{border-radius:var(–r2);border:1.5px solid var(–border);background:var(–card);overflow:hidden;transition:all .22s}
+.icu-c:hover{box-shadow:var(–sh2),var(–glow);border-color:var(–border2);transform:translateY(-2px)}
+.icu-ch{padding:13px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(–border);background:var(–card2)}
+.st-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.st-dot.stable{background:var(–ok);box-shadow:0 0 8px rgba(13,158,126,.55)}
+.st-dot.warning{background:var(–warn);box-shadow:0 0 8px rgba(212,138,0,.5);animation:dp 2s ease infinite}
+.st-dot.critical{background:var(–danger);box-shadow:0 0 8px rgba(217,63,76,.6);animation:dp .8s ease infinite}
+@keyframes dp{0%,100%{opacity:1}50%{opacity:.25}}
+.icu-cb{padding:14px 16px}
+.icu-vg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.icu-v{text-align:center;padding:8px 4px;border-radius:var(–r3);background:var(–card2);border:1px solid var(–border)}
+.icu-vl{font-size:.6rem;font-weight:700;color:var(–muted);text-transform:uppercase;letter-spacing:.06em;font-family:var(–mono)}
+.icu-vv{font-size:1.1rem;font-weight:700;margin-top:2px;font-family:var(–mono);color:var(–text)}
+.icu-vu{font-size:.57rem;color:var(–muted);font-family:var(–mono)}
+.icu-v.alert{border-color:rgba(217,63,76,.3);background:var(–danger-bg)}.icu-v.alert .icu-vv{color:var(–danger)}
+.icu-v.vwarn{border-color:rgba(212,138,0,.3);background:var(–warn-bg)}.icu-v.vwarn .icu-vv{color:var(–warn)}
+.icu-cf{padding:9px 16px;border-top:1px solid var(–border);font-size:.73rem;color:var(–muted);font-style:italic}
+
+/* ── SETTINGS ── */
+.set-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.set-sec h4{font-size:.88rem;font-weight:700;margin-bottom:14px;color:var(–text)}
+.theme-btns{display:flex;gap:10px;margin-top:10px}
+.tbtn{flex:1;padding:12px;border-radius:var(–r);border:1.5px solid var(–border);cursor:pointer;text-align:center;font-size:.82rem;font-weight:700;font-family:var(–font);background:var(–card2);color:var(–muted);transition:all .2s}
+.tbtn.on{border-color:var(–green);background:var(–green-ll);color:var(–green)}
+[data-theme=“dark”] .tbtn.on{background:var(–ghost)}
+
+/* ── NOTIF ── */
+.notif-panel{position:fixed;top:0;right:-340px;width:320px;height:100%;background:var(–card);border-left:1px solid var(–border);box-shadow:var(–sh2);padding:20px;transition:right .3s,background .3s;z-index:950;overflow-y:auto}
+.notif-panel.open{right:0}
+.notif-list{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.notif-item{padding:12px;border-radius:var(–r);border:1px solid var(–border);background:var(–card2)}
+.notif-item h4{font-size:.82rem;margin-bottom:3px;color:var(–text)}.notif-item p{font-size:.75rem;color:var(–muted)}.notif-item time{font-size:.67rem;color:var(–muted);font-family:var(–mono)}
+
+/* ── MODAL ── */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:960;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(6px)}
+.modal.vis{opacity:1;pointer-events:auto}
+.modal-c{width:100%;max-width:920px;max-height:88vh;overflow:auto;border-radius:var(–r2);background:var(–card);border:1.5px solid var(–border2);padding:28px;transform:translateY(14px) scale(.98);transition:transform .25s;box-shadow:var(–sh2)}
+.modal.vis .modal-c{transform:none}
+.modal-h{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:22px}
+.modal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:14px}
+.score-ring{width:130px;height:130px;margin:0 auto 10px;position:relative}
+.score-ring svg{width:130px;height:130px;transform:rotate(-90deg)}
+.score-ring circle{fill:none;stroke-width:8;stroke-linecap:round}
+.score-ring .bg{stroke:var(–border)}
+.score-ring .prog{stroke:var(–green);stroke-dasharray:440;transition:stroke-dashoffset .9s}
+.score-ring strong{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:800;font-family:var(–mono);color:var(–green)}
+.modal-sec{border-radius:var(–r);border:1.5px solid var(–border);padding:14px;background:var(–card2)}
+.modal-sec h4{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(–muted);margin-bottom:10px;font-family:var(–mono);font-weight:700}
+.modal-list{display:flex;flex-direction:column;gap:5px}.modal-list span{font-size:.8rem;color:var(–text2);font-family:var(–mono)}
+.modal-tags{display:flex;flex-wrap:wrap;gap:5px}
+.vt-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.vt-tab{padding:4px 11px;border-radius:var(–r3);border:1.5px solid var(–border);background:transparent;cursor:pointer;font-weight:700;font-size:.72rem;color:var(–muted);transition:all .15s;font-family:var(–mono)}
+.vt-tab.active{background:linear-gradient(135deg,var(–green),var(–iodine));color:#fff;border-color:transparent}
+
+/* ── TOAST / CONFIRM ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(70px);z-index:9999;padding:10px 22px;border-radius:var(–r);background:var(–card);color:var(–text);font-weight:700;font-size:.8rem;box-shadow:var(–sh2);transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .3s;opacity:0;pointer-events:none;border:1.5px solid var(–border2);font-family:var(–mono)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.confirm-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:9998;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(6px)}
+.confirm-ov.show{opacity:1;pointer-events:auto}
+.confirm-d{background:var(–card);border-radius:var(–r2);padding:28px;max-width:360px;width:90%;text-align:center;box-shadow:var(–sh2);border:1.5px solid var(–border2)}
+.confirm-d h3{margin-bottom:6px;color:var(–text)}.confirm-d p{color:var(–muted);margin-bottom:20px;font-size:.86rem}
+.confirm-d .btn-row{display:flex;gap:8px;justify-content:center}
+
+.stagger>*{opacity:0;animation:fadeUp .35s ease forwards}
+.stagger>*:nth-child(1){animation-delay:.05s}.stagger>*:nth-child(2){animation-delay:.10s}
+.stagger>*:nth-child(3){animation-delay:.15s}.stagger>*:nth-child(4){animation-delay:.20s}
+
+@media(min-width:1024px){.content-area{margin-left:var(–sidebar)}.sidebar{left:0;box-shadow:none}.sidebar-overlay{display:none}.cg{grid-template-columns:1.5fr .5fr}.consult-g{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.soap-g{grid-template-columns:1fr}.hero-t{font-size:1.4rem}.hero-stats{grid-template-columns:1fr 1fr}}
+</style>
+
+</head>
+<body>
+
+<!-- LOGIN -->
+
+<div id="loginScreen">
+<div style="min-height:100vh;display:flex;background:var(--bg);position:relative;overflow:hidden;transition:background .3s">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:64px;z-index:2;display:none" class="login-left-d">
+    <h1 style="font-size:3rem;font-weight:800;line-height:1.1;color:var(--text);margin-bottom:16px">Голосовой AI<br><em style="font-style:normal;background:linear-gradient(135deg,var(--green),var(--iodine),var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent">для врачей</em></h1>
+    <p style="font-size:.93rem;color:var(--text2);line-height:1.7;max-width:400px">Первая платформа голосовой медицинской документации для Центральной Азии.</p>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:30px">
+      <div style="display:flex;align-items:center;gap:12px;color:var(--text2);font-size:.88rem"><div style="width:36px;height:36px;border-radius:var(--r3);background:var(--green-ll);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0">🎙</div>Голосовой ввод на вашем языке</div>
+      <div style="display:flex;align-items:center;gap:12px;color:var(--text2);font-size:.88rem"><div style="width:36px;height:36px;border-radius:var(--r3);background:var(--green-ll);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0">📋</div>Автоматическая SOAP-документация</div>
+      <div style="display:flex;align-items:center;gap:12px;color:var(--text2);font-size:.88rem"><div style="width:36px;height:36px;border-radius:var(--r3);background:var(--green-ll);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0">🏥</div>Ночные обходы и мониторинг</div>
+    </div>
+  </div>
+  <div style="width:460px;display:flex;align-items:center;justify-content:center;padding:50px;z-index:2;width:100%;padding:20px">
+    <div style="width:100%;max-width:420px;background:var(--card);border:1.5px solid var(--border2);border-radius:20px;padding:38px;box-shadow:var(--sh2);transition:background .3s">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px">
+        <div style="display:flex;align-items:center;gap:9px;font-weight:800;font-size:1.05rem;color:var(--text)">
+          <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--green),var(--iodine));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.88rem;font-family:var(--mono)">A</div>
+          Avris AI
+        </div>
+        <div class="lang-sel" id="langSelLogin"></div>
+      </div>
+      <h2 style="font-size:1.22rem;margin-bottom:4px;font-weight:800;color:var(--text)">Вход в систему</h2>
+      <p style="color:var(--muted);margin-bottom:24px;font-size:.84rem">Введите данные для продолжения</p>
+      <form id="loginForm" style="display:flex;flex-direction:column;gap:12px">
+        <div><label>ПОЧТА</label><input id="email" type="email" placeholder="doctor@hospital.tj" required/></div>
+        <div><label>ПАРОЛЬ</label><input id="password" type="password" placeholder="••••••••" required/></div>
+        <button class="btn primary" type="submit" id="loginBtn" style="width:100%;height:44px;margin-top:4px;font-size:.9rem">Войти</button>
+      </form>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:center;align-items:center;gap:10px">
+        <span style="font-size:.74rem;color:var(--muted)">Тема:</span>
+        <button class="theme-pill" id="loginThemePill">
+          <div class="theme-pip on" id="ltp-sun">☀️</div>
+          <div class="theme-pip" id="ltp-moon">🌙</div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- APP -->
+
+<div class="app-shell hidden" id="appShell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo"><div class="sb-logo-i">A</div><div><span>Avris AI</span><small>Hyperion Labs</small></div></div>
+    <div class="nav-sec"><div class="nav-sec-t">Основное</div>
+    <nav class="nav-list">
+      <button class="nav-link active" data-screen="dashboard" data-tkey="nav_dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Дашборд</span></button>
+      <button class="nav-link" data-screen="consultation" data-tkey="nav_consult"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg><span>Осмотр</span></button>
+      <button class="nav-link" data-screen="nightRound" data-tkey="nav_night"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><span>Ночной обход</span></button>
+    </nav></div>
+    <div class="nav-sec"><div class="nav-sec-t">Данные</div>
+    <nav class="nav-list">
+      <button class="nav-link" data-screen="history" data-tkey="nav_history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>История</span></button>
+      <button class="nav-link" data-screen="monitor" data-tkey="nav_icu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>Реанимация</span></button>
+    </nav></div>
+    <div class="nav-sec"><div class="nav-sec-t">Система</div>
+    <nav class="nav-list">
+      <button class="nav-link" data-screen="settings" data-tkey="nav_settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span>Настройки</span></button>
+    </nav></div>
+    <div class="sb-footer"><div class="sb-user"><div class="avatar" style="width:32px;height:32px;font-size:.68rem">ДА</div><div><strong>Др. Ахмедов</strong><span>Терапевт</span></div></div></div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="content-area">
+    <header class="topbar">
+      <div class="topbar-l"><button class="icon-btn" id="sidebarToggle">☰</button><h1 id="screenTitle">Дашборд</h1></div>
+      <div class="topbar-r">
+        <span class="rec-ind" id="recInd">● REC</span>
+        <div class="lang-sel" id="langSel"></div>
+        <button class="icon-btn" id="notifToggle">🔔</button>
+        <button class="theme-pill" id="appThemePill"><div class="theme-pip on" id="atp-sun">☀️</div><div class="theme-pip" id="atp-moon">🌙</div></button>
+        <span class="clock" id="clock">--:--</span>
+      </div>
+    </header>
+    <div class="main">
+
+<!-- DASHBOARD -->
+
+<section class="screen active" id="dashboard">
+<div class="hero">
+  <div class="hero-ey">Сегодняшний обзор</div>
+  <div class="hero-t">Активные пациенты</div>
+  <div class="hero-sub">Обновлено: <span id="heroTS">--:--</span></div>
+  <div class="hero-stats stagger">
+    <div class="hero-stat"><div class="hero-stat-l">В работе</div><div class="hero-stat-v" id="heroPC">6</div><div class="hero-stat-s">пациентов</div></div>
+    <div class="hero-stat"><div class="hero-stat-l">Критические</div><div class="hero-stat-v" id="heroCC">1</div><div class="hero-stat-s">внимание</div></div>
+    <div class="hero-stat"><div class="hero-stat-l">Avris Score</div><div class="hero-stat-v" id="heroAS">--</div><div class="hero-stat-s">средний</div></div>
+    <div class="hero-stat"><div class="hero-stat-l">Отчёт</div><div class="hero-stat-v">12</div><div class="hero-stat-s">мин назад</div></div>
+  </div>
+</div>
+<div class="metrics-row stagger">
+  <div class="metric-c"><div class="metric-l">SOAP</div><div class="metric-v">18</div><div class="metric-s">за 24ч</div></div>
+  <div class="metric-c"><div class="metric-l">Сессии</div><div class="metric-v">12</div><div class="metric-s">~4:12</div></div>
+  <div class="metric-c"><div class="metric-l">Точность AI</div><div class="metric-v">92%</div><div class="metric-s">распознавание</div></div>
+</div>
+<div class="card" style="margin-bottom:16px">
+  <div class="filter-bar">
+    <div><input id="patSearch" type="search" placeholder="Поиск..."/></div>
+    <div><select id="diagFilter"><option value="all">Все диагнозы</option></select></div>
+    <div><select id="wardFilter"><option value="all">Все отделения</option></select></div>
+    <button class="btn ghost sm" id="resetF">Сбросить</button>
+  </div>
+  <div class="filter-count" id="filterSum">6 пациентов</div>
+</div>
+<div class="cg">
+  <div class="card">
+    <div class="card-h"><h3>Пациенты</h3><span class="badge info" id="patBadge">6</span></div>
+    <div class="p-list" id="patList"></div>
+    <div class="p-empty" id="patEmpty">Пациенты не найдены</div>
+  </div>
+  <div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-h"><h3>Avris Score</h3></div>
+      <div class="trend-bars" id="avrisTrend"></div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 11px;border-radius:var(--r3);background:var(--safe-bg);border:1px solid rgba(13,158,126,.2)"><div><strong id="bestSP" style="font-size:.8rem;color:var(--text)">--</strong><div style="font-size:.65rem;color:var(--muted);font-family:var(--mono)">лучший</div></div><span class="badge safe">Стаб.</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 11px;border-radius:var(--r3);background:var(--warn-bg);border:1px solid rgba(212,138,0,.2)"><div><strong id="watchSP" style="font-size:.8rem;color:var(--text)">--</strong><div style="font-size:.65rem;color:var(--muted);font-family:var(--mono)">наблюдение</div></div><span class="badge warn">Набл.</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3>Активность</h3></div>
+      <div class="timeline">
+        <div class="tl-item"><div class="tl-dot-w"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-body"><h4>SOAP</h4><p>Омаров Р.Б.</p><time>10:12</time></div></div>
+        <div class="tl-item"><div class="tl-dot-w"><div class="tl-dot"></div><div class="tl-line"></div></div><div class="tl-body"><h4>Обход</h4><p>Палата B3</p><time>09:48</time></div></div>
+        <div class="tl-item"><div class="tl-dot-w"><div class="tl-dot"></div></div><div class="tl-body"><h4>Экспорт</h4><p>Иванова А.М.</p><time>08:40</time></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- CONSULTATION -->
+
+<section class="screen" id="consultation">
+<div class="consult-g">
+  <div class="card">
+    <div class="card-h"><h3>Запись осмотра</h3></div>
+    <div style="margin-bottom:14px"><label>Пациент</label><select id="consultPat"></select></div>
+    <div class="mic-area"><button class="mic-btn" id="micBtn"><span class="mic-ring"></span>🎙️</button><div class="timer" id="recTimer">00:00</div><div class="wave" id="waveform"></div></div>
+    <div><label>Транскрипт</label><div class="transcript" id="transcriptText">Нажмите микрофон для записи...</div></div>
+    <div style="margin-top:14px;display:flex;gap:6px;justify-content:flex-end">
+      <button class="btn ghost" id="clearRec">Очистить</button>
+      <button class="btn primary" id="stopRec">Сохранить</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-h"><h3>SOAP-документация</h3></div>
+    <div class="soap-g">
+      <div class="soap-c"><h5>Subjective</h5><textarea id="soapS" placeholder="Жалобы пациента"></textarea></div>
+      <div class="soap-c"><h5>Objective</h5><textarea id="soapO" placeholder="Данные осмотра"></textarea></div>
+      <div class="soap-c"><h5>Assessment</h5><textarea id="soapA" placeholder="Диагноз"></textarea></div>
+      <div class="soap-c"><h5>Plan</h5><textarea id="soapP" placeholder="План лечения"></textarea></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn primary" id="soapConfirm">Подтвердить SOAP</button></div>
+  </div>
+</div>
+</section>
+
+<!-- NIGHT ROUND -->
+
+<section class="screen" id="nightRound">
+<div class="card" style="margin-bottom:16px">
+  <div class="card-h"><h3>Ночной обход</h3><span class="badge info">6 палат</span></div>
+  <div class="ward-g" id="wardGrid"></div>
+</div>
+<div class="card">
+  <div class="card-h"><h3>Голосовой ввод</h3></div>
+  <p id="selWardLbl" style="font-weight:700;color:var(--green);margin-bottom:10px;display:none;font-family:var(--mono);font-size:.82rem"></p>
+  <button class="btn primary" id="nightVoice" style="margin-bottom:14px">🎤 Авто-заполнение голосом</button>
+  <div style="display:grid;gap:10px">
+    <div><label>Осмотр</label><textarea id="nightObj" placeholder="Заполнится голосом..."></textarea></div>
+    <div><label>План</label><textarea id="nightPlan" placeholder="Лечение"></textarea></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn primary" id="nightSave" disabled>Сохранить обход</button></div>
+</div>
+</section>
+
+<!-- HISTORY -->
+
+<section class="screen" id="history">
+<div class="card"><div class="card-h"><h3>История записей</h3></div><div class="hist-list" id="histList"></div></div>
+</section>
+
+<!-- ICU -->
+
+<section class="screen" id="monitor">
+<div style="margin-bottom:20px"><h2 style="font-weight:800;margin-bottom:4px;color:var(--text)">Реанимация и пост-реанимация</h2><p style="color:var(--muted);font-size:.84rem">Наблюдение за пациентами в критическом состоянии</p></div>
+<div class="icu-sec-t">Реанимационное отделение (ОРИТ)</div>
+<div class="icu-g" id="icuGrid"></div>
+<div class="icu-sec-t">Пост-реанимационные палаты</div>
+<div class="icu-g" id="postIcuGrid"></div>
+</section>
+
+<!-- SETTINGS -->
+
+<section class="screen" id="settings">
+<div class="card">
+  <div class="card-h"><h3>Настройки</h3></div>
+  <div class="set-g">
+    <div class="set-sec">
+      <h4>Внешний вид</h4>
+      <div style="margin-bottom:14px"><label>Тема оформления</label><div class="theme-btns"><button class="tbtn on" id="sLight">☀️ Светлая</button><button class="tbtn" id="sDark">🌙 Тёмная</button></div></div>
+      <div><label>Язык интерфейса</label><select id="setLang"><option value="ru">Русский</option><option value="tj">Тоҷикӣ</option><option value="en">English</option></select></div>
+    </div>
+    <div class="set-sec">
+      <h4>Аккаунт</h4>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:var(--r3);background:var(--card2);margin-bottom:12px;border:1px solid var(--border)">
+        <div><strong style="font-size:.88rem;color:var(--text)">Др. Ахмедов</strong><div style="font-size:.74rem;color:var(--muted);font-family:var(--mono)">Терапевт</div></div>
+        <span class="badge safe">Активен</span>
+      </div>
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:10px;font-family:var(--mono)">v3.4 — Hyperion Labs</div>
+      <button class="btn danger" id="logoutBtn">Выйти из системы</button>
+    </div>
+  </div>
+</div>
+</section>
+
+```
+</div>
+```
+
+  </div>
+</div>
+
+<!-- NOTIF -->
+
+<div class="notif-panel" id="notifPanel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><h3 style="font-size:.9rem;color:var(--text)">Уведомления</h3><button class="icon-btn" id="closeNotif">✕</button></div>
+  <div class="notif-list">
+    <div class="notif-item"><h4>⚠️ SpO₂ 88%</h4><p>Рахимов С.К. — ОРИТ</p><time>14:20</time></div>
+    <div class="notif-item"><h4>📄 SOAP экспорт</h4><p>Омаров Р.Б.</p><time>08:42</time></div>
+    <div class="notif-item"><h4>✅ Обход завершён</h4><p>Все палаты осмотрены</p><time>07:30</time></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+
+<div class="modal" id="patModal">
+<div class="modal-c">
+  <div class="modal-h"><div><h2 id="mName" style="font-weight:800;font-size:1.2rem;color:var(--text)">—</h2><p id="mWard" style="margin-top:3px;font-size:.79rem;color:var(--muted);font-family:var(--mono)"></p></div><button class="icon-btn" id="closeModal">✕</button></div>
+  <div class="modal-grid">
+    <div class="modal-sec" style="text-align:center"><h4>Avris Score</h4><div class="score-ring"><svg viewBox="0 0 160 160"><circle class="bg" cx="80" cy="80" r="70"/><circle class="prog" id="mScoreRing" cx="80" cy="80" r="70" stroke-dashoffset="440"/></svg><strong id="mScoreVal">--</strong></div><p id="mInsight" style="font-size:.77rem;color:var(--muted);font-family:var(--mono);line-height:1.5"></p></div>
+    <div class="modal-sec"><h4>Профиль</h4><div class="modal-list" id="mProfile"></div><h4 style="margin-top:14px">Диагнозы</h4><div class="modal-tags" id="mDiag"></div><h4 style="margin-top:14px">Аллергии</h4><div class="modal-tags" id="mAllergy"></div></div>
+    <div class="modal-sec"><h4>Назначения</h4><div class="modal-list" id="mMeds"></div><h4 style="margin-top:14px">Анамнез</h4><div class="modal-list" id="mHist"></div></div>
+  </div>
+  <div class="modal-sec"><h4>Витальные показатели</h4><div class="vt-tabs" id="mVTabs"></div><canvas id="patVChart"></canvas></div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="confirm-ov" id="confirmOv"><div class="confirm-d"><h3 id="cTitle">—</h3><p id="cText"></p><div class="btn-row"><button class="btn ghost" id="cCancel">Отмена</button><button class="btn danger" id="cOk">Да</button></div></div></div>
+
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i)};
+var esc=function(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML};
+var RING_C=2*Math.PI*70;
+
+/* ══ THEME ══ */
+var theme="light";
+function setTheme(t){
+  theme=t;
+  document.documentElement.setAttribute("data-theme",t);
+  var d=(t==="dark");
+  var sun=[$("atp-sun"),$("ltp-sun")];
+  var moon=[$("atp-moon"),$("ltp-moon")];
+  sun.forEach(function(e){if(e){e.classList.toggle("on",!d)}});
+  moon.forEach(function(e){if(e){e.classList.toggle("on",d)}});
+  var sl=$("sLight"),sd=$("sDark");
+  if(sl)sl.classList.toggle("on",!d);
+  if(sd)sd.classList.toggle("on",d);
+}
+$("appThemePill").onclick=function(){setTheme(theme==="light"?"dark":"light")};
+$("loginThemePill").onclick=function(){setTheme(theme==="light"?"dark":"light")};
+$("sLight").onclick=function(){setTheme("light")};
+$("sDark").onclick=function(){setTheme("dark")};
+setTheme("light");
+
+/* ══ LANG ══ */
+var lang="ru";
+var LANGS={ru:"RU",tj:"TJ",en:"EN"};
+var LABELS={
+  ru:{nav_dashboard:"Дашборд",nav_consult:"Осмотр",nav_night:"Ночной обход",nav_history:"История",nav_icu:"Реанимация",nav_settings:"Настройки",st_stab:"Стаб.",st_watch:"Набл.",st_crit:"Крит.",icu_stable:"Стабильно",icu_serious:"Тяжёлое",icu_critical:"Критическое",w_label:"Палата",f_pat:"пациентов",t_soap:"✅ SOAP сохранена",t_soap_e:"⚠️ Заполните S или O",t_filled:"✅ Заполнено",t_round:"✅ Обход сохранён",t_ward:"⚠️ Выберите палату",t_exam:"⚠️ Заполните осмотр",c_logout:"Выйти из системы?",c_logout_rec:"Идёт запись! Выйти?"},
+  tj:{nav_dashboard:"Панел",nav_consult:"Муоина",nav_night:"Гашти шабона",nav_history:"Таърих",nav_icu:"Реанимация",nav_settings:"Танзимот",st_stab:"Устув.",st_watch:"Назор.",st_crit:"Крит.",icu_stable:"Устувор",icu_serious:"Вазнин",icu_critical:"Критикӣ",w_label:"Палата",f_pat:"бемор",t_soap:"✅ Нигоҳ",t_soap_e:"⚠️ Пур кунед",t_filled:"✅ Пур",t_round:"✅ Нигоҳ",t_ward:"⚠️ Палата",t_exam:"⚠️ Муоина",c_logout:"Мебароед?",c_logout_rec:"Сабт!"},
+  en:{nav_dashboard:"Dashboard",nav_consult:"Consultation",nav_night:"Night Round",nav_history:"History",nav_icu:"ICU",nav_settings:"Settings",st_stab:"Stable",st_watch:"Watch",st_crit:"Crit.",icu_stable:"Stable",icu_serious:"Serious",icu_critical:"Critical",w_label:"Ward",f_pat:"patients",t_soap:"✅ SOAP saved",t_soap_e:"⚠️ Fill S or O",t_filled:"✅ Filled",t_round:"✅ Round saved",t_ward:"⚠️ Select ward",t_exam:"⚠️ Fill exam",c_logout:"Sign out?",c_logout_rec:"Recording! Sign out?"}
+};
+function t(k){return(LABELS[lang]&&LABELS[lang][k])||LABELS.ru[k]||k}
+
+function buildLangBtns(){
+  ["langSel","langSelLogin"].forEach(function(id){
+    var el=$(id);if(!el)return;
+    el.innerHTML="";
+    Object.keys(LANGS).forEach(function(c){
+      var b=document.createElement("button");
+      b.textContent=LANGS[c];
+      b.className=(c===lang?"active":"");
+      b.onclick=function(){
+        lang=c;
+        var sl=$("setLang");if(sl)sl.value=c;
+        buildLangBtns();
+        updateNavTitles();
+      };
+      el.appendChild(b);
+    });
+  });
+}
+function updateNavTitles(){
+  var an=document.querySelector(".nav-link.active");
+  if(an){var k=an.getAttribute("data-tkey");if(k)$("screenTitle").textContent=t(k)}
+}
+$("setLang").onchange=function(e){lang=e.target.value;buildLangBtns();updateNavTitles()};
+
+/* ══ DATA ══ */
+var patients=[
+  {id:"ivanova",name:"Иванова А.М.",ini:"ИА",ward:"Кардиология A1",score:34,diag:["Гипертония","Диабет II"],current:["Гипертонический криз","Диабет II"],hist:["ИБС","ХБП I"],allergy:["Метформин"],meds:["Амлодипин 10мг","Инсулин 18Е","Рамиприл 5мг"],insight:"Ночное давление >150, усилить контроль.",demo:{age:63,gender:"Ж",blood:"O(I) Rh+",height:"165см",weight:"78кг",bmi:"28.7"},vitals:{"АД":[152,148,150,147,151,149,150],"ЧСС":[88,85,92,90,87,89,91],"T°C":[37.5,37.4,37.3,37.4,37.5,37.2,37.3],"SpO₂":[94,92,93,90,94,95,93]}},
+  {id:"omarov",name:"Омаров Р.Б.",ini:"ОР",ward:"Пульмонология B3",score:51,diag:["Пневмония","Аритмия"],current:["Пневмония","Аритмия"],hist:["ХОБЛ"],allergy:[],meds:["Цефтриаксон 2г","Метопролол 25мг"],insight:"Сатурация >94% в покое.",demo:{age:56,gender:"М",blood:"A(II) Rh+",height:"178см",weight:"86кг",bmi:"27.1"},vitals:{"АД":[132,128,130,128,124,127,129],"ЧСС":[96,92,90,88,87,86,85],"T°C":[38.4,38.1,37.9,37.8,37.6,37.4,37.2],"SpO₂":[92,93,94,94,95,96,95]}},
+  {id:"nurlanov",name:"Нурланов К.М.",ini:"НК",ward:"Кардиология C2",score:62,diag:["ИБС","Гипертония III"],current:["ИБС","АГ III"],hist:["Стенокардия"],allergy:["Амоксициллин"],meds:["Бисопролол 5мг","Аторвастатин 20мг"],insight:"Приступы снизились.",demo:{age:59,gender:"М",blood:"B(III) Rh-",height:"172см",weight:"90кг",bmi:"30.4"},vitals:{"АД":[145,142,138,136,134,133,132],"ЧСС":[78,80,76,74,75,73,72],"T°C":[36.9,36.8,36.8,36.7,36.7,36.6,36.6],"SpO₂":[96,95,95,96,97,97,96]}},
+  {id:"satybaldiev",name:"Сатыбалдиев А.Р.",ini:"СА",ward:"Терапия D1",score:71,diag:["Бронхит"],current:["Бронхит"],hist:["ХОБЛ"],allergy:[],meds:["Будесонид","Ипратропий"],insight:"Хрипы уменьшились.",demo:{age:48,gender:"М",blood:"AB(IV) Rh+",height:"180см",weight:"82кг",bmi:"25.3"},vitals:{"АД":[128,126,127,125,124,123,122],"ЧСС":[84,82,81,80,78,79,77],"T°C":[37.2,37.1,37.0,37.0,36.9,36.9,36.8],"SpO₂":[95,95,96,96,97,96,97]}},
+  {id:"bekmuratov",name:"Бекмуратов Т.Д.",ini:"БТ",ward:"Пульмонология B1",score:58,diag:["ХОБЛ"],current:["ХОБЛ"],hist:["Курение >20 лет"],allergy:[],meds:["Сальбутамол","Тиотропий"],insight:"Повторить спирометрию.",demo:{age:61,gender:"М",blood:"A(II) Rh-",height:"168см",weight:"75кг",bmi:"26.6"},vitals:{"АД":[138,137,135,134,133,132,130],"ЧСС":[88,86,85,84,83,82,82],"T°C":[37.0,37.0,36.9,36.9,36.8,36.8,36.7],"SpO₂":[93,92,93,94,94,93,92]}},
+  {id:"kadyrova",name:"Кадырова Е.В.",ini:"КЕ",ward:"Хирургия E2",score:87,diag:["Послеоп. период"],current:["Послеоп. период"],hist:["Аппендэктомия"],allergy:["Пенициллин"],meds:["Цефазолин 1г","Парацетамол 1г"],insight:"Рана сухая, Score растёт.",demo:{age:34,gender:"Ж",blood:"B(III) Rh+",height:"170см",weight:"65кг",bmi:"22.5"},vitals:{"АД":[118,120,117,116,115,114,113],"ЧСС":[78,76,75,74,74,72,72],"T°C":[37.1,36.9,36.8,36.7,36.6,36.6,36.5],"SpO₂":[98,98,99,99,99,98,98]}}
+];
+var icuPats=[
+  {name:"Рахимов С.К.",bed:"ОРИТ-1",diag:"Инфаркт миокарда, кардиогенный шок",status:"critical",days:3,vitals:{hr:112,sys:88,dia:55,spo2:89,resp:24,temp:37.8},notes:"ИВЛ, вазопрессоры. Гемодинамика нестабильна.",upd:"14:20"},
+  {name:"Алиева Н.Р.",bed:"ОРИТ-2",diag:"Тяжёлая пневмония, ОРДС",status:"warning",days:5,vitals:{hr:98,sys:105,dia:68,spo2:91,resp:22,temp:38.5},notes:"ИВЛ в режиме SIMV. Положительная динамика.",upd:"14:15"},
+  {name:"Джураев А.Б.",bed:"ОРИТ-4",diag:"Послеоперационный период, перитонит",status:"warning",days:2,vitals:{hr:92,sys:118,dia:72,spo2:94,resp:18,temp:38.1},notes:"Дренаж функционирует. Антибиотикотерапия.",upd:"13:50"}
+];
+var postPats=[
+  {name:"Муродов Б.Т.",bed:"ПР-1",diag:"Состояние после ИМ",status:"stable",days:1,vitals:{hr:78,sys:128,dia:76,spo2:96,resp:16,temp:36.8},notes:"Переведён из ОРИТ. Стабилен.",upd:"12:30"},
+  {name:"Хасанова Г.И.",bed:"ПР-3",diag:"Послеоперационный период, холецистэктомия",status:"stable",days:1,vitals:{hr:74,sys:122,dia:74,spo2:98,resp:15,temp:36.6},notes:"Активизация. Перевод в общую палату завтра.",upd:"12:00"}
+];
+var wardData=[{name:"A1",st:"stable"},{name:"B3",st:"warning"},{name:"C2",st:"warning"},{name:"D1",st:"stable"},{name:"B1",st:"stable"},{name:"E2",st:"stable"}];
+var histData=[
+  {time:"08:40",patient:"Иванова А.М.",type:"soap",summary:"Запись экспортирована."},
+  {time:"Вчера",patient:"Омаров Р.Б.",type:"round",summary:"Голосовой ввод B3."},
+  {time:"Вчера",patient:"Нурланов К.М.",type:"soap",summary:"План обновлён."}
+];
+var trLines=["Пациент жалуется на ночные подъемы давления, головную боль.","АД 152/96, пульс 88, сатурация 93%.","Лёгкие без хрипов, тоны приглушены.","План: усилить терапию, контроль глюкозы через 6 часов."];
+
+/* ══ STATE ══ */
+var recording=false,recStart=null,recInt=null,typeTO=null,curModal=null,activeVM="АД",selWard=null,searchTm=null;
+
+/* ══ TOAST ══ */
+var ttm=null;
+function toast(m,d){var e=$("toast");e.textContent=m;e.classList.add("show");clearTimeout(ttm);ttm=setTimeout(function(){e.classList.remove("show")},d||3000)}
+
+/* ══ CONFIRM ══ */
+var cRes=null;
+function confirm2(ti,tx){return new Promise(function(r){cRes=r;$("cTitle").textContent=ti;$("cText").textContent=tx;$("confirmOv").classList.add("show")})}
+function closeC(v){$("confirmOv").classList.remove("show");if(cRes){cRes(v);cRes=null}}
+$("cCancel").onclick=function(){closeC(false)};
+$("cOk").onclick=function(){closeC(true)};
+
+/* ══ CLOCK ══ */
+function initClock(){
+  function u(){var n=new Date(),s=String(n.getHours()).padStart(2,"0")+":"+String(n.getMinutes()).padStart(2,"0");$("clock").textContent=s;$("heroTS").textContent=s}
+  u();setInterval(u,30000);
+}
+
+/* ══ CHART ══ */
+function drawChart(cv,data,h){
+  if(!cv||!data||!data.length)return;
+  var par=cv.parentElement,w=par?par.clientWidth:300;h=h||160;
+  if(w<20)return;
+  var dpr=devicePixelRatio||1;cv.width=w*dpr;cv.height=h*dpr;cv.style.width=w+"px";cv.style.height=h+"px";
+  var ctx=cv.getContext("2d");ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);
+  var mx=Math.max.apply(null,data),mn=Math.min.apply(null,data),rng=mx-mn||1,pd=18,step=w/(data.length-1||1);
+  function gY(v){return h-((v-mn)/rng)*(h-pd*2)-pd}
+  ctx.strokeStyle="rgba(13,158,126,0.1)";ctx.lineWidth=1;
+  for(var g=0;g<4;g++){var gy=pd+(h-pd*2)/3*g;ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(w,gy);ctx.stroke()}
+  ctx.beginPath();
+  data.forEach(function(v,i){i===0?ctx.moveTo(i*step,gY(v)):ctx.lineTo(i*step,gY(v))});
+  ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.closePath();
+  var gr=ctx.createLinearGradient(0,0,0,h);
+  gr.addColorStop(0,"rgba(13,158,126,.22)");gr.addColorStop(1,"rgba(56,182,232,.03)");
+  ctx.fillStyle=gr;ctx.fill();
+  ctx.beginPath();
+  data.forEach(function(v,i){i===0?ctx.moveTo(i*step,gY(v)):ctx.lineTo(i*step,gY(v))});
+  ctx.strokeStyle="#0d9e7e";ctx.lineWidth=2.2;ctx.lineJoin="round";ctx.lineCap="round";ctx.stroke();
+  data.forEach(function(v,i){
+    ctx.beginPath();ctx.arc(i*step,gY(v),4,0,Math.PI*2);ctx.fillStyle="#0d9e7e";ctx.fill();
+    ctx.beginPath();ctx.arc(i*step,gY(v),2,0,Math.PI*2);ctx.fillStyle=theme==="dark"?"#091918":"#fff";ctx.fill();
+  });
+}
+
+/* ══ LOGIN ══ */
+$("loginForm").onsubmit=function(e){
+  e.preventDefault();
+  var b=$("loginBtn");
+  b.style.opacity=".6";b.textContent="...";
+  setTimeout(function(){
+    $("loginScreen").classList.add("hidden");
+    $("appShell").classList.remove("hidden");
+    b.style.opacity="1";b.textContent="Войти";
+    scrollTo(0,0);
+  },500);
+};
+
+/* ══ NAV ══ */
+var navs=document.querySelectorAll(".nav-link");
+var screens=document.querySelectorAll(".screen");
+function goTo(target){
+  navs.forEach(function(n){n.classList.toggle("active",n.dataset.screen===target)});
+  screens.forEach(function(s){s.classList.toggle("active",s.id===target)});
+  var ac=document.querySelector('.nav-link[data-screen="'+target+'"]');
+  if(ac){var k=ac.getAttribute("data-tkey");if(k)$("screenTitle").textContent=t(k)}
+  if(innerWidth<1024){$("sidebar").classList.remove("open");$("sidebarOverlay").classList.remove("vis")}
+  if(target!=="consultation"&&recording)stopRec();
+}
+navs.forEach(function(b){b.onclick=function(){goTo(b.dataset.screen)}});
+$("sidebarToggle").onclick=function(){$("sidebar").classList.toggle("open");$("sidebarOverlay").classList.toggle("vis")};
+$("sidebarOverlay").onclick=function(){$("sidebar").classList.remove("open");$("sidebarOverlay").classList.remove("vis")};
+document.onkeydown=function(e){
+  if(e.key!=="Escape")return;
+  if($("patModal").classList.contains("vis")){closeModal();return}
+  if($("notifPanel").classList.contains("open")){$("notifPanel").classList.remove("open");return}
+  if($("confirmOv").classList.contains("show")){closeC(false)}
+};
+$("notifToggle").onclick=function(){$("notifPanel").classList.add("open")};
+$("closeNotif").onclick=function(){$("notifPanel").classList.remove("open")};
+
+/* ══ PATIENTS ══ */
+function buildPatList(){
+  var pl=$("patList");pl.innerHTML="";
+  var df=$("diagFilter"),wf=$("wardFilter");
+  while(df.options.length>1)df.remove(1);
+  while(wf.options.length>1)wf.remove(1);
+  var diags={},wards={};
+  patients.forEach(function(p){p.diag.forEach(function(d){diags[d]=1});wards[p.ward]=1});
+  Object.keys(diags).forEach(function(d){var o=document.createElement("option");o.value=d;o.textContent=d;df.appendChild(o)});
+  Object.keys(wards).forEach(function(w){var o=document.createElement("option");o.value=w;o.textContent=w;wf.appendChild(o)});
+  patients.forEach(function(p){
+    var el=document.createElement("div");el.className="p-item";el.dataset.pid=p.id;
+    var rc=p.score<40?"danger":p.score<70?"warn":"safe";
+    var st=p.score<40?t("st_crit"):p.score<70?t("st_watch"):t("st_stab");
+    el.innerHTML='<div class="avatar" style="width:36px;height:36px;font-size:.72rem">'+esc(p.ini)+'</div><div class="p-info"><div class="p-name">'+esc(p.name)+'</div><div class="p-det">'+p.diag.map(esc).join(" · ")+'</div></div><div class="score-pill '+rc+'">'+p.score+' '+esc(st)+'</div>';
+    el.onclick=function(){openModal(p.id)};
+    pl.appendChild(el);
+  });
+}
+function applyFilters(){
+  var pl=$("patList");if(!pl)return;
+  var q=$("patSearch").value.trim().toLowerCase();
+  var dv=$("diagFilter").value,wv=$("wardFilter").value,cnt=0;
+  patients.forEach(function(p){
+    var nd=pl.querySelector('[data-pid="'+p.id+'"]');if(!nd)return;
+    var mq=p.name.toLowerCase().indexOf(q)>=0||p.diag.some(function(d){return d.toLowerCase().indexOf(q)>=0});
+    var md=dv==="all"||p.diag.some(function(d){return d.indexOf(dv)>=0});
+    var mw=wv==="all"||p.ward===wv;
+    var vis=mq&&md&&mw;nd.classList.toggle("fh",!vis);if(vis)cnt++;
+  });
+  $("filterSum").textContent=cnt+" "+t("f_pat");
+  $("patBadge").textContent=cnt;
+  $("patEmpty").style.display=cnt===0?"block":"none";
+}
+$("patSearch").oninput=function(){clearTimeout(searchTm);searchTm=setTimeout(applyFilters,200)};
+$("diagFilter").onchange=applyFilters;
+$("wardFilter").onchange=applyFilters;
+$("resetF").onclick=function(){$("patSearch").value="";$("diagFilter").value="all";$("wardFilter").value="all";applyFilters()};
+
+/* ══ DASHBOARD ══ */
+function updateDash(){
+  var crit=patients.filter(function(p){return p.score<40}).length;
+  $("heroPC").textContent=patients.length;$("heroCC").textContent=crit;
+  var avg=Math.round(patients.reduce(function(a,p){return a+p.score},0)/patients.length);
+  $("heroAS").textContent=avg;
+  var sorted=patients.slice().sort(function(a,b){return b.score-a.score});
+  $("bestSP").textContent=sorted[0].name+" ("+sorted[0].score+")";
+  $("watchSP").textContent=sorted[sorted.length-1].name+" ("+sorted[sorted.length-1].score+")";
+  var at=$("avrisTrend");at.innerHTML="";
+  patients.forEach(function(p){
+    var b=document.createElement("div");b.className="trend-bar";
+    var c=p.score<40?"var(--danger)":p.score<70?"var(--warn)":"var(--ok)";
+    b.style.height=Math.max(p.score,8)+"%";b.style.background=c;
+    b.innerHTML='<div class="trend-tip">'+esc(p.name.split(" ")[0])+" "+p.score+'</div>';
+    at.appendChild(b);
+  });
+}
+
+/* ══ WAVEFORM ══ */
+function initWave(){
+  var w=$("waveform");
+  for(var i=0;i<28;i++){var s=document.createElement("span");s.style.height=(3+Math.random()*16)+"px";s.style.animationDelay=(i*.04)+"s";w.appendChild(s)}
+}
+
+/* ══ CONSULTATION ══ */
+function initConsult(){
+  var cp=$("consultPat");cp.innerHTML="";
+  patients.forEach(function(p){var o=document.createElement("option");o.value=p.id;o.textContent=p.name;cp.appendChild(o)});
+}
+$("micBtn").onclick=function(){recording?stopRec():startRec()};
+$("stopRec").onclick=stopRec;
+$("clearRec").onclick=function(){$("transcriptText").textContent="Нажмите микрофон для записи...";$("soapS").value="";$("soapO").value="";$("soapA").value="";$("soapP").value=""};
+$("soapConfirm").onclick=function(){
+  if(!$("soapS").value.trim()&&!$("soapO").value.trim()){toast(t("t_soap_e"),2000);return}
+  var cp=$("consultPat"),pt=patients.find(function(p){return p.id===cp.value});
+  histData.unshift({time:new Date().toLocaleTimeString().slice(0,5),patient:pt?pt.name:"—",type:"soap",summary:($("soapA").value||"").slice(0,50)||"Запись сохранена"});
+  renderHist();toast(t("t_soap"));
+  $("soapS").value="";$("soapO").value="";$("soapA").value="";$("soapP").value="";
+};
+function startRec(){
+  recording=true;recStart=Date.now();
+  $("micBtn").classList.add("rec");$("waveform").classList.add("rec");$("recInd").classList.add("on");
+  $("transcriptText").textContent="";startTimer();startTypewriter();
+}
+function stopRec(){
+  if(!recording)return;recording=false;
+  $("micBtn").classList.remove("rec");$("waveform").classList.remove("rec");$("recInd").classList.remove("on");
+  clearInterval(recInt);recInt=null;clearTimeout(typeTO);typeTO=null;
+}
+function startTimer(){
+  clearInterval(recInt);
+  recInt=setInterval(function(){
+    if(!recStart)return;
+    var e=Math.floor((Date.now()-recStart)/1000);
+    $("recTimer").textContent=String(Math.floor(e/60)).padStart(2,"0")+":"+String(e%60).padStart(2,"0");
+  },500);
+}
+function startTypewriter(){
+  var si=0,ci=0;clearTimeout(typeTO);
+  function go(){
+    if(!recording||si>=trLines.length)return;
+    var cur=trLines[si],tt=$("transcriptText");
+    if(ci<cur.length){tt.textContent+=cur.charAt(ci);ci++}
+    else{tt.textContent+="\n";si++;ci=0}
+    typeTO=setTimeout(go,35);
+  }
+  go();
+}
+
+/* ══ NIGHT ROUND ══ */
+function renderWards(){
+  var wg=$("wardGrid");wg.innerHTML="";
+  wardData.forEach(function(w,i){
+    var p=patients[i]||patients[0];
+    var c=document.createElement("div");c.className="ward-c";
+    var stTxt=w.st==="stable"?t("icu_stable"):t("icu_serious");
+    c.innerHTML='<strong style="font-size:.84rem;color:var(--text)">'+t("w_label")+" "+esc(w.name)+'</strong><span style="font-size:.76rem;color:var(--muted);font-family:var(--mono)">'+esc(p.name)+'</span><span class="badge '+(w.st==="stable"?"safe":"warn")+'">'+esc(stTxt)+'</span>';
+    c.onclick=function(){selectWard(i)};
+    wg.appendChild(c);
+  });
+}
+function selectWard(i){
+  selWard=i;
+  $("wardGrid").querySelectorAll(".ward-c").forEach(function(c,j){c.classList.toggle("sel",j===i)});
+  var p=patients[i];
+  $("selWardLbl").textContent=t("w_label")+" "+wardData[i].name+" — "+p.name;
+  $("selWardLbl").style.display="block";
+  $("nightSave").disabled=false;
+}
+$("nightVoice").onclick=function(){
+  if(selWard===null){toast(t("t_ward"),2000);return}
+  var b=$("nightVoice");b.disabled=true;b.textContent="...";
+  setTimeout(function(){
+    $("nightObj").value="Сатурация >95%, боль не выражена.";
+    $("nightPlan").value="Кислород 2 л/мин, контроль АД каждые 2ч.";
+    b.disabled=false;b.textContent="🎤 Авто-заполнение голосом";
+    toast(t("t_filled"),2000);
+  },1200);
+};
+$("nightSave").onclick=function(){
+  if(selWard===null)return;
+  if(!$("nightObj").value.trim()){toast(t("t_exam"),2000);return}
+  histData.unshift({time:new Date().toLocaleTimeString().slice(0,5),patient:patients[selWard].name,type:"round",summary:$("nightObj").value.slice(0,50)});
+  renderHist();toast(t("t_round"));
+  $("nightObj").value="";$("nightPlan").value="";selWard=null;
+  $("wardGrid").querySelectorAll(".ward-c").forEach(function(c){c.classList.remove("sel")});
+  $("selWardLbl").style.display="none";$("nightSave").disabled=true;
+};
+
+/* ══ HISTORY ══ */
+function renderHist(){
+  var hl=$("histList");hl.innerHTML="";
+  histData.forEach(function(it){
+    var e=document.createElement("div");e.className="hist-item";
+    e.innerHTML='<div class="hist-icon">'+(it.type==="soap"?"📋":"🌙")+'</div><div class="hist-body"><strong>'+esc(it.patient)+'</strong><p>'+esc(it.summary)+'</p></div><span style="font-size:.7rem;color:var(--muted);white-space:nowrap;font-family:var(--mono)">'+esc(it.time)+'</span>';
+    hl.appendChild(e);
+  });
+}
+
+/* ══ ICU ══ */
+function renderICU(){renderICUGrid($("icuGrid"),icuPats);renderICUGrid($("postIcuGrid"),postPats)}
+function renderICUGrid(container,data){
+  container.innerHTML="";
+  data.forEach(function(p){
+    var el=document.createElement("div");el.className="icu-c";
+    var stL=p.status==="critical"?t("icu_critical"):p.status==="warning"?t("icu_serious"):t("icu_stable");
+    var v=p.vitals;
+    var hrC=v.hr>100?"alert":v.hr>90?"vwarn":"";
+    var spC=v.spo2<90?"alert":v.spo2<94?"vwarn":"";
+    var bpC=v.sys<90?"alert":v.sys<100?"vwarn":"";
+    el.innerHTML='<div class="icu-ch"><div class="st-dot '+esc(p.status)+'"></div><div style="flex:1"><strong style="font-size:.88rem;color:var(--text)">'+esc(p.name)+'</strong><div style="font-size:.74rem;color:var(--muted);font-family:var(--mono)">'+esc(p.bed)+" · "+esc(p.diag)+'</div></div><span class="badge '+(p.status==="critical"?"danger":p.status==="warning"?"warn":"safe")+'">'+esc(stL)+'</span></div>'+
+    '<div class="icu-cb"><div class="icu-vg">'+
+    '<div class="icu-v '+hrC+'"><div class="icu-vl">ЧСС</div><div class="icu-vv">'+v.hr+'</div><div class="icu-vu">уд/мин</div></div>'+
+    '<div class="icu-v '+bpC+'"><div class="icu-vl">АД</div><div class="icu-vv">'+v.sys+'/'+v.dia+'</div><div class="icu-vu">мм рт.ст.</div></div>'+
+    '<div class="icu-v '+spC+'"><div class="icu-vl">SpO₂</div><div class="icu-vv">'+v.spo2+'%</div><div class="icu-vu">сатурация</div></div>'+
+    '<div class="icu-v"><div class="icu-vl">ЧДД</div><div class="icu-vv">'+v.resp+'</div><div class="icu-vu">вд/мин</div></div>'+
+    '<div class="icu-v"><div class="icu-vl">T°C</div><div class="icu-vv">'+v.temp+'</div><div class="icu-vu">аксил.</div></div>'+
+    '<div class="icu-v"><div class="icu-vl">Дней</div><div class="icu-vv">'+p.days+'</div><div class="icu-vu">в ОРИТ</div></div>'+
+    '</div></div><div class="icu-cf">'+esc(p.notes)+' <span style="float:right;font-style:normal;font-weight:700;color:var(--green)">'+esc(p.upd)+'</span></div>';
+    container.appendChild(el);
+  });
+}
+
+/* ══ MODAL ══ */
+function openModal(id){
+  var p=patients.find(function(x){return x.id===id});if(!p)return;curModal=p;
+  $("mName").textContent=p.name;$("mWard").textContent=p.ward+" · "+p.diag.join(", ");
+  $("mScoreVal").textContent=p.score;$("mScoreRing").style.strokeDashoffset=RING_C*(1-p.score/100);
+  $("mInsight").textContent=p.insight;
+  var d=p.demo;
+  $("mProfile").innerHTML='<span>Возраст: <strong>'+d.age+'</strong></span><span>Пол: <strong>'+esc(d.gender)+'</strong></span><span>Рост: <strong>'+esc(d.height)+'</strong></span><span>Вес: <strong>'+esc(d.weight)+'</strong></span><span>BMI: <strong>'+esc(d.bmi)+'</strong></span><span>Кровь: <strong>'+esc(d.blood)+'</strong></span>';
+  $("mDiag").innerHTML=p.current.map(function(x){return'<span class="tag">'+esc(x)+'</span>'}).join("");
+  $("mAllergy").innerHTML=(p.allergy.length?p.allergy:["—"]).map(function(x){return'<span class="tag danger">'+esc(x)+'</span>'}).join("");
+  $("mMeds").innerHTML=p.meds.map(function(x){return'<span>'+esc(x)+'</span>'}).join("");
+  $("mHist").innerHTML=p.hist.map(function(x){return'<span>'+esc(x)+'</span>'}).join("");
+  renderVTabs(p);
+  $("patModal").classList.add("vis");
+  requestAnimationFrame(function(){requestAnimationFrame(function(){drawChart($("patVChart"),p.vitals[activeVM],160)})});
+}
+function closeModal(){$("patModal").classList.remove("vis");curModal=null}
+$("closeModal").onclick=closeModal;
+$("patModal").onclick=function(e){if(e.target===$("patModal"))closeModal()};
+function renderVTabs(p){
+  var mt=$("mVTabs");mt.innerHTML="";
+  Object.keys(p.vitals).forEach(function(k){
+    var b=document.createElement("button");b.className="vt-tab"+(k===activeVM?" active":"");b.textContent=k;
+    b.onclick=function(){activeVM=k;renderVTabs(p);requestAnimationFrame(function(){requestAnimationFrame(function(){drawChart($("patVChart"),p.vitals[activeVM],160)})})};
+    mt.appendChild(b);
+  });
+}
+
+/* ══ LOGOUT ══ */
+$("logoutBtn").onclick=function(){
+  confirm2("Выйти из системы?",recording?t("c_logout_rec"):t("c_logout")).then(function(ok){
+    if(!ok)return;stopRec();
+    $("appShell").classList.add("hidden");$("loginScreen").classList.remove("hidden");
+  });
+};
+
+window.onresize=function(){if(curModal&&$("patModal").classList.contains("vis"))drawChart($("patVChart"),curModal.vitals[activeVM],160)};
+
+/* ══ INIT ══ */
+function init(){
+  initClock();initWave();buildLangBtns();
+  buildPatList();applyFilters();updateDash();
+  initConsult();renderWards();renderHist();renderICU();
+}
+init();
+})();
+</script>
+
+</body>
+</html>
