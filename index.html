@@ -7,30 +7,38 @@
 <title>Avris AI • Hyperion Labs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
---font:Inter,system-ui,sans-serif;
---accent:#2aa99e;--accent-rgb:42,169,158;--accent-l:#38bdb1;
---ok:#22c55e;--warn:#f59e0b;--danger:#ef4444;
---bg:#f0f8f7;--bg2:#f8fefd;--card:#fff;--card2:#f2fcfb;
---text:#0f1f1e;--muted:#5e7876;--border:#d9ecea;
---ghost:rgba(42,169,158,.07);--tag-bg:rgba(42,169,158,.11);--tag-c:#1a8078;
---safe-bg:rgba(34,197,94,.11);--warn-bg:rgba(245,158,11,.14);--danger-bg:rgba(239,68,68,.11);
---hero:linear-gradient(135deg,#0d4f4a,#0d9488 55%,#2dd4bf);
---sh:0 2px 8px rgba(0,0,0,.06);--sh2:0 4px 16px rgba(0,0,0,.08);
---r:12px;--r2:16px;--r3:8px;--sidebar:260px;--topbar:64px;
+--font-ui:Inter,system-ui,sans-serif;--font-data:'JetBrains Mono',monospace;--font:Inter,system-ui,sans-serif;
+--brand:#0d9488;--brand-light:#14b8a6;--brand-dim:rgba(13,148,136,.1);--brand-ring:rgba(13,148,136,.2);
+--accent:#0d9488;--accent-rgb:13,148,136;--accent-l:#14b8a6;
+--ok:#16a34a;--warn:#d97706;--danger:#dc2626;--info:#2563eb;
+--bg:#f4f6f9;--bg2:#f8fafc;--card:#fff;--card2:#eef1f6;
+--text:#0d1b2a;--muted:#475569;--text-primary:#0d1b2a;--text-secondary:#475569;--text-muted:#94a3b8;
+--border:#e2e8f0;--border-soft:#e2e8f0;--border-med:#cbd5e1;
+--ghost:rgba(13,148,136,.08);--tag-bg:rgba(13,148,136,.1);--tag-c:#0d9488;
+--safe-bg:rgba(22,163,74,.1);--warn-bg:rgba(217,119,6,.12);--danger-bg:rgba(220,38,38,.1);--info-bg:rgba(37,99,235,.1);
+--hero:linear-gradient(135deg,#0a2f2c,#0d9488 55%,#14b8a6);
+--el-1:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+--el-2:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
+--el-3:0 10px 32px rgba(0,0,0,.10),0 4px 8px rgba(0,0,0,.06);
+--sh:var(--el-1);--sh2:var(--el-2);
+--r:10px;--r2:14px;--r3:6px;--r-sm:6px;--r-md:14px;--r-lg:20px;
+--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;--sp-8:32px;
+--sidebar:260px;--topbar:68px;
 }
 body[data-theme=dark]{
---bg:#0a0f1a;--bg2:#0f1629;--card:#141b2d;--card2:#1a2340;
---text:#e8ecf4;--muted:#8892a8;--border:#1e293b;
---ghost:rgba(42,169,158,.15);--tag-bg:rgba(42,169,158,.2);--tag-c:#5eddd5;
---safe-bg:rgba(34,197,94,.2);--warn-bg:rgba(245,158,11,.2);--danger-bg:rgba(239,68,68,.2);
---hero:linear-gradient(135deg,#0a1628,#152040 50%,#1e3a6e);
---sh:0 2px 8px rgba(0,0,0,.25);--sh2:0 4px 16px rgba(0,0,0,.3);
+--bg:#080e18;--bg2:#0f1929;--card:#0f1929;--card2:#162033;
+--text:#e2e8f0;--muted:#94a3b8;--text-primary:#e2e8f0;--text-secondary:#94a3b8;--text-muted:#475569;
+--border:#1e2d42;--border-soft:#1e2d42;--border-med:#253451;
+--ghost:rgba(13,148,136,.15);--tag-bg:rgba(13,148,136,.2);--tag-c:#2dd4bf;
+--safe-bg:rgba(22,163,74,.18);--warn-bg:rgba(217,119,6,.18);--danger-bg:rgba(220,38,38,.18);
+--hero:linear-gradient(135deg,#060d18,#0d4f4a 50%,#0d9488);
+--sh:0 2px 8px rgba(0,0,0,.3);--sh2:0 6px 20px rgba(0,0,0,.35);
 }
-body{font-family:var(--font);background:var(--bg);color:var(--text);transition:background .2s,color .2s;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font-ui);background:var(--bg);color:var(--text);transition:background .2s,color .2s;-webkit-font-smoothing:antialiased}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 .hidden{display:none!important}
 .card{background:var(--card);border-radius:var(--r2);padding:20px;border:1px solid var(--border);box-shadow:var(--sh);transition:all .2s}
@@ -53,30 +61,38 @@ textarea{resize:vertical;min-height:90px}
 .tag.danger{background:var(--danger-bg);color:var(--danger)}
 .score-pill{min-width:68px;text-align:center;border-radius:var(--r3);padding:5px 10px;font-weight:700;font-size:.82rem}
 .score-pill.danger{background:var(--danger-bg);color:var(--danger)}.score-pill.warn{background:var(--warn-bg);color:var(--warn)}.score-pill.safe{background:var(--safe-bg);color:var(--ok)}
-.login-screen{min-height:100vh;display:flex;background:linear-gradient(135deg,#0d2d2b,#0d4f4a 30%,#0d9488 60%,#2aa99e);position:relative;overflow:hidden}
-.login-screen::before{content:"";position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(42,169,158,.12),transparent 70%);top:-150px;right:-80px}
-.login-left{flex:1;display:flex;flex-direction:column;justify-content:center;padding:50px;color:#fff;z-index:1}
-.login-left h1{font-size:2.6rem;font-weight:800;line-height:1.1;margin-bottom:14px}
-.login-left h1 span{background:linear-gradient(135deg,#5eddd5,#a7f3ed);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.login-left p{font-size:1rem;color:rgba(255,255,255,.65);line-height:1.6;max-width:400px}
+.login-screen{min-height:100vh;display:flex;background:#080e18;position:relative;overflow:hidden}
+.login-screen::before{content:"";position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(13,148,136,.06),transparent 70%);top:-200px;left:-100px}
+.login-left{flex:1;display:flex;flex-direction:column;justify-content:center;padding:60px;color:#fff;z-index:1;position:relative}
+.login-left h1{font-size:2.8rem;font-weight:800;line-height:1.05;margin-bottom:14px}
+.login-left h1 span{background:linear-gradient(135deg,#14b8a6,#5eddd5);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.login-left p{font-size:1rem;color:rgba(255,255,255,.45);line-height:1.6;max-width:400px}
 .login-features{display:flex;flex-direction:column;gap:10px;margin-top:28px}
-.login-feature{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.75);font-size:.9rem}
-.login-fi{width:32px;height:32px;border-radius:var(--r3);background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.login-right{width:440px;display:flex;align-items:center;justify-content:center;padding:50px;z-index:1}
-.login-card{width:100%;background:#ffffff;border:1px solid #d9ecea;border-radius:20px;padding:36px;box-shadow:0 8px 40px rgba(0,0,0,.18);color:#0f1f1e}
-.login-card input{background:#f5fffe;border-color:#d9ecea;color:#0f1f1e}
-.login-card input::placeholder{color:#8aa8a6}
-.login-card input:focus{border-color:#2aa99e;background:#fff}
+.login-feature{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.55);font-size:.88rem}
+.login-fi{width:32px;height:32px;border-radius:var(--r3);background:rgba(13,148,136,.15);border:1px solid rgba(13,148,136,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:rgba(255,255,255,.6)}
+.ecg-wrap{position:absolute;bottom:18%;left:0;width:100%;height:60px;overflow:hidden;pointer-events:none}
+.ecg-wrap svg{width:200%;height:100%;animation:ecgScroll 4s linear infinite}
+@keyframes ecgScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.login-right{width:440px;display:flex;align-items:center;justify-content:center;padding:50px;z-index:1;background:#fff;border-left:1px solid #e2e8f0}
+body[data-theme=dark] .login-right{background:#0f1929;border-left-color:#1e2d42}
+.login-card{width:100%;background:transparent;border:none;border-radius:0;padding:0;box-shadow:none;color:#0f1f1e}
+body[data-theme=dark] .login-card{color:#e2e8f0}
+.login-card input{background:#f8fafc;border-color:#e2e8f0;color:#0f1f1e}
+body[data-theme=dark] .login-card input{background:#162033;border-color:#1e2d42;color:#e2e8f0}
+.login-card input::placeholder{color:#94a3b8}
+.login-card input:focus{border-color:var(--accent);background:#fff}
+body[data-theme=dark] .login-card input:focus{background:#1a2538}
 .login-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
 .login-logo{font-weight:800;font-size:1.2rem;letter-spacing:.06em;color:#0f1f1e;display:flex;align-items:center;gap:8px}
-.login-logo-i{width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#2aa99e,#38bdb1);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.85rem;flex-shrink:0}
-.lang-sel{display:flex;gap:3px;background:#f0f8f7;border:1px solid #d9ecea;border-radius:var(--r3);padding:2px}
-.lang-sel button{padding:5px 10px;border:none;background:transparent;color:#5e7876;border-radius:6px;cursor:pointer;font-size:.78rem;font-weight:600;transition:all .15s;font-family:var(--font)}
-.lang-sel button.active,.lang-sel-top button.active{background:#2aa99e;color:#fff}
+body[data-theme=dark] .login-logo{color:#e2e8f0}
+.login-logo-i{width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#0d9488,#14b8a6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.85rem;flex-shrink:0}
+.lang-sel{display:flex;gap:3px;background:#f0f4f8;border:1px solid #e2e8f0;border-radius:var(--r3);padding:2px}
+.lang-sel button{padding:5px 10px;border:none;background:transparent;color:#64748b;border-radius:6px;cursor:pointer;font-size:.78rem;font-weight:600;transition:all .15s;font-family:var(--font)}
+.lang-sel button.active,.lang-sel-top button.active{background:var(--accent);color:#fff}
 body[data-theme=dark] .lang-sel{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.08)}
 body[data-theme=dark] .lang-sel button{color:rgba(255,255,255,.5)}
 body[data-theme=dark] .lang-sel button.active{background:var(--accent);color:#fff}
-@media(max-width:860px){.login-left{display:none}.login-right{width:100%;padding:20px}}
+@media(max-width:860px){.login-left{display:none}.login-right{width:100%;padding:20px;border-left:none}}
 .app-shell{display:flex;min-height:100vh}
 .sidebar{position:fixed;top:0;left:calc(-1*var(--sidebar));width:var(--sidebar);height:100%;background:var(--card);border-right:1px solid var(--border);padding:20px 14px;z-index:1000;transition:left .3s;display:flex;flex-direction:column;box-shadow:var(--sh2)}
 .sidebar.open{left:0}
@@ -106,7 +122,7 @@ body[data-theme=dark] .topbar{background:rgba(15,22,41,.85)}
 .rec-ind{display:none;align-items:center;gap:5px;padding:3px 10px;border-radius:var(--r3);background:var(--danger-bg);color:var(--danger);font-size:.75rem;font-weight:700;animation:blink 1.2s ease infinite}
 .rec-ind.on{display:inline-flex}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
-.clock{font-weight:600;font-size:.85rem;font-variant-numeric:tabular-nums;color:var(--muted)}
+.clock{font-family:var(--font-data);font-weight:600;font-size:.85rem;font-variant-numeric:tabular-nums;color:var(--muted)}
 .main{padding:20px;max-width:1360px;margin:0 auto;width:100%}
 .screen{display:none;animation:fadeIn .3s ease}.screen.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -119,7 +135,7 @@ body[data-theme=dark] .topbar{background:rgba(15,22,41,.85)}
 .hero-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:20px}
 .hero-stat{background:rgba(255,255,255,.07);backdrop-filter:blur(6px);border-radius:var(--r);padding:14px;border:1px solid rgba(255,255,255,.06)}
 .hero-stat-l{font-size:.72rem;color:rgba(255,255,255,.55);margin-bottom:3px}
-.hero-stat-v{font-size:1.6rem;font-weight:800}
+.hero-stat-v{font-family:var(--font-data);font-size:1.6rem;font-weight:700}
 .hero-stat-s{font-size:.7rem;color:rgba(255,255,255,.45);margin-top:1px}
 .metrics-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
 .metric-c{border-radius:var(--r2);padding:18px;color:#fff;position:relative;overflow:hidden}
@@ -128,7 +144,7 @@ body[data-theme=dark] .topbar{background:rgba(15,22,41,.85)}
 .metric-c:nth-child(2){background:linear-gradient(135deg,#22c55e,#14b8a6)}
 .metric-c:nth-child(3){background:linear-gradient(135deg,#2aa99e,#06b6d4)}
 .metric-l{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
-.metric-v{font-size:1.8rem;font-weight:800}
+.metric-v{font-family:var(--font-data);font-size:1.8rem;font-weight:700}
 .metric-s{font-size:.72rem;opacity:.65}
 .cg{display:grid;grid-template-columns:1fr;gap:16px}
 .card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
@@ -139,17 +155,20 @@ body[data-theme=dark] .topbar{background:rgba(15,22,41,.85)}
 .filter-count{font-size:.82rem;color:var(--muted);margin-bottom:10px}
 .p-list{display:flex;flex-direction:column;gap:6px}
 .p-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r);border:1px solid var(--border);background:var(--card);cursor:pointer;transition:all .15s}
-.p-item:hover{border-color:var(--accent);background:var(--ghost);transform:translateX(3px)}
+.p-item:hover{border-color:var(--accent);background:var(--ghost);box-shadow:var(--el-1)}
+.p-action{opacity:0;flex-shrink:0;transition:opacity .15s}
+.p-item:hover .p-action{opacity:1}
 .p-item.fh{display:none}
 .p-info{flex:1;min-width:0}
 .p-name{font-weight:600;font-size:.87rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .p-det{font-size:.78rem;color:var(--muted);margin-top:1px}
 .p-empty{text-align:center;padding:30px;color:var(--muted);display:none}
-.trend-bars{display:flex;gap:5px;align-items:flex-end;height:90px}
-.trend-bar{flex:1;border-radius:6px 6px 0 0;position:relative;min-height:6px;cursor:pointer;transition:all .3s}
-.trend-bar:hover{opacity:.75}
-.trend-tip{position:absolute;top:-26px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:2px 7px;border-radius:4px;font-size:.68rem;font-weight:600;white-space:nowrap;opacity:0;transition:opacity .15s;pointer-events:none}
-.trend-bar:hover .trend-tip{opacity:1}
+.trend-bars{display:flex;flex-direction:column;gap:6px}
+.score-h-row{display:flex;align-items:center;gap:10px}
+.score-h-name{font-size:.82rem;font-weight:500;min-width:90px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.score-h-track{flex:1;height:8px;border-radius:4px;background:var(--card2);overflow:hidden}
+.score-h-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.score-h-val{font-family:var(--font-data);font-size:.82rem;font-weight:700;min-width:28px;text-align:right}
 .timeline{display:flex;flex-direction:column;gap:14px}
 .tl-item{display:flex;gap:10px}
 .tl-dot-w{display:flex;flex-direction:column;align-items:center}
@@ -201,7 +220,7 @@ body[data-theme=dark] .topbar{background:rgba(15,22,41,.85)}
 .icu-vg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .icu-v{text-align:center;padding:6px 3px;border-radius:var(--r3);background:var(--card2)}
 .icu-vl{font-size:.65rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-.icu-vv{font-size:1.2rem;font-weight:800;margin-top:1px;font-variant-numeric:tabular-nums}
+.icu-vv{font-family:var(--font-data);font-size:1.2rem;font-weight:600;margin-top:1px;font-variant-numeric:tabular-nums}
 .icu-vu{font-size:.6rem;color:var(--muted)}
 .icu-v.alert .icu-vv{color:var(--danger)}.icu-v.vwarn .icu-vv{color:var(--warn)}
 .icu-cf{padding:10px 18px;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted);font-style:italic}
@@ -222,7 +241,7 @@ body[data-theme=dark] .topbar{background:rgba(15,22,41,.85)}
 .score-ring svg{width:140px;height:140px;transform:rotate(-90deg)}
 .score-ring circle{fill:none;stroke-width:10;stroke-linecap:round}
 .score-ring .bg{stroke:var(--border)}.score-ring .prog{stroke:var(--ok);stroke-dasharray:440;transition:stroke-dashoffset .8s}
-.score-ring strong{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800}
+.score-ring strong{font-family:var(--font-data);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700}
 .modal-sec{border-radius:var(--r);border:1px solid var(--border);padding:16px;background:var(--card2)}
 .modal-sec h4{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px}
 .modal-list{display:flex;flex-direction:column;gap:5px}.modal-list span{font-size:.82rem;color:var(--muted)}
@@ -240,6 +259,116 @@ body[data-theme=dark] .topbar{background:rgba(15,22,41,.85)}
 .confirm-d .btn-row{display:flex;gap:8px;justify-content:center}
 @media(min-width:1024px){.content-area{margin-left:var(--sidebar)}.sidebar{left:0;box-shadow:none}.sidebar-overlay{display:none}.cg{grid-template-columns:1.4fr .6fr}.consult-g{grid-template-columns:1fr 1fr}}
 @media(max-width:640px){.soap-g{grid-template-columns:1fr}.hero-t{font-size:1.4rem}.hero-stats{grid-template-columns:1fr 1fr}}
+/* ===== CONSULTATION REDESIGN ===== */
+/* Patient Context Bar */
+.pat-ctx{background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);padding:16px 20px;margin-bottom:20px;cursor:pointer;transition:border-color .2s,box-shadow .2s;position:relative;user-select:none}
+.pat-ctx:hover{border-color:var(--accent);box-shadow:0 0 0 3px var(--brand-dim)}
+.pat-ctx-top{display:flex;align-items:center;gap:12px}
+.pat-ctx-info{flex:1;min-width:0}
+.pat-ctx-name{font-weight:700;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pat-ctx-meta{font-size:.78rem;color:var(--muted);margin-top:2px}
+.pat-ctx-score{font-family:var(--font-data);font-weight:700;font-size:.82rem;padding:4px 10px;border-radius:var(--r3);white-space:nowrap;flex-shrink:0}
+.pat-ctx-score.safe{background:var(--safe-bg);color:var(--ok)}
+.pat-ctx-score.warn{background:var(--warn-bg);color:var(--warn)}
+.pat-ctx-score.danger{background:var(--danger-bg);color:var(--danger)}
+.pat-ctx-chevron{font-size:.75rem;color:var(--muted);transition:transform .2s;flex-shrink:0;line-height:1}
+.pat-ctx.open .pat-ctx-chevron{transform:rotate(180deg)}
+.pat-ctx-bottom{display:flex;align-items:center;flex-wrap:wrap;gap:14px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:.78rem}
+.pat-ctx-diag{color:var(--muted)}
+.pat-ctx-allergy{color:var(--warn);font-weight:600}
+.pat-ctx-dropdown{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.pat-ctx.open .pat-ctx-dropdown{display:block}
+.pat-ctx-opt{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:background .15s}
+.pat-ctx-opt:hover{background:var(--ghost)}
+.pat-ctx-opt-info{flex:1;min-width:0}
+.pat-ctx-opt-name{font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pat-ctx-opt-ward{font-size:.75rem;color:var(--muted)}
+/* Recording Surface */
+.rec-wave-wrap{background:var(--card2);border-radius:var(--r);padding:10px 16px;height:76px;display:flex;align-items:center;margin-bottom:14px;overflow:hidden;border:1px solid var(--border)}
+.rec-wave-wrap .wave{width:100%;height:48px;justify-content:center}
+.rec-wave-wrap .wave span{width:3px}
+.rec-timer-row{display:flex;align-items:baseline;justify-content:center;gap:10px;margin-bottom:14px}
+.timer{font-family:var(--font-data);font-size:2.6rem;font-weight:600;letter-spacing:.04em;line-height:1;color:var(--text);font-variant-numeric:tabular-nums}
+.rec-status-lbl{font-size:.8rem;color:var(--muted)}
+.rec-bar{width:100%;height:52px;border:none;border-radius:var(--r);background:var(--accent);color:#fff;font-family:var(--font-ui);font-size:.88rem;font-weight:700;letter-spacing:.06em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;margin-bottom:10px;text-transform:uppercase}
+.rec-bar:hover:not(.rec){background:var(--accent-l);transform:translateY(-1px);box-shadow:0 4px 16px rgba(13,148,136,.3)}
+.rec-bar.rec{background:var(--danger);animation:recPulse 2s ease infinite}
+@keyframes recPulse{0%,100%{box-shadow:0 0 0 4px rgba(220,38,38,.15)}50%{box-shadow:0 0 0 10px rgba(220,38,38,.04)}}
+.rec-bar-dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.7);flex-shrink:0;transition:background .2s}
+.rec-bar.rec .rec-bar-dot{background:#fff;animation:blink 1s ease infinite}
+.rec-footer{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.rec-badge{font-size:.72rem;font-weight:500;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:var(--r3);padding:3px 9px}
+.rec-lang-pill{font-family:var(--font-data);font-size:.72rem;font-weight:700;color:var(--accent);background:var(--ghost);border:1px solid var(--brand-ring);border-radius:var(--r3);padding:3px 9px}
+/* Transcript */
+.transcript-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.transcript-hdr label{margin-bottom:0;flex:1}
+.transcript-meta{font-family:var(--font-data);font-size:.72rem;color:var(--muted)}
+.transcript{border-radius:var(--r);border:1px solid var(--border);padding:14px;background:var(--card2);min-height:110px;white-space:pre-wrap;line-height:1.75;font-size:.875rem;color:var(--text)}
+/* SOAP Panel */
+.soap-g{display:grid;grid-template-columns:1fr;gap:10px}
+.soap-c{border-radius:var(--r);border:1px solid var(--border);border-left-width:4px;padding:14px 16px;background:var(--card);transition:box-shadow .15s}
+.soap-c:focus-within{box-shadow:0 0 0 3px var(--brand-dim)}
+.soap-s{border-left-color:#3b82f6}
+.soap-o{border-left-color:#16a34a}
+.soap-a{border-left-color:#d97706}
+.soap-p{border-left-color:#0d9488}
+.soap-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.soap-hdr h5{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0}
+.soap-ai-tag{font-size:.68rem;font-weight:600;color:var(--accent);background:var(--ghost);border:1px solid var(--brand-ring);border-radius:4px;padding:2px 7px}
+.soap-c textarea{min-height:80px;border:none;background:transparent;padding:0;font-size:.875rem;resize:vertical;width:100%;color:var(--text);font-family:var(--font-ui)}
+.soap-c textarea:focus{box-shadow:none;outline:none}
+.ai-badge{font-size:.72rem;font-weight:600;color:var(--accent);background:var(--ghost);border:1px solid var(--brand-ring);border-radius:var(--r3);padding:3px 9px}
+/* ===== DASHBOARD: COMMAND BAR ===== */
+.cmd-bar{background:linear-gradient(135deg,var(--card) 0%,var(--card2) 100%);border:1px solid var(--border);border-radius:var(--r-md);padding:20px 24px;margin-bottom:20px;display:flex;align-items:stretch;flex-wrap:wrap;gap:0;box-shadow:var(--el-1)}
+.cmd-stat{flex:1;min-width:100px;padding:0 22px;text-align:center;display:flex;flex-direction:column;justify-content:center}
+.cmd-stat:first-child{padding-left:0;text-align:left}
+.cmd-v{font-family:var(--font-data);font-size:2.5rem;font-weight:800;line-height:1;color:var(--text)}
+.cmd-stat.cmd-danger{background:var(--danger);border-radius:var(--r);padding:12px 22px;margin:-4px 0}
+.cmd-stat.cmd-danger .cmd-v{color:#fff}
+.cmd-stat.cmd-danger .cmd-l{color:rgba(255,255,255,.85)}
+.cmd-stat.cmd-danger .cmd-s{color:rgba(255,255,255,.65)}
+.cmd-l{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:4px}
+.cmd-s{font-size:.7rem;color:var(--text-muted);margin-top:1px}
+.cmd-div{width:1px;background:var(--border);flex-shrink:0;align-self:stretch;margin:4px 0}
+.cmd-upd{font-family:var(--font-data);font-size:.72rem;color:var(--text-muted);margin-left:auto;padding-left:20px;align-self:center;white-space:nowrap}
+@media(max-width:640px){.cmd-bar{gap:16px;padding:16px}.cmd-div{display:none}.cmd-stat{padding:0;text-align:left;min-width:calc(50% - 8px)}.cmd-upd{display:none}}
+/* ===== DASHBOARD: FLAT STAT CARDS ===== */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-top:3px solid var(--border);border-radius:var(--r-md);padding:18px 20px;box-shadow:var(--el-1);transition:box-shadow .2s}
+.stat-card:hover{box-shadow:var(--el-2)}
+.stat-soap{border-top-color:var(--ok)}
+.stat-sess{border-top-color:var(--accent)}
+.stat-acc{border-top-color:var(--info)}
+.stat-icon{width:36px;height:36px;border-radius:var(--r3);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.stat-icon svg{width:18px;height:18px}
+.stat-soap .stat-icon{background:var(--safe-bg);color:var(--ok)}
+.stat-sess .stat-icon{background:var(--tag-bg);color:var(--accent)}
+.stat-acc .stat-icon{background:var(--info-bg);color:var(--info)}
+.stat-v{font-family:var(--font-data);font-size:1.8rem;font-weight:700;line-height:1;color:var(--text)}
+.stat-l{font-size:.78rem;font-weight:600;color:var(--text-secondary);margin-top:5px}
+.stat-s{font-size:.72rem;color:var(--text-muted);margin-top:2px}
+@media(max-width:640px){.stat-row{grid-template-columns:1fr}}
+/* ===== ICU MONITOR REDESIGN ===== */
+.icu-status-bar{display:flex;align-items:center;flex-wrap:wrap;gap:0;background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 20px;margin-bottom:20px;box-shadow:var(--el-1)}
+.icu-sb-item{font-size:.82rem;color:var(--muted);padding:0 18px;display:flex;align-items:center;gap:5px}
+.icu-sb-item:first-child{padding-left:0}
+.icu-sb-item strong{font-family:var(--font-data);color:var(--text);font-weight:700;font-size:.95rem}
+.icu-sb-crit strong{color:var(--danger)}
+.icu-sb-div{width:1px;background:var(--border);align-self:stretch;min-height:20px;flex-shrink:0}
+.icu-sb-time{font-family:var(--font-data);font-size:.78rem;color:var(--muted);margin-left:auto;padding-left:18px}
+.icu-c.critical{border-left:5px solid var(--danger)}
+.icu-c.warning{border-left:4px solid var(--warn)}
+.icu-c.stable{border-left:4px solid var(--ok)}
+body[data-theme=light] .icu-c.critical{background:linear-gradient(90deg,rgba(220,38,38,.03),var(--card) 55%)}
+body[data-theme=dark] .icu-c.critical{background:linear-gradient(90deg,rgba(220,38,38,.06),var(--card) 55%)}
+.icu-sec-t{display:flex;align-items:center;gap:10px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+.icu-sec-badge{background:var(--danger-bg);color:var(--danger);border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:700;text-transform:none;letter-spacing:0}
+.icu-sec-badge.warn{background:var(--warn-bg);color:var(--warn)}
+.icu-cf{padding:10px 18px;border-top:1px solid var(--border);font-size:.78rem;color:var(--muted);font-style:italic}
+.icu-cf-footer{display:flex;align-items:center;justify-content:space-between;margin-top:6px;flex-wrap:wrap;gap:6px;font-style:normal}
+.icu-call-btn{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:4px;background:var(--danger-bg);color:var(--danger);font-size:.72rem;font-weight:700;border:1px solid rgba(220,38,38,.2);cursor:pointer;font-family:var(--font-ui);font-style:normal}
+.icu-call-btn:hover{background:var(--danger);color:#fff}
+.icu-upd-time{font-family:var(--font-data);font-size:.7rem;color:var(--muted);font-weight:500;margin-left:auto}
 </style>
 </head>
 <body data-theme="light">
@@ -252,6 +381,7 @@ body[data-theme=dark] .topbar{background:rgba(15,22,41,.85)}
 <div class="login-feature"><div class="login-fi">📋</div><span data-i18n="login_f2">Автоматическая SOAP-документация</span></div>
 <div class="login-feature"><div class="login-fi">🏥</div><span data-i18n="login_f3">Ночные обходы и мониторинг</span></div>
 </div>
+<div class="ecg-wrap"><svg viewBox="0 0 1200 100" preserveAspectRatio="none"><path d="M0,50 L60,50 Q70,43 80,50 L100,50 L105,48 L110,12 L115,78 L120,50 L140,50 Q155,38 170,50 L200,50 L260,50 Q270,43 280,50 L300,50 L305,48 L310,12 L315,78 L320,50 L340,50 Q355,38 370,50 L400,50 L460,50 Q470,43 480,50 L500,50 L505,48 L510,12 L515,78 L520,50 L540,50 Q555,38 570,50 L600,50 L660,50 Q670,43 680,50 L700,50 L705,48 L710,12 L715,78 L720,50 L740,50 Q755,38 770,50 L800,50 L860,50 Q870,43 880,50 L900,50 L905,48 L910,12 L915,78 L920,50 L940,50 Q955,38 970,50 L1000,50 L1060,50 Q1070,43 1080,50 L1100,50 L1105,48 L1110,12 L1115,78 L1120,50 L1140,50 Q1155,38 1170,50 L1200,50" fill="none" stroke="rgba(13,148,136,.3)" stroke-width="2"/></svg></div>
 </div>
 <div class="login-right">
 <div class="login-card">
@@ -259,16 +389,16 @@ body[data-theme=dark] .topbar{background:rgba(15,22,41,.85)}
   <div class="login-logo"><div class="login-logo-i">A</div> Avris AI</div>
   <div class="lang-sel" id="langSelLogin"></div>
 </div>
-<h2 style="font-size:1.3rem;margin-bottom:3px;color:#0f1f1e" data-i18n="login_title">Вход в систему</h2>
-<p style="color:#5e7876;margin-bottom:20px;font-size:.88rem" data-i18n="login_sub">Введите данные для продолжения</p>
+<h2 style="font-size:1.3rem;margin-bottom:3px" data-i18n="login_title">Вход в систему</h2>
+<p style="color:var(--muted);margin-bottom:20px;font-size:.88rem" data-i18n="login_sub">Введите данные для продолжения</p>
 <form id="loginForm" style="display:flex;flex-direction:column;gap:10px">
-<div><label style="color:#5e7876" data-i18n="lbl_email">Почта</label><input id="email" type="email" placeholder="doctor@hospital.tj" required></div>
-<div><label style="color:#5e7876" data-i18n="lbl_pass">Пароль</label><input id="password" type="password" placeholder="••••••••" required></div>
+<div><label data-i18n="lbl_email">Почта</label><input id="email" type="email" placeholder="doctor@hospital.tj" required></div>
+<div><label data-i18n="lbl_pass">Пароль</label><input id="password" type="password" placeholder="••••••••" required></div>
 <button class="btn primary" type="submit" id="loginBtn" style="width:100%;height:46px;margin-top:6px" data-i18n="btn_login">Войти</button>
 </form>
 <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px">
-<span style="font-size:.8rem;color:#5e7876">Тема:</span>
-<button class="icon-btn" id="loginThemeBtn" style="background:#f0f8f7;border-color:#d9ecea">☀️</button>
+<span style="font-size:.8rem;color:var(--muted)">Тема:</span>
+<button class="icon-btn" id="loginThemeBtn">☀️</button>
 </div>
 </div>
 </div>
@@ -307,21 +437,59 @@ body[data-theme=dark] .topbar{background:rgba(15,22,41,.85)}
 </header>
 <div class="main">
 <section class="screen active" id="dashboard">
-<div class="hero">
-<div class="hero-ey" data-i18n="hero_ey">Сегодняшний обзор</div>
-<div class="hero-t" data-i18n="hero_t">Активные пациенты</div>
-<div class="hero-sub"><span data-i18n="hero_sub">Обновлено: </span><span id="heroTS">--:--</span></div>
-<div class="hero-stats">
-<div class="hero-stat"><div class="hero-stat-l" data-i18n="hero_work">В работе</div><div class="hero-stat-v" id="heroPC">6</div><div class="hero-stat-s" data-i18n="hero_pat">пациентов</div></div>
-<div class="hero-stat"><div class="hero-stat-l" data-i18n="hero_crit">Критические</div><div class="hero-stat-v" id="heroCC">1</div><div class="hero-stat-s" data-i18n="hero_att">внимание</div></div>
-<div class="hero-stat"><div class="hero-stat-l">Avris Score</div><div class="hero-stat-v" id="heroAS">--</div><div class="hero-stat-s" data-i18n="hero_avg">средний</div></div>
-<div class="hero-stat"><div class="hero-stat-l" data-i18n="hero_rep">Отчёт</div><div class="hero-stat-v">12</div><div class="hero-stat-s" data-i18n="hero_min">мин назад</div></div>
+<!-- Command Bar — замена hero-баннера -->
+<div class="cmd-bar">
+<div class="cmd-stat">
+<div class="cmd-v" id="heroPC">6</div>
+<div class="cmd-l" data-i18n="hero_work">Активных</div>
+<div class="cmd-s" data-i18n="hero_pat">пациентов</div>
 </div>
+<div class="cmd-div"></div>
+<div class="cmd-stat cmd-danger">
+<div class="cmd-v" id="heroCC">1</div>
+<div class="cmd-l" data-i18n="hero_crit">Критических</div>
+<div class="cmd-s" data-i18n="hero_att">требуют внимания</div>
 </div>
-<div class="metrics-row">
-<div class="metric-c"><div class="metric-l">SOAP</div><div class="metric-v">18</div><div class="metric-s" data-i18n="m_24h">за 24ч</div></div>
-<div class="metric-c"><div class="metric-l" data-i18n="m_sess">Сессии</div><div class="metric-v">12</div><div class="metric-s">~4:12</div></div>
-<div class="metric-c"><div class="metric-l" data-i18n="m_acc">Точность AI</div><div class="metric-v">92%</div><div class="metric-s" data-i18n="m_rec">распознавание</div></div>
+<div class="cmd-div"></div>
+<div class="cmd-stat">
+<div class="cmd-v" id="heroAS">--</div>
+<div class="cmd-l">Avris Score</div>
+<div class="cmd-s" data-i18n="hero_avg">средний</div>
+</div>
+<div class="cmd-div"></div>
+<div class="cmd-stat">
+<div class="cmd-v">18</div>
+<div class="cmd-l">SOAP</div>
+<div class="cmd-s" data-i18n="m_24h">за 24ч</div>
+</div>
+<div class="cmd-div"></div>
+<div class="cmd-stat">
+<div class="cmd-v">92%</div>
+<div class="cmd-l" data-i18n="m_acc">Точность AI</div>
+<div class="cmd-s" data-i18n="m_rec">распознавание</div>
+</div>
+<div class="cmd-upd">Обновлено: <span id="heroTS">--:--</span></div>
+</div>
+<!-- Flat Stat Cards — замена градиентных metric-c -->
+<div class="stat-row">
+<div class="stat-card stat-soap">
+<div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></div>
+<div class="stat-v">18</div>
+<div class="stat-l">SOAP-записи</div>
+<div class="stat-s" data-i18n="m_24h">за 24ч</div>
+</div>
+<div class="stat-card stat-sess">
+<div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></div>
+<div class="stat-v">12</div>
+<div class="stat-l" data-i18n="m_sess">Сессии</div>
+<div class="stat-s">~4:12 мин/сессия</div>
+</div>
+<div class="stat-card stat-acc">
+<div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+<div class="stat-v">92%</div>
+<div class="stat-l" data-i18n="m_acc">Точность AI</div>
+<div class="stat-s" data-i18n="m_rec">распознавание</div>
+</div>
 </div>
 <div class="card" style="margin-bottom:16px">
 <div class="filter-bar">
@@ -359,28 +527,78 @@ body[data-theme=dark] .topbar{background:rgba(15,22,41,.85)}
 </div>
 </section>
 <section class="screen" id="consultation">
+<!-- Patient Context Bar -->
+<div class="pat-ctx" id="patCtx">
+<div class="pat-ctx-top">
+<div class="avatar" id="patCtxAvatar" style="width:36px;height:36px;font-size:.72rem;flex-shrink:0">ИА</div>
+<div class="pat-ctx-info">
+<div class="pat-ctx-name" id="patCtxName">Иванова А.М.</div>
+<div class="pat-ctx-meta" id="patCtxMeta">63г · Кардиология A1</div>
+</div>
+<div class="pat-ctx-score danger" id="patCtxScore">34 Крит.</div>
+<span class="pat-ctx-chevron">▾</span>
+</div>
+<div class="pat-ctx-bottom">
+<span class="pat-ctx-diag" id="patCtxDiag">Гипертония, Диабет II</span>
+<span class="pat-ctx-allergy" id="patCtxAllergy">⚠ Аллергия: Метформин</span>
+</div>
+<div class="pat-ctx-dropdown" id="patCtxDropdown"></div>
+<select id="consultPat" style="display:none"></select>
+</div>
 <div class="consult-g">
+<!-- Запись осмотра -->
 <div class="card">
 <div class="card-h"><h3 data-i18n="cons_rec">Запись осмотра</h3></div>
-<div style="margin-bottom:14px"><label data-i18n="lbl_patient">Пациент</label><select id="consultPat"></select></div>
-<div class="mic-area">
-<button class="mic-btn" id="micBtn">🎙️</button>
-<div class="timer" id="recTimer">00:00</div>
+<!-- Waveform -->
+<div class="rec-wave-wrap">
 <div class="wave" id="waveform"></div>
 </div>
-<div><label data-i18n="lbl_transcript">Транскрипт</label><div class="transcript" id="transcriptText" data-i18n="tr_ph">Нажмите микрофон для записи...</div></div>
+<!-- Timer -->
+<div class="rec-timer-row">
+<div class="timer" id="recTimer">00:00</div>
+<div class="rec-status-lbl" id="recStatusLbl">Нажмите для записи</div>
+</div>
+<!-- Кнопка записи на всю ширину -->
+<button class="rec-bar" id="micBtn">
+<span class="rec-bar-dot"></span>
+<span id="recBarLabel">НАЧАТЬ ЗАПИСЬ</span>
+</button>
+<!-- Футер: бейджи -->
+<div class="rec-footer">
+<span class="rec-badge">🔒 Whisper AI · Распознавание</span>
+<span class="rec-lang-pill">RU</span>
+</div>
+<!-- Транскрипт -->
+<div class="transcript-hdr">
+<label data-i18n="lbl_transcript">Транскрипт</label>
+<span class="transcript-meta" id="transcriptMeta">0 слов</span>
+<button class="btn ghost sm" id="clearRec" data-i18n="btn_clear">Очистить</button>
+</div>
+<div class="transcript" id="transcriptText" data-i18n="tr_ph">Нажмите микрофон для записи...</div>
 <div style="margin-top:14px;display:flex;gap:6px;justify-content:flex-end">
-<button class="btn ghost" id="clearRec" data-i18n="btn_clear">Очистить</button>
 <button class="btn primary" id="stopRec" data-i18n="btn_save">Сохранить</button>
 </div>
 </div>
+<!-- SOAP документация -->
 <div class="card">
-<div class="card-h"><h3 data-i18n="soap_title">SOAP-документация</h3></div>
+<div class="card-h"><h3 data-i18n="soap_title">SOAP-документация</h3><span class="ai-badge">✦ Claude Sonnet</span></div>
 <div class="soap-g">
-<div class="soap-c"><h5>Subjective</h5><textarea id="soapS" data-phk="ph_complaints" placeholder="Жалобы пациента"></textarea></div>
-<div class="soap-c"><h5>Objective</h5><textarea id="soapO" data-phk="ph_exam" placeholder="Данные осмотра"></textarea></div>
-<div class="soap-c"><h5>Assessment</h5><textarea id="soapA" data-phk="ph_diag" placeholder="Диагноз"></textarea></div>
-<div class="soap-c"><h5>Plan</h5><textarea id="soapP" data-phk="ph_plan" placeholder="План лечения"></textarea></div>
+<div class="soap-c soap-s">
+<div class="soap-hdr"><h5>S — Subjective</h5><span class="soap-ai-tag">AI предлагает</span></div>
+<textarea id="soapS" data-phk="ph_complaints" placeholder="Жалобы пациента"></textarea>
+</div>
+<div class="soap-c soap-o">
+<div class="soap-hdr"><h5>O — Objective</h5><span class="soap-ai-tag">AI предлагает</span></div>
+<textarea id="soapO" data-phk="ph_exam" placeholder="Данные осмотра"></textarea>
+</div>
+<div class="soap-c soap-a">
+<div class="soap-hdr"><h5>A — Assessment</h5><span class="soap-ai-tag">AI предлагает</span></div>
+<textarea id="soapA" data-phk="ph_diag" placeholder="Диагноз"></textarea>
+</div>
+<div class="soap-c soap-p">
+<div class="soap-hdr"><h5>P — Plan</h5><span class="soap-ai-tag">AI предлагает</span></div>
+<textarea id="soapP" data-phk="ph_plan" placeholder="План лечения"></textarea>
+</div>
 </div>
 <div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn primary" id="soapConfirm" data-i18n="btn_soap">Подтвердить SOAP</button></div>
 </div>
@@ -413,9 +631,26 @@ body[data-theme=dark] .topbar{background:rgba(15,22,41,.85)}
 <h2 style="font-weight:800;margin-bottom:3px" data-i18n="icu_title">Реанимация и пост-реанимация</h2>
 <p style="color:var(--muted)" data-i18n="icu_sub">Наблюдение за пациентами в критическом состоянии</p>
 </div>
-<div class="icu-sec-t" data-i18n="icu_sec">Реанимационное отделение (ОРИТ)</div>
+<!-- Status Bar -->
+<div class="icu-status-bar">
+<div class="icu-sb-item"><span>Всего</span><strong id="icuTotalCount">—</strong></div>
+<div class="icu-sb-div"></div>
+<div class="icu-sb-item icu-sb-crit"><span>Критических</span><strong id="icuCritCount">—</strong></div>
+<div class="icu-sb-div"></div>
+<div class="icu-sb-item"><span>Ср. SpO₂</span><strong id="icuAvgSpo2">—</strong><span>%</span></div>
+<div class="icu-sb-time" id="icuUpdTime">обновлено: —</div>
+</div>
+<!-- ОРИТ -->
+<div class="icu-sec-t">
+<span data-i18n="icu_sec">Реанимационное отделение (ОРИТ)</span>
+<span class="icu-sec-badge" id="icuCritBadge"></span>
+</div>
 <div class="icu-g" id="icuGrid"></div>
-<div class="icu-sec-t" data-i18n="post_sec">Пост-реанимационные палаты</div>
+<!-- Пост-реанимация -->
+<div class="icu-sec-t" style="margin-top:24px">
+<span data-i18n="post_sec">Пост-реанимационные палаты</span>
+<span class="icu-sec-badge warn" id="icuPostBadge"></span>
+</div>
 <div class="icu-g" id="postIcuGrid"></div>
 </section>
 <section class="screen" id="settings">
@@ -511,25 +746,43 @@ $("notifToggle").onclick=function(){$("notifPanel").classList.add("open")};$("cl
 function renderFilters(){var df=$("diagFilter"),wf=$("wardFilter");if(!df||!wf)return;while(df.options.length>1)df.remove(1);while(wf.options.length>1)wf.remove(1);var diags={},wards={};patients.forEach(function(p){p.diag.forEach(function(d){diags[d]=1});wards[p.ward]=1});Object.keys(diags).forEach(function(d){var o=document.createElement("option");o.value=d;o.textContent=d;df.appendChild(o)});Object.keys(wards).forEach(function(w){var o=document.createElement("option");o.value=w;o.textContent=w;wf.appendChild(o)})}
 var ps=$("patSearch"),df=$("diagFilter"),wf=$("wardFilter");
 ps.oninput=function(){clearTimeout(searchTm);searchTm=setTimeout(applyFilters,200)};df.onchange=applyFilters;wf.onchange=applyFilters;$("resetF").onclick=function(){ps.value="";df.value="all";wf.value="all";applyFilters()};
-function buildPatList(){var pl=$("patList");pl.innerHTML="";patients.forEach(function(p){var el=document.createElement("div");el.className="p-item";el.dataset.pid=p.id;var rc=p.score<40?"danger":p.score<70?"warn":"safe";var st=p.score<40?t("st_crit"):p.score<70?t("st_watch"):t("st_stab");el.innerHTML='<div class="avatar">'+esc(p.ini)+'</div><div class="p-info"><div class="p-name">'+esc(p.name)+'</div><div class="p-det">'+p.diag.map(esc).join(" · ")+'</div></div><div class="score-pill '+rc+'">'+p.score+" "+esc(st)+'</div>';el.onclick=function(){openModal(p.id)};pl.appendChild(el)})}
+function buildPatList(){var pl=$("patList");pl.innerHTML="";patients.forEach(function(p){var el=document.createElement("div");el.className="p-item";el.dataset.pid=p.id;var rc=p.score<40?"danger":p.score<70?"warn":"safe";var st=p.score<40?t("st_crit"):p.score<70?t("st_watch"):t("st_stab");el.innerHTML='<div class="avatar">'+esc(p.ini)+'</div><div class="p-info"><div class="p-name">'+esc(p.name)+'</div><div class="p-det">'+p.diag.map(esc).join(" · ")+'</div></div><div class="score-pill '+rc+'">'+p.score+" "+esc(st)+'</div><button class="btn primary sm p-action">Осмотр →</button>';el.querySelector(".p-action").onclick=function(e){e.stopPropagation();$("consultPat").value=p.id;updatePatCtx();goTo("consultation")};el.onclick=function(){openModal(p.id)};pl.appendChild(el)})}
 function applyFilters(){var pl=$("patList");if(!pl)return;var q=ps?ps.value.trim().toLowerCase():"",dv=df?df.value:"all",wv=wf?wf.value:"all",cnt=0;patients.forEach(function(p){var nd=pl.querySelector('[data-pid="'+p.id+'"]');if(!nd)return;var mq=p.name.toLowerCase().indexOf(q)>=0||p.diag.some(function(d){return d.toLowerCase().indexOf(q)>=0});var md=dv==="all"||p.diag.some(function(d){return d.indexOf(dv)>=0});var mw=wv==="all"||p.ward===wv;var vis=mq&&md&&mw;nd.classList.toggle("fh",!vis);if(vis)cnt++});$("filterSum").textContent=cnt+" "+t("f_pat");$("patBadge").textContent=cnt;$("patEmpty").style.display=cnt===0?"block":"none"}
-function updateDash(){var crit=patients.filter(function(p){return p.score<40}).length;$("heroPC").textContent=patients.length;$("heroCC").textContent=crit;var avg=Math.round(patients.reduce(function(a,p){return a+p.score},0)/patients.length);$("heroAS").textContent=avg;var sorted=patients.slice().sort(function(a,b){return b.score-a.score});$("bestSP").textContent=sorted[0].name+" ("+sorted[0].score+")";$("watchSP").textContent=sorted[sorted.length-1].name+" ("+sorted[sorted.length-1].score+")";var at=$("avrisTrend");at.innerHTML="";patients.forEach(function(p){var b=document.createElement("div");b.className="trend-bar";var c=p.score<40?"var(--danger)":p.score<70?"var(--warn)":"var(--ok)";b.style.height=Math.max(p.score,8)+"%";b.style.background=c;b.innerHTML='<div class="trend-tip">'+esc(p.name.split(" ")[0])+" "+p.score+'</div>';at.appendChild(b)})}
+function updateDash(){var crit=patients.filter(function(p){return p.score<40}).length;$("heroPC").textContent=patients.length;$("heroCC").textContent=crit;var avg=Math.round(patients.reduce(function(a,p){return a+p.score},0)/patients.length);$("heroAS").textContent=avg;var sorted=patients.slice().sort(function(a,b){return b.score-a.score});$("bestSP").textContent=sorted[0].name+" ("+sorted[0].score+")";$("watchSP").textContent=sorted[sorted.length-1].name+" ("+sorted[sorted.length-1].score+")";var at=$("avrisTrend");at.innerHTML="";var sortedTrend=patients.slice().sort(function(a,b){return a.score-b.score});sortedTrend.forEach(function(p){var row=document.createElement("div");row.className="score-h-row";var c=p.score<40?"var(--danger)":p.score<70?"var(--warn)":"var(--ok)";row.innerHTML='<span class="score-h-name">'+esc(p.name.split(" ")[0])+'</span><div class="score-h-track"><div class="score-h-fill" style="width:'+p.score+'%;background:'+c+'"></div></div><span class="score-h-val" style="color:'+c+'">'+p.score+'</span>';at.appendChild(row)})}
 function initWave(){var w=$("waveform");for(var i=0;i<28;i++){var s=document.createElement("span");s.style.height=(3+Math.random()*16)+"px";s.style.animationDelay=(i*.04)+"s";w.appendChild(s)}}
-function initConsult(){var cp=$("consultPat");cp.innerHTML="";patients.forEach(function(p){var o=document.createElement("option");o.value=p.id;o.textContent=p.name;cp.appendChild(o)})}
+function updatePatCtx(){var cp=$("consultPat");if(!cp)return;var p=patients.find(function(x){return x.id===cp.value});if(!p)return;var rc=p.score<40?"danger":p.score<70?"warn":"safe";var st=p.score<40?t("st_crit"):p.score<70?t("st_watch"):t("st_stab");$("patCtxAvatar").textContent=p.ini;$("patCtxName").textContent=p.name;$("patCtxMeta").textContent=p.demo.age+"г · "+p.ward;var sc=$("patCtxScore");sc.textContent=p.score+" "+st;sc.className="pat-ctx-score "+rc;$("patCtxDiag").textContent=p.diag.join(", ");var al=$("patCtxAllergy");if(p.allergy&&p.allergy.length){al.textContent="⚠ Аллергия: "+p.allergy.join(", ");al.style.display=""}else{al.style.display="none"}}
+function buildPatCtxDropdown(){var dd=$("patCtxDropdown");if(!dd)return;dd.innerHTML="";patients.forEach(function(p){var rc=p.score<40?"danger":p.score<70?"warn":"safe";var d=document.createElement("div");d.className="pat-ctx-opt";d.innerHTML='<div class="avatar" style="width:30px;height:30px;font-size:.65rem;flex-shrink:0">'+esc(p.ini)+'</div><div class="pat-ctx-opt-info"><div class="pat-ctx-opt-name">'+esc(p.name)+'</div><div class="pat-ctx-opt-ward">'+esc(p.ward)+'</div></div><span class="score-pill '+rc+'">'+p.score+'</span>';d.onclick=function(e){e.stopPropagation();$("consultPat").value=p.id;updatePatCtx();$("patCtx").classList.remove("open")};dd.appendChild(d)})}
+function initConsult(){var cp=$("consultPat");cp.innerHTML="";patients.forEach(function(p){var o=document.createElement("option");o.value=p.id;o.textContent=p.name;cp.appendChild(o)});updatePatCtx();buildPatCtxDropdown()}
+$("patCtx").onclick=function(e){if(e.target.closest(".pat-ctx-opt"))return;$("patCtx").classList.toggle("open")};
 $("micBtn").onclick=function(){recording?stopRec():startRec()};$("stopRec").onclick=stopRec;
-$("clearRec").onclick=function(){$("transcriptText").textContent=t("tr_ph");$("soapS").value="";$("soapO").value="";$("soapA").value="";$("soapP").value=""};
+$("clearRec").onclick=function(){$("transcriptText").textContent=t("tr_ph");if($("transcriptMeta"))$("transcriptMeta").textContent="0 слов";$("soapS").value="";$("soapO").value="";$("soapA").value="";$("soapP").value=""};
 $("soapConfirm").onclick=function(){if(!$("soapS").value.trim()&&!$("soapO").value.trim()){toast(t("t_soap_e"),2000);return}var cp=$("consultPat"),pt=patients.find(function(p){return p.id===cp.value});histData.unshift({time:new Date().toLocaleTimeString().slice(0,5),patient:pt?pt.name:"—",type:"soap",summary:($("soapA").value||"").slice(0,50)||"Запись сохранена"});renderHist();toast(t("t_soap"));$("soapS").value="";$("soapO").value="";$("soapA").value="";$("soapP").value=""};
-function startRec(){recording=true;recStart=Date.now();$("micBtn").classList.add("rec");$("waveform").classList.add("rec");$("recInd").classList.add("on");$("transcriptText").textContent="";startTimer();startTypewriter()}
-function stopRec(){if(!recording)return;recording=false;$("micBtn").classList.remove("rec");$("waveform").classList.remove("rec");$("recInd").classList.remove("on");clearInterval(recInt);recInt=null;clearTimeout(typeTO);typeTO=null}
+function startRec(){recording=true;recStart=Date.now();$("micBtn").classList.add("rec");$("waveform").classList.add("rec");$("recInd").classList.add("on");$("transcriptText").textContent="";if($("recBarLabel"))$("recBarLabel").textContent="ОСТАНОВИТЬ ЗАПИСЬ";if($("recStatusLbl"))$("recStatusLbl").textContent="Идёт запись...";if($("transcriptMeta"))$("transcriptMeta").textContent="0 слов";startTimer();startTypewriter()}
+function stopRec(){if(!recording)return;recording=false;$("micBtn").classList.remove("rec");$("waveform").classList.remove("rec");$("recInd").classList.remove("on");if($("recBarLabel"))$("recBarLabel").textContent="НАЧАТЬ ЗАПИСЬ";if($("recStatusLbl"))$("recStatusLbl").textContent="Нажмите для записи";clearInterval(recInt);recInt=null;clearTimeout(typeTO);typeTO=null}
 function startTimer(){clearInterval(recInt);recInt=setInterval(function(){if(!recStart)return;var e=Math.floor((Date.now()-recStart)/1000);$("recTimer").textContent=String(Math.floor(e/60)).padStart(2,"0")+":"+String(e%60).padStart(2,"0")},500)}
-function startTypewriter(){var si=0,ci=0;clearTimeout(typeTO);function go(){if(!recording||si>=trLines.length)return;var cur=trLines[si],tt=$("transcriptText");if(ci<cur.length){tt.textContent+=cur.charAt(ci);ci++}else{tt.textContent+="\n";si++;ci=0}typeTO=setTimeout(go,35)}go()}
+function startTypewriter(){var si=0,ci=0;clearTimeout(typeTO);function go(){if(!recording||si>=trLines.length)return;var cur=trLines[si],tt=$("transcriptText");if(ci<cur.length){tt.textContent+=cur.charAt(ci);ci++}else{tt.textContent+="\n";si++;ci=0}var wc=tt.textContent.trim().split(/\s+/).filter(function(w){return w.length>0}).length;if($("transcriptMeta"))$("transcriptMeta").textContent=wc+" слов";typeTO=setTimeout(go,35)}go()}
 function renderWards(){var wg=$("wardGrid");wg.innerHTML="";wardData.forEach(function(w,i){var p=patients[i]||patients[0];var c=document.createElement("div");c.className="ward-c";c.dataset.idx=i;var stTxt=w.st==="stable"?t("icu_stable"):t("icu_serious");c.innerHTML="<strong>"+t("w_label")+" "+esc(w.name)+"</strong><span style='font-size:.82rem;color:var(--muted)'>"+esc(p.name)+"</span><span class='badge "+(w.st==="stable"?"safe":"warn")+"'>"+esc(stTxt)+"</span>";c.onclick=function(){selectWard(i)};wg.appendChild(c)})}
 function selectWard(i){selWard=i;$("wardGrid").querySelectorAll(".ward-c").forEach(function(c,j){c.classList.toggle("sel",j===i)});var p=patients[i];$("selWardLbl").textContent=t("w_label")+" "+wardData[i].name+" — "+p.name;$("selWardLbl").style.display="block";$("nightSave").disabled=false}
 $("nightVoice").onclick=function(){if(selWard===null){toast(t("t_ward"),2000);return}var b=$("nightVoice");b.disabled=true;b.textContent="...";setTimeout(function(){$("nightObj").value="Сатурация >95%, боль не выражена.";$("nightPlan").value="Кислород 2 л/мин, контроль АД каждые 2ч.";b.disabled=false;b.textContent=t("btn_vfill");toast(t("t_filled"),2000)},1200)};
 $("nightSave").onclick=function(){if(selWard===null)return;if(!$("nightObj").value.trim()){toast(t("t_exam"),2000);return}var p=patients[selWard];histData.unshift({time:new Date().toLocaleTimeString().slice(0,5),patient:p.name,type:"round",summary:$("nightObj").value.slice(0,50)});renderHist();toast(t("t_round"));$("nightObj").value="";$("nightPlan").value="";selWard=null;$("wardGrid").querySelectorAll(".ward-c").forEach(function(c){c.classList.remove("sel")});$("selWardLbl").style.display="none";$("nightSave").disabled=true};
 function renderHist(){var hl=$("histList");hl.innerHTML="";histData.forEach(function(it){var e=document.createElement("div");e.className="hist-item";var icon=it.type==="soap"?"📋":"🌙";e.innerHTML='<div class="hist-icon">'+icon+'</div><div class="hist-body"><strong>'+esc(it.patient)+'</strong><p>'+esc(it.summary)+'</p></div><span style="font-size:.75rem;color:var(--muted);white-space:nowrap">'+esc(it.time)+'</span>';hl.appendChild(e)})}
-function renderICU(){renderICUGrid($("icuGrid"),icuPats);renderICUGrid($("postIcuGrid"),postPats)}
-function renderICUGrid(container,data){container.innerHTML="";data.forEach(function(p){var el=document.createElement("div");el.className="icu-c";var stLabel=p.status==="critical"?t("icu_critical"):p.status==="warning"?t("icu_serious"):t("icu_stable");var v=p.vitals;var hrCls=v.hr>100?"alert":v.hr>90?"vwarn":"";var spCls=v.spo2<90?"alert":v.spo2<94?"vwarn":"";var bpCls=v.sys<90?"alert":v.sys<100?"vwarn":"";el.innerHTML='<div class="icu-ch"><div class="st-dot '+esc(p.status)+'"></div><div style="flex:1"><strong style="font-size:.9rem">'+esc(p.name)+'</strong><div style="font-size:.78rem;color:var(--muted)">'+esc(p.bed)+" · "+esc(p.diag)+'</div></div><span class="badge '+(p.status==="critical"?"danger":p.status==="warning"?"warn":"safe")+'">'+esc(stLabel)+'</span></div><div class="icu-cb"><div class="icu-vg"><div class="icu-v '+hrCls+'"><div class="icu-vl">ЧСС</div><div class="icu-vv">'+v.hr+'</div><div class="icu-vu">уд/мин</div></div><div class="icu-v '+bpCls+'"><div class="icu-vl">АД</div><div class="icu-vv">'+v.sys+"/"+v.dia+'</div><div class="icu-vu">мм рт.ст.</div></div><div class="icu-v '+spCls+'"><div class="icu-vl">SpO₂</div><div class="icu-vv">'+v.spo2+'%</div><div class="icu-vu">сатурация</div></div><div class="icu-v"><div class="icu-vl">ЧДД</div><div class="icu-vv">'+v.resp+'</div><div class="icu-vu">вд/мин</div></div><div class="icu-v"><div class="icu-vl">T°C</div><div class="icu-vv">'+v.temp+'</div><div class="icu-vu">аксил.</div></div><div class="icu-v"><div class="icu-vl">'+t("icu_days")+'</div><div class="icu-vv">'+p.days+'</div><div class="icu-vu">'+t("icu_doc").split(" ")[0]+'</div></div></div></div><div class="icu-cf">'+esc(p.notes)+' <span style="float:right;font-style:normal;font-weight:600">'+t("icu_upd")+": "+esc(p.upd)+'</span></div>';container.appendChild(el)})}
+function renderICU(){
+  renderICUGrid($("icuGrid"),icuPats);
+  renderICUGrid($("postIcuGrid"),postPats);
+  var all=icuPats.concat(postPats);
+  var critCount=all.filter(function(p){return p.status==="critical"}).length;
+  var avgSpo2=Math.round(all.reduce(function(s,p){return s+p.vitals.spo2},0)/all.length);
+  var now=new Date();var hh=String(now.getHours()).padStart(2,"0");var mm=String(now.getMinutes()).padStart(2,"0");
+  if($("icuTotalCount"))$("icuTotalCount").textContent=all.length;
+  if($("icuCritCount"))$("icuCritCount").textContent=critCount;
+  if($("icuAvgSpo2"))$("icuAvgSpo2").textContent=avgSpo2;
+  if($("icuUpdTime"))$("icuUpdTime").textContent="обновлено: "+hh+":"+mm;
+  var icuCrit=icuPats.filter(function(p){return p.status==="critical"}).length;
+  var icuWarn=icuPats.filter(function(p){return p.status==="warning"}).length;
+  if($("icuCritBadge")){var cb=$("icuCritBadge");if(icuCrit){cb.textContent=icuCrit+" критических";cb.style.display=""}else if(icuWarn){cb.textContent=icuWarn+" под наблюдением";cb.className="icu-sec-badge warn";cb.style.display=""}else cb.style.display="none"}
+  if($("icuPostBadge")){var pb=$("icuPostBadge");pb.textContent=postPats.length+" пациентов";pb.className="icu-sec-badge warn";pb.style.display=postPats.length?"":"none"}
+}
+function renderICUGrid(container,data){container.innerHTML="";data.forEach(function(p){var el=document.createElement("div");el.className="icu-c "+p.status;var stLabel=p.status==="critical"?t("icu_critical"):p.status==="warning"?t("icu_serious"):t("icu_stable");var v=p.vitals;var hrCls=v.hr>100?"alert":v.hr>90?"vwarn":"";var spCls=v.spo2<90?"alert":v.spo2<94?"vwarn":"";var bpCls=v.sys<90?"alert":v.sys<100?"vwarn":"";var callBtn=(p.status==="critical"||p.status==="warning")?"<button class='icu-call-btn'>⚡ Вызвать врача</button>":"";el.innerHTML='<div class="icu-ch"><div class="st-dot '+esc(p.status)+'"></div><div style="flex:1"><strong style="font-size:.9rem">'+esc(p.name)+'</strong><div style="font-size:.78rem;color:var(--muted)">'+esc(p.bed)+" · "+esc(p.diag)+'</div></div><span class="badge '+(p.status==="critical"?"danger":p.status==="warning"?"warn":"safe")+'">'+esc(stLabel)+'</span></div><div class="icu-cb"><div class="icu-vg"><div class="icu-v '+hrCls+'"><div class="icu-vl">ЧСС</div><div class="icu-vv">'+v.hr+'</div><div class="icu-vu">уд/мин</div></div><div class="icu-v '+bpCls+'"><div class="icu-vl">АД</div><div class="icu-vv">'+v.sys+"/"+v.dia+'</div><div class="icu-vu">мм рт.ст.</div></div><div class="icu-v '+spCls+'"><div class="icu-vl">SpO₂</div><div class="icu-vv">'+v.spo2+'%</div><div class="icu-vu">сатурация</div></div><div class="icu-v"><div class="icu-vl">ЧДД</div><div class="icu-vv">'+v.resp+'</div><div class="icu-vu">вд/мин</div></div><div class="icu-v"><div class="icu-vl">T°C</div><div class="icu-vv">'+v.temp+'</div><div class="icu-vu">аксил.</div></div><div class="icu-v"><div class="icu-vl">'+t("icu_days")+'</div><div class="icu-vv">'+p.days+'</div><div class="icu-vu">'+t("icu_doc").split(" ")[0]+'</div></div></div></div><div class="icu-cf">'+esc(p.notes)+'<div class="icu-cf-footer">'+callBtn+'<span class="icu-upd-time">'+t("icu_upd")+": "+esc(p.upd)+'</span></div></div>';container.appendChild(el)})}
 function openModal(id){var p=patients.find(function(x){return x.id===id});if(!p)return;curModal=p;$("mName").textContent=p.name;$("mWard").textContent=p.ward+" · "+p.diag.join(", ");$("mScoreVal").textContent=p.score;$("mScoreRing").style.strokeDashoffset=RING_C*(1-p.score/100);$("mInsight").textContent=p.insight;var d=p.demo;$("mProfile").innerHTML="<span>"+t("lbl_age")+": <strong>"+d.age+"</strong></span><span>"+t("lbl_gender")+": <strong>"+esc(d.gender)+"</strong></span><span>"+t("lbl_height")+": <strong>"+esc(d.height)+"</strong></span><span>"+t("lbl_weight")+": <strong>"+esc(d.weight)+"</strong></span><span>BMI: <strong>"+esc(d.bmi)+"</strong></span><span>"+t("lbl_blood")+": <strong>"+esc(d.blood)+"</strong></span>";$("mDiag").innerHTML=p.current.map(function(x){return'<span class="tag">'+esc(x)+"</span>"}).join("");$("mAllergy").innerHTML=(p.allergy.length?p.allergy:["Нет"]).map(function(x){return'<span class="tag danger">'+esc(x)+"</span>"}).join("");$("mMeds").innerHTML=p.meds.map(function(x){return"<span>"+esc(x)+"</span>"}).join("");$("mHist").innerHTML=p.hist.map(function(x){return"<span>"+esc(x)+"</span>"}).join("");renderVTabs(p);$("patModal").classList.add("vis");requestAnimationFrame(function(){requestAnimationFrame(function(){drawChart($("patVChart"),p.vitals[activeVM],160)})})}
 function closeModal(){$("patModal").classList.remove("vis");curModal=null}
 $("closeModal").onclick=closeModal;$("patModal").onclick=function(e){if(e.target===$("patModal"))closeModal()};
