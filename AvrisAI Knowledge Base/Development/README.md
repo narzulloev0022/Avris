@@ -1,23 +1,39 @@
 # Разработка
 
+## Прогресс дизайна
+
+| Этап | Статус | Что сделано |
+|------|--------|-------------|
+| Session 1: Design System + Login | ✅ Готово | Deep Navy палитра, dark-first CSS variables, Login redesign (centered form, AVRIS + teal dot) |
+| Session 2: Dashboard + Consultation | ✅ Готово | Metrics bar, stat cards, patient list с hover-slide, Consultation 55/45 split-screen, recording surface, SOAP panel |
+| Session 3: Night Round + History + ICU + Settings + Patient Modal | 🔄 Следующий | Переделка оставшихся экранов под Deep Navy |
+
+---
+
 ## Архитектура
 
 ### Текущее состояние
 
 ```
-index.html (545 строк)
+index.html (~750 строк)
 ├── <head>
 │   ├── Google Fonts (Inter)
-│   └── <style> — вся CSS (~243 строки, CSS-переменные)
+│   └── <style> — вся CSS (Deep Navy design system, CSS-переменные)
 ├── <body>
-│   ├── .login-screen    — экран входа
+│   ├── .login-screen    — экран входа (Session 1 redesign)
 │   ├── .app-shell       — основное приложение
 │   │   ├── .sidebar     — фиксированная левая навигация
 │   │   ├── .topbar      — шапка (sticky)
 │   │   └── .main        — 6 screen-секций
+│   │       ├── #dashboard     — Session 2 redesign
+│   │       ├── #consultation  — Session 2 split-screen
+│   │       ├── #nightRound    — 🔄 Session 3
+│   │       ├── #history       — 🔄 Session 3
+│   │       ├── #monitor       — 🔄 Session 3
+│   │       └── #settings      — 🔄 Session 3
 │   ├── .notif-panel     — панель уведомлений (drawer)
-│   ├── #patModal        — модальное окно пациента
-│   ├── .toast           — уведомления
+│   ├── #patModal        — модальное окно пациента (🔄 Session 3)
+│   ├── .toast           — уведомления (typed: ok/err/info)
 │   └── .confirm-ov      — диалог подтверждения
 └── <script>             — весь JS (~80 строк, IIFE, strict mode)
 ```
@@ -179,7 +195,8 @@ index.html (545 строк)
 | `startTypewriter()` | Симуляция транскрипта (удалить после Whisper) |
 | `renderICU()` | Рендер ОРИТ-доски |
 | `renderWards()` | Рендер сетки палат |
-| `toast(msg, delay)` | Показать toast-уведомление |
+| `toast(msg, delay, type)` | Показать toast-уведомление (type: ok/err/info) |
+| `initWave()` | Инициализация 16-bar waveform для записи |
 | `confirm2(title, text)` | Promise-based confirm dialog |
 
 ---
