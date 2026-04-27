@@ -25,6 +25,7 @@
 
 - [[Product/README#Роадмап|Роадмап продукта]]
 - [[Development/README#Что нужно сделать|Что нужно сделать]]
+- [[Development/Session1-2-Progress|Session 1-2 Progress]]
 - [[Investor Materials/README#FAQ для инвесторов|FAQ для инвесторов]]
 - [[Development/README#API-спецификации (планируемые)|API-спецификации]]
 
@@ -34,11 +35,12 @@
 
 | Слой | Статус |
 |------|--------|
-| Frontend UI (все экраны) | ✅ Готово |
+| Design System (Deep Navy) | ✅ Session 1-2 COMPLETE |
+| Login / Dashboard / Consultation | ✅ Session 1-2 COMPLETE |
+| Night Round / History / ICU / Settings | 🔄 Session 3 (next) |
 | Мультиязычность RU/TJ/EN | ✅ Готово |
-| Dark/Light mode | ✅ Готово |
-| Whisper STT | 🔧 В работе |
-| Claude Sonnet SOAP | 🔧 В работе |
+| Whisper STT | 🔧 Запланировано |
+| Claude Sonnet SOAP | 🔧 Запланировано |
 | Аутентификация | ❌ Не начато |
 | База данных | ❌ Не начато |
 | Бэкенд | ❌ Не начато |

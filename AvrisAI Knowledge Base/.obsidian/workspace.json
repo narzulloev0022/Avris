@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "README.md",
+                "file": "Product/README.md",
                 "mode": "source",
                 "source": false
               },
@@ -185,11 +185,11 @@
   },
   "active": "e7080efd57657e78",
   "lastOpenFiles": [
+    "Development/README.md",
+    "Investor Materials/README.md",
     "Project Overview/README.md",
     "Product/README.md",
-    "Investor Materials/README.md",
-    "Development/README.md",
-    "Design System/README.md",
-    "README.md"
+    "README.md",
+    "Design System/README.md"
   ]
 }

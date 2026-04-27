@@ -1,53 +1,77 @@
-# Дизайн-система Avris AI
+# Дизайн-система Avris AI — Deep Navy
 
-Вся дизайн-система реализована в `index.html` через CSS-переменные (`:root` и `body[data-theme=dark]`).
+Dark-first дизайн-система, реализованная в `index.html` через CSS-переменные (`:root`). Обновлена в Session 1-2 (апрель 2026).
 
 ---
 
-## Цвета
+## Палитра
 
-### Токены (light mode)
+### Фоны
+
+| Токен | Значение | Назначение |
+|-------|----------|------------|
+| `--bg-base` | `#080e18` | Фон страницы |
+| `--bg-surface` | `#0d1520` | Поверхности (sidebar, panels) |
+| `--bg-card` | `#111e2e` | Карточки |
+| `--bg-elevated` | `#162437` | Hover-состояния карточек |
+| `--bg-input` | `#0d1a28` | Поля ввода |
+
+### Акцент (Teal)
+
+| Токен | Значение | Назначение |
+|-------|----------|------------|
+| `--accent` | `#0d9488` | Основной бренд-цвет |
+| `--accent-bright` | `#14b8a6` | Hover-состояние |
+| `--accent-dim` | `#0f766e` | Приглушённый акцент |
+| `--accent-glow` | `rgba(13,148,136,0.15)` | Свечение, фон кнопок |
+
+### Текст
+
+| Токен | Значение | Назначение |
+|-------|----------|------------|
+| `--text-primary` | `#f0f4f8` | Основной текст |
+| `--text-secondary` | `#94a3b8` | Вторичный текст |
+| `--text-muted` | `#4a5568` | Приглушённый / лейблы |
+| `--text-accent` | `#5eead4` | Акцентный текст (теги, ссылки) |
+
+### Границы
+
+| Токен | Значение | Назначение |
+|-------|----------|------------|
+| `--border` | `rgba(255,255,255,0.06)` | Обычная граница |
+| `--border-hover` | `rgba(255,255,255,0.12)` | Hover-граница |
+
+### Статусы
+
+| Токен | Значение | Назначение |
+|-------|----------|------------|
+| `--danger` | `#ef4444` | Critical / ошибка |
+| `--warning` | `#f59e0b` | Warning / наблюдение |
+| `--success` | `#10b981` | Stable / успех |
+| `--info` | `#2563eb` | Информационный |
+
+---
+
+## Legacy-алиасы
+
+Для обратной совместимости с существующими CSS-правилами:
 
 ```css
---accent: #2aa99e         /* основной бренд-цвет — teal */
---accent-rgb: 42,169,158  /* для rgba() */
---accent-l: #38bdb1       /* hover-состояние */
-
---ok: #22c55e             /* зелёный — stable / success */
---warn: #f59e0b           /* янтарный — warning / watch */
---danger: #ef4444         /* красный — critical / error */
-
---bg: #f0f8f7             /* фон страницы */
---bg2: #f8fefd            /* вторичный фон */
---card: #fff              /* фон карточек */
---card2: #f2fcfb          /* вторичный фон карточек */
-
---text: #0f1f1e           /* основной текст */
---muted: #5e7876          /* приглушённый текст, лейблы */
---border: #d9ecea         /* границы */
-
---ghost: rgba(42,169,158,.07)     /* hover-фон элементов */
---tag-bg: rgba(42,169,158,.11)    /* фон тегов */
---tag-c: #1a8078                  /* текст тегов */
-
---safe-bg: rgba(34,197,94,.11)    /* фон safe-badge */
---warn-bg: rgba(245,158,11,.14)   /* фон warn-badge */
---danger-bg: rgba(239,68,68,.11)  /* фон danger-badge */
-
---hero: linear-gradient(135deg,#0d4f4a,#0d9488 55%,#2dd4bf)
-```
-
-### Токены (dark mode) — `body[data-theme=dark]`
-
-```css
---bg: #0a0f1a
---bg2: #0f1629
---card: #141b2d
---card2: #1a2340
---text: #e8ecf4
---muted: #8892a8
---border: #1e293b
---hero: linear-gradient(135deg,#0a1628,#152040 50%,#1e3a6e)
+--brand: #0d9488          /* = --accent */
+--accent-l: #14b8a6       /* = --accent-bright */
+--ok: #10b981             /* = --success */
+--warn: #f59e0b           /* = --warning */
+--bg: #080e18             /* = --bg-base */
+--bg2: #0d1520            /* = --bg-surface */
+--card: #111e2e           /* = --bg-card */
+--card2: #162437          /* = --bg-elevated */
+--text: #f0f4f8           /* = --text-primary */
+--muted: #94a3b8          /* = --text-secondary */
+--ghost: rgba(13,148,136,.12)
+--tag-bg: rgba(13,148,136,.15)
+--tag-c: #5eead4
+--safe-bg: rgba(16,185,129,.1)
+--warn-bg: rgba(245,158,11,.1)
 ```
 
 ---
@@ -72,26 +96,83 @@
 | Лейблы форм | 0.75rem | 600 / uppercase |
 | Мета / время / подписи | 0.7–0.72rem | 400 |
 
-**Числовые значения:** `font-variant-numeric: tabular-nums` — для часов, таймеров, витальных показателей
+**Числовые значения:** `font-variant-numeric: tabular-nums`
 
 ---
 
-## Пространство и скруглення
+## Радиусы
 
 ```css
---r: 12px    /* карточки, кнопки */
---r2: 16px   /* крупные карточки, модалки */
---r3: 8px    /* мелкие элементы: badge, tag, icon-btn */
+--radius-card: 12px      /* карточки, кнопки */
+--radius-input: 8px      /* поля ввода, мелкие элементы */
+--radius-pill: 20px      /* pill-badge, score-pill */
+```
 
+Legacy-алиасы: `--r: 12px`, `--r2: 16px`, `--r3: 8px`
+
+---
+
+## Тени
+
+```css
+--shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.4)
+--shadow-glow: 0 0 20px rgba(13,148,136,0.3)
+```
+
+---
+
+## Переходы
+
+```css
+--transition: 150ms cubic-bezier(0.4, 0, 0.2, 1)
+```
+
+---
+
+## Размеры layout
+
+```css
 --sidebar: 260px
---topbar: 64px
+--topbar: 56px
 ```
 
-### Тени
+---
+
+## Micro-interactions
+
+### Анимации
+
 ```css
---sh: 0 2px 8px rgba(0,0,0,.06)    /* лёгкая */
---sh2: 0 4px 16px rgba(0,0,0,.08)  /* средняя */
+@keyframes screenIn     /* появление экрана: opacity 0→1, translateY 12px→0, 300ms */
+@keyframes critPulse    /* пульсация critical-стата: rgba danger фон, 1.5s infinite */
+@keyframes recRing      /* пульсация кнопки записи: scale + shadow-glow, 1.5s infinite */
+@keyframes skeletonPulse /* загрузка SOAP: opacity 0.6→1, 1.2s infinite */
+@keyframes blink        /* REC-индикатор: opacity 1→0→1, 1s infinite */
+@keyframes wv           /* waveform-бары при записи: scaleY 0.3→1, 0.6s infinite */
 ```
+
+### Focus ring
+
+```css
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+```
+
+### Hover-состояния
+
+- Карточки: `translateY(-2px)` + `--bg-elevated`
+- Пациенты в списке: `--bg-elevated` + slide-in action button (`translateX(-8px → 0)`)
+- Score bars: 6px → 8px height
+- Кнопки: `scale(.97)` при active
+
+### Toast-уведомления
+
+Типизированные с цветными левыми бордерами:
+- `.toast-ok` — `--success` border
+- `.toast-err` — `--danger` border
+- `.toast-info` — `--info` border
 
 ---
 
@@ -107,10 +188,6 @@
 <button class="icon-btn">☰</button>
 ```
 
-- Высота: `42px` (default), `34px` (.sm)
-- Активное состояние: `transform: scale(.97)`
-- Disabled: `opacity: .5`
-
 ### Badges
 
 ```html
@@ -120,75 +197,16 @@
 <span class="badge info">6</span>
 ```
 
-### Score Pill
+### Score Pill / Avatar / Card / Tag / Toast / Confirm / Modal
 
-```html
-<div class="score-pill safe">87 Стаб.</div>
-<div class="score-pill warn">51 Набл.</div>
-<div class="score-pill danger">34 Крит.</div>
-```
-
-### Avatar
-
-```html
-<div class="avatar">ДА</div>
-```
-Градиент `--accent → --accent-l`, 40×40px, border-radius 50%.
-
-### Card
-
-```html
-<div class="card">
-  <div class="card-h"><h3>Заголовок</h3><span class="badge info">6</span></div>
-  <!-- контент -->
-</div>
-```
-
-### Tag
-
-```html
-<span class="tag">Гипертония</span>
-<span class="tag danger">Пенициллин</span>
-```
-
-### Toast
-
-Программный вызов: `toast("✅ Сохранено", 3000)`
-
-Появляется снизу по центру, исчезает через delay мс.
-
-### Confirm Dialog
-
-```js
-confirm2("Заголовок", "Текст").then(ok => { if (ok) { ... } })
-```
-
-### Modal
-
-```js
-openModal(patientId)  // открыть модалку пациента
-closeModal()
-```
+Компоненты без изменений — см. код `index.html`.
 
 ---
 
-## Анимации
+## Подготовлено (CSS готов, JS не подключён)
 
-```css
-@keyframes fadeIn   — появление экранов (opacity + translateY)
-@keyframes blink    — REC-индикатор
-@keyframes rip      — пульсация микрофона во время записи
-@keyframes wv       — waveform во время записи
-@keyframes dp       — пульсация статус-точки (ОРИТ warning/critical)
-```
-
----
-
-## Responsive
-
-- **≥1024px:** sidebar фиксирован слева, двухколоночный layout для consultation и dashboard
-- **<1024px:** sidebar скрыт, открывается по гамбургер-кнопке с overlay
-- **≤640px:** SOAP-форма в одну колонку, hero уменьшен
+- **Skeleton loading:** класс `.skeleton` с `skeletonPulse` для SOAP-текстарей
+- **Word traceability:** `<span class="word" data-ts>` + `.highlight` для транскрипт→SOAP связи
 
 ---
 
