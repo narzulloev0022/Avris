@@ -13,7 +13,7 @@
 :root{
 --font-ui:Inter,system-ui,sans-serif;--font-data:'JetBrains Mono',monospace;--font:Inter,system-ui,sans-serif;
 --bg-base:#080e18;--bg-surface:#0d1520;--bg-card:#111e2e;--bg-elevated:#162437;--bg-input:#0d1a28;
---accent:#0d9488;--accent-glow:rgba(13,148,136,0.15);--accent-bright:#14b8a6;--accent-dim:#0f766e;--accent-rgb:13,148,136;
+--accent:#4AA391;--accent-glow:rgba(74,163,145,0.15);--accent-bright:#5ab8a1;--accent-dim:#3d8a79;--accent-rgb:74,163,145;
 --text-primary:#f0f4f8;--text-secondary:#94a3b8;--text-muted:#4a5568;--text-accent:#5eead4;
 --border:rgba(255,255,255,0.06);--border-hover:rgba(255,255,255,0.12);
 --danger:#ef4444;--danger-bg:rgba(239,68,68,0.1);
@@ -22,17 +22,17 @@
 --info:#2563eb;--info-bg:rgba(37,99,235,0.1);
 --radius-card:12px;--radius-input:8px;--radius-pill:20px;
 --shadow:0 0 0 1px rgba(0,0,0,0.5),0 8px 32px rgba(0,0,0,0.4);
---shadow-glow:0 0 20px rgba(13,148,136,0.3);
+--shadow-glow:0 0 20px rgba(74,163,145,0.3);
 --transition:150ms cubic-bezier(0.4,0,0.2,1);
---brand:#0d9488;--brand-light:#14b8a6;--brand-dim:rgba(13,148,136,.1);--brand-ring:rgba(13,148,136,.2);
---accent-l:#14b8a6;
+--brand:#4AA391;--brand-light:#5ab8a1;--brand-dim:rgba(74,163,145,.1);--brand-ring:rgba(74,163,145,.2);
+--accent-l:#5ab8a1;
 --ok:#10b981;--warn:#f59e0b;
 --bg:#080e18;--bg2:#0d1520;--card:#111e2e;--card2:#162437;
 --text:#f0f4f8;--muted:#94a3b8;
 --border-soft:rgba(255,255,255,0.06);--border-med:rgba(255,255,255,0.12);
---ghost:rgba(13,148,136,.12);--tag-bg:rgba(13,148,136,.15);--tag-c:#5eead4;
+--ghost:rgba(74,163,145,.12);--tag-bg:rgba(74,163,145,.15);--tag-c:#5eead4;
 --safe-bg:rgba(16,185,129,.1);--warn-bg:rgba(245,158,11,.1);
---hero:linear-gradient(135deg,#060d18,#0d4f4a 50%,#0d9488);
+--hero:linear-gradient(135deg,#060d18,#2d6b5e 50%,#4AA391);
 --el-1:0 2px 6px rgba(0,0,0,.2);--el-2:0 4px 16px rgba(0,0,0,.25);--el-3:0 10px 32px rgba(0,0,0,.3);
 --sh:var(--el-1);--sh2:var(--el-2);
 --r:var(--radius-input);--r2:var(--radius-card);--r3:6px;--r-sm:6px;--r-md:var(--radius-card);--r-lg:var(--radius-pill);
@@ -52,7 +52,7 @@ body{font-family:var(--font-ui);background:var(--bg);color:var(--text);transitio
 .icon-btn{width:38px;height:38px;border-radius:var(--r3);border:1px solid var(--border);background:var(--card);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;font-size:1rem}
 .icon-btn:hover{background:var(--ghost);border-color:var(--accent)}
 input,select,textarea{width:100%;border-radius:var(--r);border:1px solid var(--border);padding:10px 14px;background:var(--card);color:var(--text);font-size:.88rem;font-family:var(--font);transition:all .2s}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(42,169,158,.15)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,163,145,.15)}
 label{font-size:.75rem;font-weight:600;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
 textarea{resize:vertical;min-height:90px}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:.75rem;font-weight:600}
@@ -63,7 +63,12 @@ textarea{resize:vertical;min-height:90px}
 .score-pill{min-width:68px;text-align:center;border-radius:var(--r3);padding:5px 10px;font-weight:700;font-size:.82rem}
 .score-pill.danger{background:var(--danger-bg);color:var(--danger)}.score-pill.warn{background:var(--warn-bg);color:var(--warn)}.score-pill.safe{background:var(--safe-bg);color:var(--ok)}
 .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg-base);position:relative}
-.login-lang{position:absolute;top:20px;right:24px;display:flex;gap:2px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--radius-pill);padding:2px}
+.login-top-bar{position:absolute;top:20px;right:24px;display:flex;align-items:center;gap:8px}
+.login-theme{display:flex;gap:4px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;padding:4px}
+.login-theme button{width:40px;height:32px;border:none;border-radius:6px;background:transparent;color:var(--text-muted);font-size:16px;cursor:pointer;transition:all var(--transition);line-height:1;display:flex;align-items:center;justify-content:center}
+.login-theme button:hover{opacity:.8}
+.login-theme button.active{background:var(--accent);color:#fff}
+.login-lang{position:static;display:flex;gap:2px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--radius-pill);padding:2px}
 .login-lang button{padding:5px 10px;border:none;background:transparent;color:var(--text-muted);border-radius:var(--radius-pill);cursor:pointer;font-size:.78rem;font-weight:600;transition:var(--transition);font-family:var(--font)}
 .login-lang button.active{background:var(--accent);color:#fff}
 .login-form-wrap{width:100%;max-width:380px;padding:0 20px;display:flex;flex-direction:column;align-items:center}
@@ -156,7 +161,7 @@ textarea{resize:vertical;min-height:90px}
 .ward-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .ward-c{border-radius:var(--r);border:1px solid var(--border);padding:14px;background:var(--card);cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:6px}
 .ward-c:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--sh2)}
-.ward-c.sel{border-color:var(--accent);background:var(--ghost);box-shadow:0 0 0 3px rgba(42,169,158,.12)}
+.ward-c.sel{border-color:var(--accent);background:var(--ghost);box-shadow:0 0 0 3px rgba(74,163,145,.12)}
 .hist-list{display:flex;flex-direction:column;gap:6px}
 .hist-item{border-radius:var(--r);border:1px solid var(--border);padding:14px;background:var(--card);display:flex;align-items:flex-start;gap:10px;transition:all .15s}
 .hist-item:hover{border-color:var(--accent)}
@@ -282,7 +287,7 @@ textarea{resize:vertical;min-height:90px}
 .soap-s{border-left-color:#3b82f6}
 .soap-o{border-left-color:#10b981}
 .soap-a{border-left-color:#f59e0b}
-.soap-p{border-left-color:#0d9488}
+.soap-p{border-left-color:#4AA391}
 .soap-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .soap-hdr h5{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin:0}
 .soap-ai-tag{font-size:.68rem;font-weight:600;color:var(--text-muted);background:var(--bg-elevated);border-radius:4px;padding:2px 7px}
@@ -290,7 +295,7 @@ textarea{resize:vertical;min-height:90px}
 .soap-c textarea:focus{box-shadow:none;outline:none}
 .soap-c textarea.skeleton{pointer-events:none;animation:skeletonPulse 1.5s ease infinite}
 @keyframes skeletonPulse{0%,100%{opacity:.4}50%{opacity:.8}}
-.ai-badge{font-size:.72rem;font-weight:600;color:var(--text-accent);background:var(--accent-glow);border:1px solid rgba(13,148,136,.2);border-radius:var(--radius-pill);padding:3px 12px}
+.ai-badge{font-size:.72rem;font-weight:600;color:var(--text-accent);background:var(--accent-glow);border:1px solid rgba(74,163,145,.2);border-radius:var(--radius-pill);padding:3px 12px}
 /* ===== DASHBOARD ===== */
 .cmd-bar{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-card);padding:20px 32px;margin-bottom:20px;display:flex;align-items:stretch;flex-wrap:wrap;gap:0}
 .cmd-stat{flex:1;min-width:100px;padding:0 28px;text-align:center;display:flex;flex-direction:column;justify-content:center}
@@ -345,11 +350,213 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 @keyframes screenIn{from{opacity:0}to{opacity:1}}
 .consult-left::-webkit-scrollbar,.consult-right::-webkit-scrollbar{width:4px}
 .consult-left::-webkit-scrollbar-thumb,.consult-right::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
+/* ===== NIGHT ROUND REDESIGN ===== */
+.nr-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.nr-header h2{font-weight:600;font-size:1.5rem}
+.nr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.nr-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-card);padding:16px;cursor:pointer;transition:all var(--transition);border-left:4px solid var(--success)}
+.nr-card.st-warn{border-left-color:var(--warning)}
+.nr-card.st-danger{border-left-color:var(--danger)}
+.nr-card:hover{background:var(--bg-elevated);transform:translateY(-2px);box-shadow:var(--shadow-glow)}
+.nr-card-ward{font-family:var(--font-data);font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-bottom:8px}
+.nr-card-name{font-weight:600;font-size:.88rem}
+.nr-card-diag{font-size:.78rem;color:var(--text-muted);margin-top:2px}
+.nr-card-badge{margin-top:10px}
+.fab{position:fixed;bottom:28px;right:28px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;border:none;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:100;font-size:1.4rem;transition:all var(--transition);animation:fabPulse 2s ease infinite}
+.fab:hover{background:var(--accent-bright);transform:scale(1.1)}
+.fab.hidden-fab{display:none}
+@keyframes fabPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.nr-modal-ov{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(12px);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 200ms}
+.nr-modal-ov.vis{opacity:1;pointer-events:auto}
+.nr-modal-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-card);max-width:500px;width:90%;padding:32px;transform:translateY(14px) scale(.98);transition:transform 200ms}
+.nr-modal-ov.vis .nr-modal-card{transform:none}
+.nr-modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.nr-modal-hdr h3{font-weight:700;font-size:1.1rem}
+/* ===== HISTORY REDESIGN ===== */
+.hist-toolbar{display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+.hist-toolbar input{flex:1;min-width:200px}
+.hist-pills{display:flex;gap:6px;flex-wrap:wrap}
+.hist-pill{padding:6px 14px;border-radius:var(--radius-pill);border:1px solid var(--border);background:transparent;color:var(--text-muted);font-weight:600;font-size:.82rem;cursor:pointer;transition:all var(--transition);font-family:var(--font-ui)}
+.hist-pill.active{background:var(--bg-elevated);color:var(--text-accent);border-color:var(--accent)}
+.hist-pill:hover:not(.active){background:var(--bg-elevated)}
+.hist-group-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:0;margin-top:20px}
+.hist-group-title:first-child{margin-top:0}
+.hist-entry{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);transition:all var(--transition);cursor:pointer}
+.hist-entry:last-child{border-bottom:none}
+.hist-entry:hover{background:var(--bg-elevated);margin:0 -16px;padding:14px 16px;border-radius:var(--radius-input)}
+.hist-entry-info{flex:1;min-width:0}
+.hist-entry-name{font-weight:600;font-size:.88rem}
+.hist-entry-diag{font-size:13px;color:var(--text-muted);margin-top:2px}
+.hist-entry-badge{padding:3px 9px;border-radius:var(--radius-pill);background:var(--bg-elevated);font-size:.75rem;font-weight:600;color:var(--text-secondary);flex-shrink:0}
+.hist-entry-time{font-size:.78rem;color:var(--text-muted);flex-shrink:0;min-width:50px;text-align:right}
+.hist-entry-open{color:var(--text-accent);font-size:.82rem;font-weight:600;opacity:0;transition:opacity var(--transition);flex-shrink:0}
+.hist-entry:hover .hist-entry-open{opacity:1}
+.hist-empty{text-align:center;padding:40px;color:var(--text-muted)}
+/* ===== ICU CHIPS ===== */
+.icu-chips{display:flex;align-items:center;flex-wrap:wrap;gap:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-card);padding:14px 20px;margin-bottom:20px}
+.icu-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:var(--radius-pill);background:var(--bg-elevated);border:1px solid var(--border);font-size:.82rem;color:var(--text-secondary)}
+.icu-chip strong{font-family:var(--font-data);color:var(--text-primary);font-weight:700;font-size:.95rem}
+.icu-chip.crit strong{color:var(--danger)}
+.icu-chip-time{font-family:var(--font-data);font-size:.78rem;color:var(--text-muted);margin-left:auto}
+.icu-sec-badge.safe{background:var(--success-bg);color:var(--success)}
+.icu-call-btn2{display:inline-flex;align-items:center;gap:6px;padding:0 16px;height:40px;border-radius:var(--radius-input);background:var(--danger);color:#fff;font-size:.82rem;font-weight:700;border:none;cursor:pointer;font-family:var(--font-ui);transition:filter var(--transition)}
+.icu-call-btn2:hover{filter:brightness(1.1)}
+/* ===== SETTINGS REDESIGN ===== */
+.set-layout{display:flex;gap:0;min-height:calc(100vh - var(--topbar) - 80px)}
+.set-nav{width:200px;flex-shrink:0}
+.set-nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;font-weight:500;font-size:.88rem;color:var(--text-muted);transition:all var(--transition);border-left:3px solid transparent;border-radius:0;background:none;border-top:none;border-bottom:none;border-right:none;width:100%;text-align:left;font-family:var(--font-ui)}
+.set-nav-item:hover{background:var(--bg-elevated);color:var(--text-primary)}
+.set-nav-item.active{border-left-color:var(--accent);color:var(--text-accent);background:var(--bg-elevated)}
+.set-cont{flex:1;padding:0 32px}
+.set-cont-title{font-weight:600;font-size:1.25rem;margin-bottom:20px}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);gap:16px}
+.set-row:last-child{border-bottom:none}
+.set-row-info{flex:1}
+.set-row-label{font-weight:500;font-size:.88rem}
+.set-row-desc{font-size:13px;color:var(--text-muted);margin-top:2px}
+.toggle-sw{position:relative;width:44px;height:24px;border-radius:12px;background:var(--bg-elevated);border:1px solid var(--border);cursor:pointer;transition:background var(--transition);flex-shrink:0;display:block}
+.toggle-sw.on{background:var(--accent);border-color:var(--accent)}
+.toggle-sw::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform var(--transition);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle-sw.on::after{transform:translateX(20px)}
+.set-pane{display:none}
+.set-pane.active{display:block}
+.set-profile-card{display:flex;align-items:center;gap:16px;padding:20px;background:var(--bg-elevated);border-radius:var(--radius-card);margin-bottom:20px}
+.set-profile-card strong{font-size:.95rem;display:block}
+.set-profile-card span{font-size:.78rem;color:var(--text-muted)}
+/* ===== PATIENT MODAL REDESIGN ===== */
+.pm-ov{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(12px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 200ms}
+.pm-ov.vis{opacity:1;pointer-events:auto}
+.pm-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-card);max-width:500px;width:100%;padding:32px;max-height:90vh;overflow-y:auto;transform:translateY(14px) scale(.98);transition:transform 200ms}
+.pm-ov.vis .pm-card{transform:none}
+.pm-hdr{display:flex;align-items:center;gap:16px;margin-bottom:24px;position:relative}
+.pm-avatar{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;background:linear-gradient(135deg,var(--accent),var(--accent-bright));color:#fff;flex-shrink:0}
+.pm-close{position:absolute;top:-4px;right:-4px;width:32px;height:32px;border-radius:50%;border:none;background:transparent;color:var(--text-muted);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.pm-close:hover{color:var(--danger);background:var(--danger-bg)}
+.pm-name{font-weight:700;font-size:1.25rem}
+.pm-meta{font-size:.82rem;color:var(--text-muted);margin-top:2px}
+.pm-score-wrap{text-align:center;padding:16px 0;margin-bottom:16px}
+.pm-ring{width:120px;height:120px;margin:0 auto;position:relative}
+.pm-ring svg{width:120px;height:120px;transform:rotate(-90deg)}
+.pm-ring circle{fill:none;stroke-width:8;stroke-linecap:round}
+.pm-ring .bg{stroke:var(--bg-elevated)}
+.pm-ring .prog{transition:stroke-dashoffset .8s ease}
+.pm-ring strong{font-family:var(--font-data);position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:2.5rem;font-weight:800;line-height:1}
+.pm-ring small{font-size:.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
+.pm-vitals{display:flex;gap:12px;margin-bottom:20px}
+.pm-vital{flex:1;background:var(--bg-elevated);border-radius:var(--radius-input);padding:12px;text-align:center}
+.pm-vital-val{font-family:var(--font-data);font-size:1.5rem;font-weight:700}
+.pm-vital-unit{font-size:.72rem;color:var(--text-muted);margin-top:2px}
+.pm-vital-norm{font-size:.65rem;color:var(--text-muted)}
+.pm-sparkline{display:block;margin:6px auto 0}
+.pm-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:16px}
+.pm-tab{padding:10px 16px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-muted);font-weight:600;font-size:.85rem;cursor:pointer;transition:all 200ms;font-family:var(--font-ui)}
+.pm-tab.active{color:var(--text-primary);border-bottom-color:var(--accent)}
+.pm-tab:hover:not(.active){color:var(--text-secondary)}
+.pm-pane{display:none}.pm-pane.active{display:block}
+.pm-allergy-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:8px;margin-top:16px}
+.pm-allergy-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:var(--radius-pill);background:var(--danger-bg);color:var(--danger);font-weight:600;font-size:.78rem;border:1px solid rgba(239,68,68,.15);margin-right:6px;margin-bottom:6px}
+.pm-actions{display:flex;flex-direction:column;gap:8px;margin-top:20px}
+.pm-btn-primary{width:100%;height:48px;border:none;border-radius:var(--radius-input);background:var(--accent);color:#fff;font-weight:600;font-size:.88rem;cursor:pointer;transition:all var(--transition);font-family:var(--font-ui);display:flex;align-items:center;justify-content:center;gap:6px}
+.pm-btn-primary:hover{background:var(--accent-bright);box-shadow:var(--shadow-glow)}
+.pm-btn-secondary{width:100%;height:42px;border:1px solid var(--border);border-radius:var(--radius-input);background:transparent;color:var(--text-secondary);font-weight:600;font-size:.85rem;cursor:pointer;transition:all var(--transition);font-family:var(--font-ui)}
+.pm-btn-secondary:hover{background:var(--bg-elevated);border-color:var(--border-hover)}
+.pm-list{display:flex;flex-direction:column;gap:5px}.pm-list span{font-size:.82rem;color:var(--text-secondary)}
+.pm-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.pm-sec-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:8px;margin-top:16px}
+.pm-sec-title:first-child{margin-top:0}
+.pm-card::-webkit-scrollbar{width:4px}.pm-card::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
+@media(max-width:768px){
+.nr-grid{grid-template-columns:1fr 1fr}
+.set-layout{flex-direction:column}
+.set-nav{width:100%;display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--border)}
+.set-nav-item{border-left:none;border-bottom:3px solid transparent;flex:1;text-align:center;justify-content:center;min-width:80px;padding:10px 8px;font-size:.78rem}
+.set-nav-item.active{border-bottom-color:var(--accent);border-left-color:transparent}
+.set-cont{padding:20px 0}
+.pm-vitals{flex-direction:column}
+}
+@media(max-width:480px){.nr-grid{grid-template-columns:1fr}}
+/* ===== LIGHT THEME ===== */
+body[data-theme="light"]{
+--bg-base:#f8fafb;--bg-surface:#ffffff;--bg-card:#f3f4f6;--bg-elevated:#efefef;--bg-input:#f9fafb;
+--text-primary:#1a202c;--text-secondary:#4a5568;--text-muted:#a0aec0;--text-accent:#4AA391;
+--border:rgba(0,0,0,0.08);--border-hover:rgba(0,0,0,0.12);
+--danger-bg:rgba(239,68,68,0.08);--warning-bg:rgba(245,158,11,0.08);--success-bg:rgba(16,185,129,0.08);--info-bg:rgba(37,99,235,0.08);
+--shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.06);
+--shadow-glow:0 0 20px rgba(74,163,145,0.15);
+--accent-glow:rgba(74,163,145,0.1);
+--bg:#f8fafb;--bg2:#ffffff;--card:#f3f4f6;--card2:#efefef;
+--text:#1a202c;--muted:#a0aec0;
+--border-soft:rgba(0,0,0,0.06);--border-med:rgba(0,0,0,0.1);
+--ghost:rgba(74,163,145,.08);--tag-bg:rgba(74,163,145,.1);--tag-c:#3d8a79;
+--safe-bg:rgba(16,185,129,.08);--warn-bg:rgba(245,158,11,.08);
+--hero:linear-gradient(135deg,#e8f5f2,#b8ddd4 50%,#4AA391);
+--el-1:0 1px 3px rgba(0,0,0,.06);--el-2:0 4px 12px rgba(0,0,0,.08);--el-3:0 8px 24px rgba(0,0,0,.1);
+--sh:var(--el-1);--sh2:var(--el-2);
+--brand-dim:rgba(74,163,145,.08);--brand-ring:rgba(74,163,145,.12);
+}
+body[data-theme="light"] .topbar{background:rgba(255,255,255,.85);border-bottom-color:rgba(0,0,0,.06)}
+body[data-theme="light"] .sidebar{background:#ffffff;border-right-color:rgba(0,0,0,.06)}
+body[data-theme="light"] .notif-panel{background:#ffffff;border-left-color:rgba(0,0,0,.06)}
+body[data-theme="light"] .login-screen{background:#f8fafb}
+body[data-theme="light"] .login-field input{background:#ffffff;border-color:rgba(0,0,0,.1);color:#1a202c}
+body[data-theme="light"] .login-field input::placeholder{color:#a0aec0}
+body[data-theme="light"] .login-submit{box-shadow:0 2px 8px rgba(74,163,145,.25)}
+body[data-theme="light"] .consult-left,body[data-theme="light"] .consult-right{background:#ffffff}
+body[data-theme="light"] .pat-ctx{background:#f3f4f6;border-color:rgba(0,0,0,.06)}
+body[data-theme="light"] .rec-wave-wrap{background:#efefef;border-color:rgba(0,0,0,.06)}
+body[data-theme="light"] .transcript{background:#f9fafb;color:#1a202c}
+body[data-theme="light"] .soap-c{background:#f3f4f6;border-color:rgba(0,0,0,.06)}
+body[data-theme="light"] .soap-c textarea{color:#1a202c}
+body[data-theme="light"] .nr-card{background:#ffffff;border-color:rgba(0,0,0,.06)}
+body[data-theme="light"] .nr-card:hover{background:#f3f4f6}
+body[data-theme="light"] .nr-modal-card{background:#ffffff}
+body[data-theme="light"] .nr-modal-ov{background:rgba(0,0,0,0.3);backdrop-filter:blur(8px)}
+body[data-theme="light"] .hist-entry:hover{background:#efefef}
+body[data-theme="light"] .icu-chips{background:#ffffff;border-color:rgba(0,0,0,.06)}
+body[data-theme="light"] .icu-chip{background:#f3f4f6;border-color:rgba(0,0,0,.06)}
+body[data-theme="light"] .icu-c{background:#ffffff;border-color:rgba(0,0,0,.06)}
+body[data-theme="light"] .icu-c:hover{background:#f9fafb}
+body[data-theme="light"] .icu-ch{background:#f3f4f6}
+body[data-theme="light"] .icu-v{background:#f3f4f6}
+body[data-theme="light"] .set-nav-item:hover{background:#efefef}
+body[data-theme="light"] .set-nav-item.active{background:#efefef}
+body[data-theme="light"] .set-profile-card{background:#efefef}
+body[data-theme="light"] .toggle-sw{background:#d1d5db;border-color:#d1d5db}
+body[data-theme="light"] .toggle-sw.on{background:var(--accent);border-color:var(--accent)}
+body[data-theme="light"] .pm-ov{background:rgba(0,0,0,0.3);backdrop-filter:blur(8px)}
+body[data-theme="light"] .pm-card{background:#ffffff}
+body[data-theme="light"] .pm-ring .bg{stroke:#e2e8f0}
+body[data-theme="light"] .pm-vital{background:#f3f4f6}
+body[data-theme="light"] .pm-sparkline polyline{stroke:var(--accent)}
+body[data-theme="light"] .cmd-bar{background:#ffffff;border-color:rgba(0,0,0,.06)}
+body[data-theme="light"] .stat-card{background:#ffffff;border-color:rgba(0,0,0,.06)}
+body[data-theme="light"] .stat-card:hover{background:#f9fafb}
+body[data-theme="light"] .icon-btn{background:#ffffff;border-color:rgba(0,0,0,.08);color:#1a202c}
+body[data-theme="light"] .icon-btn:hover{background:rgba(74,163,145,.08)}
+body[data-theme="light"] .notif-item{background:#f3f4f6;border-color:rgba(0,0,0,.06)}
+body[data-theme="light"] .confirm-d{background:#ffffff}
+body[data-theme="light"] .toast{background:#ffffff;color:#1a202c;border-color:rgba(0,0,0,.08)}
+body[data-theme="light"] .fab{box-shadow:0 4px 16px rgba(74,163,145,.3)}
+body[data-theme="light"] .lang-sel,body[data-theme="light"] .login-lang{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08)}
+body[data-theme="light"] .lang-sel button,body[data-theme="light"] .login-lang button{color:#4a5568}
+body[data-theme="light"] .login-theme{background:#efefef;border-color:rgba(0,0,0,.08)}
+body[data-theme="light"] .login-theme button{color:#a0aec0}
+body[data-theme="light"] .login-theme button.active{background:var(--accent);color:#fff}
+body[data-theme="light"] .pm-card::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12)}
+body[data-theme="light"] ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12)}
+body[data-theme="light"] input,body[data-theme="light"] select,body[data-theme="light"] textarea{background:#ffffff;border-color:rgba(0,0,0,.1);color:#1a202c}
+body[data-theme="light"] input:focus,body[data-theme="light"] select:focus,body[data-theme="light"] textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,163,145,.1)}
 </style>
 </head>
-<body data-theme="dark">
+<body data-theme="light">
 <div class="login-screen" id="loginScreen">
+<div class="login-top-bar">
+<div class="login-theme" id="loginThemeSw">
+<button data-th="dark" class="login-theme-btn">🌙</button>
+<button data-th="light" class="login-theme-btn">☀️</button>
+</div>
 <div class="login-lang" id="langSelLogin"></div>
+</div>
 <div class="login-form-wrap">
 <div class="login-brand"><span class="login-brand-text">AVRIS</span><span class="login-brand-dot"></span></div>
 <p class="login-tagline">Голосовой AI · Для врачей · Центральная Азия</p>
@@ -392,6 +599,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 <div class="lang-sel lang-sel-top" id="langSel"></div>
 <button class="icon-btn" id="notifToggle">🔔</button>
 <button class="icon-btn" id="themeToggle">🌙</button>
+<script>!function(){var s=localStorage.getItem("avris-theme");if(!s){s=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"}document.body.dataset.theme=s;document.getElementById("themeToggle").textContent=s==="dark"?"☀️":"🌙";document.querySelectorAll(".login-theme-btn").forEach(function(b){b.classList.toggle("active",b.dataset.th===s)})}()</script>
 <span class="clock" id="clock">--:--</span>
 </div>
 </header>
@@ -557,26 +765,23 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 </div>
 </section>
 <section class="screen" id="nightRound">
-<div class="card" style="margin-bottom:16px">
-<div class="card-h"><h3 data-i18n="night_title">Ночной обход</h3><span class="badge info" data-i18n="night_badge">6 палат</span></div>
-<div class="ward-g" id="wardGrid"></div>
+<div class="nr-header">
+<h2 data-i18n="night_title">Ночной обход</h2>
+<span class="badge info" id="nrCount" data-i18n="night_badge">6 палат</span>
 </div>
-<div class="card">
-<div class="card-h"><h3 data-i18n="night_voice">Голосовой ввод</h3></div>
-<p id="selWardLbl" style="font-weight:600;color:var(--accent);margin-bottom:10px;display:none"></p>
-<button class="btn primary" id="nightVoice" style="margin-bottom:14px" data-i18n="btn_vfill">🎤 Авто-заполнение голосом</button>
-<div style="display:grid;gap:10px">
-<div><label data-i18n="lbl_exam">Осмотр</label><textarea id="nightObj" data-phk="ph_vfill" placeholder="Заполнится голосом..."></textarea></div>
-<div><label data-i18n="lbl_plan">План</label><textarea id="nightPlan" data-phk="ph_treat" placeholder="Лечение"></textarea></div>
-</div>
-<div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn primary" id="nightSave" disabled data-i18n="btn_sround">Сохранить обход</button></div>
-</div>
+<div class="nr-grid" id="nrGrid"></div>
 </section>
 <section class="screen" id="history">
-<div class="card">
-<div class="card-h"><h3 data-i18n="hist_title">История записей</h3></div>
-<div class="hist-list" id="histList"></div>
+<div class="hist-toolbar">
+<input type="search" id="histSearch" placeholder="Поиск по записям...">
+<div class="hist-pills" id="histPills">
+<button class="hist-pill active" data-hf="all">Все</button>
+<button class="hist-pill" data-hf="soap">SOAP</button>
+<button class="hist-pill" data-hf="round">Обход</button>
+<button class="hist-pill" data-hf="export">Экспорт</button>
 </div>
+</div>
+<div id="histList"></div>
 </section>
 <section class="screen" id="monitor">
 <div style="margin-bottom:20px">
@@ -584,13 +789,11 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 <p style="color:var(--muted)" data-i18n="icu_sub">Наблюдение за пациентами в критическом состоянии</p>
 </div>
 <!-- Status Bar -->
-<div class="icu-status-bar">
-<div class="icu-sb-item"><span>Всего</span><strong id="icuTotalCount">—</strong></div>
-<div class="icu-sb-div"></div>
-<div class="icu-sb-item icu-sb-crit"><span>Критических</span><strong id="icuCritCount">—</strong></div>
-<div class="icu-sb-div"></div>
-<div class="icu-sb-item"><span>Ср. SpO₂</span><strong id="icuAvgSpo2">—</strong><span>%</span></div>
-<div class="icu-sb-time" id="icuUpdTime">обновлено: —</div>
+<div class="icu-chips">
+<div class="icu-chip"><span>Всего</span><strong id="icuTotalCount">—</strong></div>
+<div class="icu-chip crit"><span>Критических</span><strong id="icuCritCount">—</strong></div>
+<div class="icu-chip"><span>Ср. SpO₂</span><strong id="icuAvgSpo2">—</strong><span>%</span></div>
+<span class="icu-chip-time" id="icuUpdTime">обновлено —</span>
 </div>
 <!-- ОРИТ -->
 <div class="icu-sec-t">
@@ -606,22 +809,50 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 <div class="icu-g" id="postIcuGrid"></div>
 </section>
 <section class="screen" id="settings">
-<div class="card">
-<div class="card-h"><h3 data-i18n="set_title">Настройки</h3></div>
-<div class="set-g">
-<div class="set-sec">
-<h4 data-i18n="set_appear">Внешний вид</h4>
-<div style="margin-bottom:10px"><label data-i18n="lbl_theme">Тема</label><select id="themeSel"><option value="light" data-i18n-o="th_light">Светлая</option><option value="dark" data-i18n-o="th_dark">Тёмная</option></select></div>
-<div><label data-i18n="lbl_lang">Язык интерфейса</label><select id="setLang"><option value="ru">Русский</option><option value="tj">Тоҷикӣ</option><option value="en">English</option></select></div>
+<div class="set-layout">
+<div class="set-nav" id="setNav">
+<button class="set-nav-item active" data-sp="setProfile">👤 Профиль</button>
+<button class="set-nav-item" data-sp="setNotif">🔔 Уведомления</button>
+<button class="set-nav-item" data-sp="setLangPane">🌐 Язык</button>
+<button class="set-nav-item" data-sp="setThemePane">🎨 Тема</button>
+<button class="set-nav-item" data-sp="setAbout">ℹ️ О системе</button>
 </div>
-<div class="set-sec">
-<h4 data-i18n="set_acc">Аккаунт</h4>
-<div style="display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:var(--r3);background:var(--card2);margin-bottom:12px">
-<div><strong data-i18n="user_name" style="font-size:.85rem">Др. Ахмедов</strong><div style="font-size:.78rem;color:var(--muted)" data-i18n="user_role">Терапевт</div></div>
-<span class="badge safe" data-i18n="st_active">Активен</span>
+<div class="set-cont">
+<div class="set-pane active" id="setProfile">
+<div class="set-cont-title" data-i18n="set_acc">Профиль</div>
+<div class="set-profile-card">
+<div class="avatar" style="width:48px;height:48px;font-size:.85rem">ДА</div>
+<div><strong data-i18n="user_name">Др. Ахмедов</strong><span data-i18n="user_role">Терапевт</span></div>
+<span class="badge safe" style="margin-left:auto" data-i18n="st_active">Активен</span>
 </div>
-<div style="font-size:.78rem;color:var(--muted);margin-bottom:10px">v3.5 — Hyperion Labs</div>
-<button class="btn danger" id="logoutBtn" data-i18n="btn_logout">Выйти из системы</button>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label">Имя</div><div class="set-row-desc">Отображаемое имя в системе</div></div><input style="max-width:220px" value="Др. Ахмедов" disabled></div>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label">Специальность</div><div class="set-row-desc">Врачебная специальность</div></div><input style="max-width:220px" value="Терапевт" disabled></div>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label">Email</div><div class="set-row-desc">Электронная почта для входа</div></div><input style="max-width:220px" value="doctor@hospital.tj" disabled></div>
+</div>
+<div class="set-pane" id="setNotif">
+<div class="set-cont-title">Уведомления</div>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label">Push-уведомления</div><div class="set-row-desc">Получать уведомления о критических пациентах</div></div><button class="toggle-sw on"></button></div>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label">Звуковые сигналы</div><div class="set-row-desc">Звуковой сигнал при критических показателях</div></div><button class="toggle-sw on"></button></div>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label">Email-отчёты</div><div class="set-row-desc">Ежедневная сводка на почту</div></div><button class="toggle-sw"></button></div>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label">Ночной режим</div><div class="set-row-desc">Отключить уведомления с 23:00 до 07:00</div></div><button class="toggle-sw"></button></div>
+</div>
+<div class="set-pane" id="setLangPane">
+<div class="set-cont-title" data-i18n="lbl_lang">Язык интерфейса</div>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label">Язык интерфейса</div><div class="set-row-desc">Язык всех элементов приложения</div></div><select id="setLang" style="max-width:220px"><option value="ru">Русский</option><option value="tj">Тоҷикӣ</option><option value="en">English</option></select></div>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label">Язык распознавания</div><div class="set-row-desc">Язык для голосового ввода (Whisper)</div></div><select style="max-width:220px"><option value="ru">Русский</option><option value="tj">Тоҷикӣ</option><option value="en">English</option></select></div>
+</div>
+<div class="set-pane" id="setThemePane">
+<div class="set-cont-title" data-i18n="set_appear">Тема</div>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label" data-i18n="lbl_theme">Тема оформления</div><div class="set-row-desc">Внешний вид интерфейса</div></div><select id="themeSel" style="max-width:220px"><option value="dark" data-i18n-o="th_dark">Тёмная</option><option value="light" data-i18n-o="th_light">Светлая</option></select></div>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label">Компактный режим</div><div class="set-row-desc">Уменьшить отступы для больших экранов</div></div><button class="toggle-sw"></button></div>
+</div>
+<div class="set-pane" id="setAbout">
+<div class="set-cont-title">О системе</div>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label">Версия</div><div class="set-row-desc">v3.5 — Hyperion Labs</div></div></div>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label">STT движок</div><div class="set-row-desc">OpenAI Whisper</div></div></div>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label">LLM</div><div class="set-row-desc">Claude Sonnet · Anthropic</div></div></div>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label">Лицензия</div><div class="set-row-desc">Proprietary · Hyperion Labs © 2026</div></div></div>
+<div style="margin-top:20px"><button class="btn danger" id="logoutBtn" data-i18n="btn_logout">Выйти из системы</button></div>
 </div>
 </div>
 </div>
@@ -635,17 +866,59 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 <div class="notif-item"><h4>✅ Обход завершён</h4><p data-i18n="notif_done">Все палаты осмотрены</p><time>07:30</time></div>
 </div>
 </div>
-<div class="modal" id="patModal">
-<div class="modal-c">
-<div class="modal-h"><div><h2 id="mName" style="font-weight:800">—</h2><p id="mWard" style="margin-top:3px;font-size:.85rem;color:var(--muted)"></p></div><button class="icon-btn" id="closeModal">✕</button></div>
-<div class="modal-grid">
-<div class="modal-sec" style="text-align:center"><h4>Avris Score</h4><div class="score-ring"><svg viewBox="0 0 160 160"><circle class="bg" cx="80" cy="80" r="70"/><circle class="prog" id="mScoreRing" cx="80" cy="80" r="70" stroke-dashoffset="440"/></svg><strong id="mScoreVal">--</strong></div><p id="mInsight" style="font-size:.82rem;color:var(--muted)"></p></div>
-<div class="modal-sec"><h4 data-i18n="m_profile">Профиль</h4><div class="modal-list" id="mProfile"></div><h4 style="margin-top:14px" data-i18n="m_diag">Диагнозы</h4><div class="modal-tags" id="mDiag"></div><h4 style="margin-top:14px" data-i18n="m_allergy">Аллергии</h4><div class="modal-tags" id="mAllergy"></div></div>
-<div class="modal-sec"><h4 data-i18n="m_meds">Назначения</h4><div class="modal-list" id="mMeds"></div><h4 style="margin-top:14px" data-i18n="m_hist">Анамнез</h4><div class="modal-list" id="mHist"></div></div>
+<div class="pm-ov" id="patModal">
+<div class="pm-card">
+<div class="pm-hdr">
+<div class="pm-avatar" id="pmAvatar">—</div>
+<div><div class="pm-name" id="pmName">—</div><div class="pm-meta" id="pmMeta"></div></div>
+<button class="pm-close" id="closeModal">✕</button>
 </div>
-<div class="modal-sec"><h4 data-i18n="m_vitals">Витальные показатели</h4><div class="vt-tabs" id="mVTabs"></div><canvas id="patVChart"></canvas></div>
+<div class="pm-score-wrap">
+<div class="pm-ring"><svg viewBox="0 0 120 120"><circle class="bg" cx="60" cy="60" r="50"/><circle class="prog" id="pmRing" cx="60" cy="60" r="50" stroke-dasharray="314.16" stroke-dashoffset="314.16"/></svg><strong><span id="pmScoreVal">--</span><small>Avris Score</small></strong></div>
+<p id="pmInsight" style="font-size:.82rem;color:var(--text-muted);margin-top:8px"></p>
+</div>
+<div class="pm-vitals" id="pmVitals"></div>
+<div class="pm-tabs">
+<button class="pm-tab active" data-pt="pmOverview">Обзор</button>
+<button class="pm-tab" data-pt="pmSoap">SOAP</button>
+<button class="pm-tab" data-pt="pmHistory">История</button>
+</div>
+<div class="pm-pane active" id="pmOverview">
+<div class="pm-sec-title" data-i18n="m_profile">Профиль</div>
+<div class="pm-list" id="pmProfile"></div>
+<div class="pm-sec-title" data-i18n="m_diag">Диагнозы</div>
+<div class="pm-tags" id="pmDiag"></div>
+<div class="pm-allergy-title" data-i18n="m_allergy">Аллергии</div>
+<div id="pmAllergy"></div>
+<div class="pm-sec-title" data-i18n="m_meds">Назначения</div>
+<div class="pm-list" id="pmMeds"></div>
+</div>
+<div class="pm-pane" id="pmSoap">
+<div class="pm-sec-title">Последняя SOAP-запись</div>
+<p style="color:var(--text-muted);font-size:.85rem">Нет записей для этого пациента</p>
+</div>
+<div class="pm-pane" id="pmHistory">
+<div class="pm-sec-title" data-i18n="m_hist">Анамнез</div>
+<div class="pm-list" id="pmHist"></div>
+</div>
+<div class="pm-actions">
+<button class="pm-btn-primary" id="pmStartExam">Начать осмотр →</button>
+<button class="pm-btn-secondary" id="pmShowHist">История</button>
 </div>
 </div>
+</div>
+<div class="nr-modal-ov" id="nrModal">
+<div class="nr-modal-card">
+<div class="nr-modal-hdr"><h3 id="nrModalTitle">Палата —</h3><button class="icon-btn" id="nrModalClose">✕</button></div>
+<div style="margin-bottom:16px"><label data-i18n="lbl_exam">Осмотр</label><textarea id="nrExam" placeholder="Результаты осмотра..." rows="4"></textarea></div>
+<div style="margin-bottom:16px"><label data-i18n="lbl_plan">План лечения</label><textarea id="nrPlan" placeholder="План лечения..." rows="3"></textarea></div>
+<div style="display:flex;gap:8px;justify-content:flex-end">
+<button class="btn ghost" id="nrModalCancel" data-i18n="btn_cancel">Отмена</button>
+<button class="btn primary" id="nrModalSave" data-i18n="btn_sround">Сохранить обход</button>
+</div>
+</div>
+</div>
+<button class="fab hidden-fab" id="nrFab" title="Голосовой ввод">🎤</button>
 <div class="toast" id="toast"></div>
 <div class="confirm-ov" id="confirmOv"><div class="confirm-d"><h3 id="cTitle">—</h3><p id="cText"></p><div class="btn-row"><button class="btn ghost" id="cCancel" data-i18n="btn_cancel">Отмена</button><button class="btn danger" id="cOk" data-i18n="btn_yes">Да</button></div></div></div>
 <script>
@@ -653,7 +926,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 "use strict";
 var $=function(i){return document.getElementById(i)},
 esc=function(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML},
-RING_C=2*Math.PI*70;
+PM_RING_C=2*Math.PI*50;
 var lang="ru";
 var TR={
 ru:{login_desc:"Первая платформа голосовой медицинской документации для Центральной Азии.",login_f1:"Голосовой ввод на вашем языке",login_f2:"Автоматическая SOAP-документация",login_f3:"Ночные обходы и мониторинг",login_title:"Вход в систему",login_sub:"Введите данные для продолжения",lbl_email:"Почта",lbl_pass:"Пароль",btn_login:"Войти",nav_main:"Основное",nav_dashboard:"Дашборд",nav_consult:"Осмотр",nav_night:"Ночной обход",nav_data:"Данные",nav_history:"История",nav_icu:"Реанимация",nav_sys:"Система",nav_settings:"Настройки",hero_ey:"Сегодняшний обзор",hero_t:"Активные пациенты",hero_sub:"Обновлено: ",hero_work:"В работе",hero_pat:"пациентов",hero_crit:"Критические",hero_att:"внимание",hero_avg:"средний",hero_rep:"Отчёт",hero_min:"мин назад",m_24h:"за 24ч",m_sess:"Сессии",m_acc:"Точность AI",m_rec:"распознавание",ph_search:"Поиск по ФИО или диагнозу...",f_all_d:"Все диагнозы",f_all_w:"Все отделения",btn_reset:"Сбросить",pat_title:"Пациенты",pat_empty:"Пациенты не найдены",lbl_best:"лучший",lbl_watch:"наблюдение",st_stab:"Стаб.",st_watch:"Набл.",st_crit:"Крит.",act_title:"Активность",act_round:"Обход",act_b3:"Палата B3",act_export:"Экспорт",cons_rec:"Запись осмотра",lbl_patient:"Пациент",lbl_transcript:"Транскрипт",tr_ph:"Нажмите микрофон для записи...",btn_clear:"Очистить",btn_save:"Сохранить",soap_title:"SOAP-документация",ph_complaints:"Жалобы пациента",ph_exam:"Данные осмотра",ph_diag:"Диагноз",ph_plan:"План лечения",btn_soap:"Подтвердить SOAP",night_title:"Ночной обход",night_badge:"6 палат",night_voice:"Голосовой ввод",btn_vfill:"🎤 Авто-заполнение голосом",lbl_exam:"Осмотр",lbl_plan:"План",ph_vfill:"Заполнится голосом...",ph_treat:"Лечение",btn_sround:"Сохранить обход",hist_title:"История записей",icu_title:"Реанимация и пост-реанимация",icu_sub:"Наблюдение за пациентами в критическом состоянии",icu_sec:"Реанимационное отделение (ОРИТ)",post_sec:"Пост-реанимационные палаты",set_title:"Настройки",set_appear:"Внешний вид",lbl_theme:"Тема",th_light:"Светлая",th_dark:"Тёмная",lbl_lang:"Язык интерфейса",set_acc:"Аккаунт",user_name:"Др. Ахмедов",user_role:"Терапевт",st_active:"Активен",btn_logout:"Выйти из системы",notif_title:"Уведомления",notif_done:"Все палаты осмотрены",m_profile:"Профиль",m_diag:"Диагнозы",m_allergy:"Аллергии",m_meds:"Назначения",m_hist:"Анамнез",m_vitals:"Витальные показатели",btn_cancel:"Отмена",btn_yes:"Да",c_logout:"Выйти из системы?",c_logout_rec:"Идёт запись! Выйти?",t_soap:"✅ SOAP сохранена",t_soap_e:"⚠️ Заполните S или O",t_filled:"✅ Заполнено",t_round:"✅ Обход сохранён",t_ward:"⚠️ Выберите палату",t_exam:"⚠️ Заполните осмотр",f_pat:"пациентов",w_label:"Палата",icu_days:"дн. в ОРИТ",icu_upd:"Обновлено",icu_doc:"Лечащий врач",icu_stable:"Стабильно",icu_serious:"Тяжёлое",icu_critical:"Критическое",lbl_age:"Возраст",lbl_gender:"Пол",lbl_height:"Рост",lbl_weight:"Вес",lbl_blood:"Кровь"},
@@ -674,32 +947,32 @@ var patients=[
 var icuPats=[{name:"Рахимов С.К.",ini:"РС",bed:"ОРИТ-1",age:72,gender:"М",diag:"Инфаркт миокарда, кардиогенный шок",status:"critical",doctor:"Др. Назаров",days:3,vitals:{hr:112,sys:88,dia:55,spo2:89,resp:24,temp:37.8},notes:"ИВЛ, вазопрессоры. Гемодинамика нестабильна.",upd:"14:20"},{name:"Алиева Н.Р.",ini:"АН",bed:"ОРИТ-2",age:45,gender:"Ж",diag:"Тяжёлая пневмония, ОРДС",status:"warning",doctor:"Др. Каримов",days:5,vitals:{hr:98,sys:105,dia:68,spo2:91,resp:22,temp:38.5},notes:"ИВЛ в режиме SIMV. Положительная динамика.",upd:"14:15"},{name:"Джураев А.Б.",ini:"ДА",bed:"ОРИТ-4",age:58,gender:"М",diag:"Послеоперационный период, перитонит",status:"warning",doctor:"Др. Ахмедов",days:2,vitals:{hr:92,sys:118,dia:72,spo2:94,resp:18,temp:38.1},notes:"Дренаж функционирует. Антибиотикотерапия.",upd:"13:50"}];
 var postPats=[{name:"Муродов Б.Т.",ini:"МБ",bed:"ПР-1",age:65,gender:"М",diag:"Состояние после ИМ",status:"stable",doctor:"Др. Назаров",days:1,vitals:{hr:78,sys:128,dia:76,spo2:96,resp:16,temp:36.8},notes:"Переведён из ОРИТ. Стабилен.",upd:"12:30"},{name:"Хасанова Г.И.",ini:"ХГ",bed:"ПР-3",age:52,gender:"Ж",diag:"Послеоперационный период, холецистэктомия",status:"stable",doctor:"Др. Ахмедов",days:1,vitals:{hr:74,sys:122,dia:74,spo2:98,resp:15,temp:36.6},notes:"Активизация. Перевод в общую палату завтра.",upd:"12:00"}];
 var wardData=[{name:"A1",st:"stable"},{name:"B3",st:"warning"},{name:"C2",st:"warning"},{name:"D1",st:"stable"},{name:"B1",st:"stable"},{name:"E2",st:"stable"}];
-var histData=[{time:"08:40",patient:"Иванова А.М.",type:"soap",summary:"Запись экспортирована."},{time:"Вчера",patient:"Омаров Р.Б.",type:"round",summary:"Голосовой ввод B3."},{time:"Вчера",patient:"Нурланов К.М.",type:"soap",summary:"План обновлён."}];
+var histData=[{time:"08:40",patient:"Иванова А.М.",type:"soap",summary:"SOAP экспортирована в систему.",diag:"Гипертония"},{time:"08:40",patient:"Кадырова Е.В.",type:"export",summary:"Экспорт в PDF.",diag:"Послеоп. период"},{time:"Вчера",patient:"Омаров Р.Б.",type:"round",summary:"Обход палаты B3. Сатурация стабильна.",diag:"Пневмония"},{time:"Вчера",patient:"Нурланов К.М.",type:"soap",summary:"План лечения обновлён.",diag:"ИБС"},{time:"Ранее",patient:"Сатыбалдиев А.Р.",type:"round",summary:"Контрольный осмотр. Хрипы уменьшились.",diag:"Бронхит"},{time:"Ранее",patient:"Бекмуратов Т.Д.",type:"soap",summary:"Спирометрия назначена повторно.",diag:"ХОБЛ"}];
 var trLines=["Пациент жалуется на ночные подъемы давления, головную боль.","АД 152/96, пульс 88, сатурация 93%.","Лёгкие без хрипов, тоны приглушены.","План: усилить терапию, контроль глюкозы через 6 часов."];
-var recording=false,recStart=null,recInt=null,typeTO=null,curModal=null,activeVM="АД",selWard=null,searchTm=null,toastTm=null,cRes=null;
+var recording=false,recStart=null,recInt=null,typeTO=null,curModal=null,selWard=null,searchTm=null,toastTm=null,cRes=null,histFilter="all";
 function toast(m,d,type){var e=$("toast");e.textContent=m;e.className="toast show"+(type?" toast-"+type:"");clearTimeout(toastTm);toastTm=setTimeout(function(){e.className="toast"},d||3000)}
 function confirm2(title,text){return new Promise(function(r){cRes=r;$("cTitle").textContent=title;$("cText").textContent=text;$("confirmOv").classList.add("show")})}
 function closeC(v){$("confirmOv").classList.remove("show");if(cRes){cRes(v);cRes=null}}
 $("cCancel").onclick=function(){closeC(false)};$("cOk").onclick=function(){closeC(true)};
-function drawChart(cv,data,h){if(!cv||!data||!data.length)return;var par=cv.parentElement,w=par?par.clientWidth:300;h=h||160;if(w<20)return;var dpr=devicePixelRatio||1;cv.width=w*dpr;cv.height=h*dpr;cv.style.width=w+"px";cv.style.height=h+"px";var ctx=cv.getContext("2d");ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);var mx=Math.max.apply(null,data),mn=Math.min.apply(null,data),rng=mx-mn||1,pd=18,step=w/(data.length-1||1);function gY(v){return h-((v-mn)/rng)*(h-pd*2)-pd}var ac=getComputedStyle(document.documentElement).getPropertyValue("--accent").trim()||"#2aa99e";var rgb=getComputedStyle(document.documentElement).getPropertyValue("--accent-rgb").trim()||"42,169,158";ctx.strokeStyle=document.body.dataset.theme==="dark"?"rgba(255,255,255,.05)":"rgba(0,0,0,.04)";ctx.lineWidth=1;for(var g=0;g<4;g++){var gy=pd+(h-pd*2)/3*g;ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(w,gy);ctx.stroke()}ctx.beginPath();data.forEach(function(v,i){i===0?ctx.moveTo(i*step,gY(v)):ctx.lineTo(i*step,gY(v))});ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.closePath();var gr=ctx.createLinearGradient(0,0,0,h);gr.addColorStop(0,"rgba("+rgb+",.18)");gr.addColorStop(1,"rgba("+rgb+",.01)");ctx.fillStyle=gr;ctx.fill();ctx.beginPath();data.forEach(function(v,i){i===0?ctx.moveTo(i*step,gY(v)):ctx.lineTo(i*step,gY(v))});ctx.strokeStyle=ac;ctx.lineWidth=2.5;ctx.lineJoin="round";ctx.lineCap="round";ctx.stroke();data.forEach(function(v,i){ctx.beginPath();ctx.arc(i*step,gY(v),3,0,Math.PI*2);ctx.fillStyle=ac;ctx.fill()})}
-function setTheme(th){document.body.dataset.theme=th;var ts=$("themeSel");if(ts)ts.value=th;updThemeIcon()}
+function setTheme(th){document.body.dataset.theme=th;try{localStorage.setItem("avris-theme",th)}catch(e){}var ts=$("themeSel");if(ts)ts.value=th;updThemeIcon()}
 function toggleTheme(){setTheme(document.body.dataset.theme==="light"?"dark":"light")}
-function updThemeIcon(){var d=document.body.dataset.theme==="dark";$("themeToggle").textContent=d?"☀️":"🌙";var l=$("loginThemeBtn");if(l)l.textContent=d?"☀️":"🌙"}
-$("themeToggle").onclick=toggleTheme;var _ltb=$("loginThemeBtn");if(_ltb)_ltb.onclick=toggleTheme;
+function updThemeIcon(){var d=document.body.dataset.theme==="dark";$("themeToggle").textContent=d?"☀️":"🌙";document.querySelectorAll(".login-theme-btn").forEach(function(b){b.classList.toggle("active",b.dataset.th===document.body.dataset.theme)})}
+$("themeToggle").onclick=toggleTheme;
+document.querySelectorAll(".login-theme-btn").forEach(function(b){b.onclick=function(){setTheme(b.dataset.th)}});
 function initClock(){function u(){var n=new Date(),s=String(n.getHours()).padStart(2,"0")+":"+String(n.getMinutes()).padStart(2,"0");$("clock").textContent=s;$("heroTS").textContent=s}u();setInterval(u,30000)}
 $("loginForm").onsubmit=function(e){e.preventDefault();var b=$("loginBtn");b.style.opacity=".6";setTimeout(function(){$("loginScreen").classList.add("hidden");$("appShell").classList.remove("hidden");b.style.opacity="1";scrollTo(0,0)},400)};
 var navs=document.querySelectorAll(".nav-link"),screens=document.querySelectorAll(".screen");
-function goTo(target){navs.forEach(function(n){n.classList.toggle("active",n.dataset.screen===target)});screens.forEach(function(s){s.classList.toggle("active",s.id===target)});var ac=document.querySelector('.nav-link[data-screen="'+target+'"]');if(ac){var k=ac.getAttribute("data-tkey");$("screenTitle").textContent=k?t(k):ac.textContent.trim()}if(innerWidth<1024){$("sidebar").classList.remove("open");$("sidebarOverlay").classList.remove("vis")}if(target!=="consultation"&&recording)stopRec()}
+function goTo(target){navs.forEach(function(n){n.classList.toggle("active",n.dataset.screen===target)});screens.forEach(function(s){s.classList.toggle("active",s.id===target)});var ac=document.querySelector('.nav-link[data-screen="'+target+'"]');if(ac){var k=ac.getAttribute("data-tkey");$("screenTitle").textContent=k?t(k):ac.textContent.trim()}if(innerWidth<1024){$("sidebar").classList.remove("open");$("sidebarOverlay").classList.remove("vis")}if(target!=="consultation"&&recording)stopRec();var fab=$("nrFab");if(fab)fab.classList.toggle("hidden-fab",target!=="nightRound")}
 navs.forEach(function(b){b.onclick=function(){goTo(b.dataset.screen)}});
 $("sidebarToggle").onclick=function(){$("sidebar").classList.toggle("open");$("sidebarOverlay").classList.toggle("vis")};
 $("sidebarOverlay").onclick=function(){$("sidebar").classList.remove("open");$("sidebarOverlay").classList.remove("vis")};
-document.onkeydown=function(e){if(e.key!=="Escape")return;if($("patModal").classList.contains("vis")){closeModal();return}if($("notifPanel").classList.contains("open")){$("notifPanel").classList.remove("open");return}if($("confirmOv").classList.contains("show")){closeC(false)}};
+document.onkeydown=function(e){if(e.key!=="Escape")return;if($("nrModal")&&$("nrModal").classList.contains("vis")){$("nrModal").classList.remove("vis");return}if($("patModal").classList.contains("vis")){closeModal();return}if($("notifPanel").classList.contains("open")){$("notifPanel").classList.remove("open");return}if($("confirmOv").classList.contains("show")){closeC(false)}};
 $("notifToggle").onclick=function(){$("notifPanel").classList.add("open")};$("closeNotif").onclick=function(){$("notifPanel").classList.remove("open")};
 function renderFilters(){var df=$("diagFilter"),wf=$("wardFilter");if(!df||!wf)return;while(df.options.length>1)df.remove(1);while(wf.options.length>1)wf.remove(1);var diags={},wards={};patients.forEach(function(p){p.diag.forEach(function(d){diags[d]=1});wards[p.ward]=1});Object.keys(diags).forEach(function(d){var o=document.createElement("option");o.value=d;o.textContent=d;df.appendChild(o)});Object.keys(wards).forEach(function(w){var o=document.createElement("option");o.value=w;o.textContent=w;wf.appendChild(o)})}
-var ps=$("patSearch"),df=$("diagFilter"),wf=$("wardFilter");
-ps.oninput=function(){clearTimeout(searchTm);searchTm=setTimeout(applyFilters,200)};df.onchange=applyFilters;wf.onchange=applyFilters;$("resetF").onclick=function(){ps.value="";df.value="all";wf.value="all";applyFilters()};
+var ps=$("patSearch"),dfl=$("diagFilter"),wfl=$("wardFilter");
+ps.oninput=function(){clearTimeout(searchTm);searchTm=setTimeout(applyFilters,200)};dfl.onchange=applyFilters;wfl.onchange=applyFilters;$("resetF").onclick=function(){ps.value="";dfl.value="all";wfl.value="all";applyFilters()};
 function buildPatList(){var pl=$("patList");pl.innerHTML="";patients.forEach(function(p){var el=document.createElement("div");el.className="p-item";el.dataset.pid=p.id;var rc=p.score<40?"danger":p.score<70?"warn":"safe";var st=p.score<40?t("st_crit"):p.score<70?t("st_watch"):t("st_stab");el.innerHTML='<div class="avatar">'+esc(p.ini)+'</div><div class="p-info"><div class="p-name">'+esc(p.name)+'</div><div class="p-det">'+p.diag.map(esc).join(" · ")+'</div></div><div class="score-pill '+rc+'">'+p.score+" "+esc(st)+'</div><button class="btn primary sm p-action">Осмотр →</button>';el.querySelector(".p-action").onclick=function(e){e.stopPropagation();$("consultPat").value=p.id;updatePatCtx();goTo("consultation")};el.onclick=function(){openModal(p.id)};pl.appendChild(el)})}
-function applyFilters(){var pl=$("patList");if(!pl)return;var q=ps?ps.value.trim().toLowerCase():"",dv=df?df.value:"all",wv=wf?wf.value:"all",cnt=0;patients.forEach(function(p){var nd=pl.querySelector('[data-pid="'+p.id+'"]');if(!nd)return;var mq=p.name.toLowerCase().indexOf(q)>=0||p.diag.some(function(d){return d.toLowerCase().indexOf(q)>=0});var md=dv==="all"||p.diag.some(function(d){return d.indexOf(dv)>=0});var mw=wv==="all"||p.ward===wv;var vis=mq&&md&&mw;nd.classList.toggle("fh",!vis);if(vis)cnt++});$("filterSum").textContent=cnt+" "+t("f_pat");$("patBadge").textContent=cnt;$("patEmpty").style.display=cnt===0?"block":"none"}
+function applyFilters(){var pl=$("patList");if(!pl)return;var q=ps?ps.value.trim().toLowerCase():"",dv=dfl?dfl.value:"all",wv=wfl?wfl.value:"all",cnt=0;patients.forEach(function(p){var nd=pl.querySelector('[data-pid="'+p.id+'"]');if(!nd)return;var mq=p.name.toLowerCase().indexOf(q)>=0||p.diag.some(function(d){return d.toLowerCase().indexOf(q)>=0});var md=dv==="all"||p.diag.some(function(d){return d.indexOf(dv)>=0});var mw=wv==="all"||p.ward===wv;var vis=mq&&md&&mw;nd.classList.toggle("fh",!vis);if(vis)cnt++});$("filterSum").textContent=cnt+" "+t("f_pat");$("patBadge").textContent=cnt;$("patEmpty").style.display=cnt===0?"block":"none"}
 function updateDash(){var crit=patients.filter(function(p){return p.score<40}).length;$("heroPC").textContent=patients.length;$("heroCC").textContent=crit;var avg=Math.round(patients.reduce(function(a,p){return a+p.score},0)/patients.length);$("heroAS").textContent=avg;var sorted=patients.slice().sort(function(a,b){return b.score-a.score});$("bestSP").textContent=sorted[0].name+" ("+sorted[0].score+")";$("watchSP").textContent=sorted[sorted.length-1].name+" ("+sorted[sorted.length-1].score+")";var at=$("avrisTrend");at.innerHTML="";var sortedTrend=patients.slice().sort(function(a,b){return a.score-b.score});sortedTrend.forEach(function(p){var row=document.createElement("div");row.className="score-h-row";var c=p.score<40?"var(--danger)":p.score<70?"var(--warn)":"var(--ok)";row.innerHTML='<span class="score-h-name">'+esc(p.name.split(" ")[0])+'</span><div class="score-h-track"><div class="score-h-fill" style="width:'+p.score+'%;background:'+c+'"></div></div><span class="score-h-val" style="color:'+c+'">'+p.score+'</span>';at.appendChild(row)})}
 function initWave(){var w=$("waveform");for(var i=0;i<16;i++){var s=document.createElement("span");s.style.height=(4+Math.random()*28)+"px";s.style.animationDelay=(i*.06)+"s";w.appendChild(s)}}
 function updatePatCtx(){var cp=$("consultPat");if(!cp)return;var p=patients.find(function(x){return x.id===cp.value});if(!p)return;var rc=p.score<40?"danger":p.score<70?"warn":"safe";var st=p.score<40?t("st_crit"):p.score<70?t("st_watch"):t("st_stab");$("patCtxAvatar").textContent=p.ini;$("patCtxName").textContent=p.name;$("patCtxMeta").textContent=p.demo.age+"г · "+p.ward;var sc=$("patCtxScore");sc.textContent=p.score+" "+st;sc.className="pat-ctx-score "+rc;var dg=$("patCtxDiag");dg.innerHTML=p.diag.map(function(d){return'<span class="pat-ctx-diag">'+esc(d)+'</span>'}).join("");var al=$("patCtxAllergy");if(p.allergy&&p.allergy.length){al.innerHTML='⚠ '+p.allergy.map(esc).join(", ");al.style.display=""}else{al.style.display="none"}}
@@ -708,41 +981,42 @@ function initConsult(){var cp=$("consultPat");cp.innerHTML="";patients.forEach(f
 $("patCtx").onclick=function(e){if(e.target.closest(".pat-ctx-opt"))return;$("patCtx").classList.toggle("open")};
 $("micBtn").onclick=function(){recording?stopRec():startRec()};$("stopRec").onclick=stopRec;
 $("clearRec").onclick=function(){$("transcriptText").textContent=t("tr_ph");if($("transcriptMeta"))$("transcriptMeta").textContent="0 слов";$("soapS").value="";$("soapO").value="";$("soapA").value="";$("soapP").value=""};
-$("soapConfirm").onclick=function(){if(!$("soapS").value.trim()&&!$("soapO").value.trim()){toast(t("t_soap_e"),2000,"err");return}var cp=$("consultPat"),pt=patients.find(function(p){return p.id===cp.value});histData.unshift({time:new Date().toLocaleTimeString().slice(0,5),patient:pt?pt.name:"—",type:"soap",summary:($("soapA").value||"").slice(0,50)||"Запись сохранена"});renderHist();toast(t("t_soap"),3000,"ok");$("soapS").value="";$("soapO").value="";$("soapA").value="";$("soapP").value=""};
+$("soapConfirm").onclick=function(){if(!$("soapS").value.trim()&&!$("soapO").value.trim()){toast(t("t_soap_e"),2000,"err");return}var cp=$("consultPat"),pt=patients.find(function(p){return p.id===cp.value});histData.unshift({time:new Date().toLocaleTimeString().slice(0,5),patient:pt?pt.name:"—",type:"soap",summary:($("soapA").value||"").slice(0,50)||"Запись сохранена",diag:pt?pt.diag.join(", "):""});renderHist();toast(t("t_soap"),3000,"ok");$("soapS").value="";$("soapO").value="";$("soapA").value="";$("soapP").value=""};
 function startRec(){recording=true;recStart=Date.now();$("micBtn").classList.add("rec");$("waveform").classList.add("rec");$("recInd").classList.add("on");$("transcriptText").textContent="";if($("recBarLabel"))$("recBarLabel").textContent="ОСТАНОВИТЬ ЗАПИСЬ";if($("recStatusLbl"))$("recStatusLbl").textContent="Идёт запись...";if($("transcriptMeta"))$("transcriptMeta").textContent="0 слов";startTimer();startTypewriter()}
 function stopRec(){if(!recording)return;recording=false;$("micBtn").classList.remove("rec");$("waveform").classList.remove("rec");$("recInd").classList.remove("on");if($("recBarLabel"))$("recBarLabel").textContent="НАЧАТЬ ЗАПИСЬ";if($("recStatusLbl"))$("recStatusLbl").textContent="Нажмите для записи";clearInterval(recInt);recInt=null;clearTimeout(typeTO);typeTO=null}
 function startTimer(){clearInterval(recInt);recInt=setInterval(function(){if(!recStart)return;var e=Math.floor((Date.now()-recStart)/1000);$("recTimer").textContent=String(Math.floor(e/60)).padStart(2,"0")+":"+String(e%60).padStart(2,"0")},500)}
 function startTypewriter(){var si=0,ci=0;clearTimeout(typeTO);function go(){if(!recording||si>=trLines.length)return;var cur=trLines[si],tt=$("transcriptText");if(ci<cur.length){tt.textContent+=cur.charAt(ci);ci++}else{tt.textContent+="\n";si++;ci=0}var wc=tt.textContent.trim().split(/\s+/).filter(function(w){return w.length>0}).length;if($("transcriptMeta"))$("transcriptMeta").textContent=wc+" слов";typeTO=setTimeout(go,35)}go()}
-function renderWards(){var wg=$("wardGrid");wg.innerHTML="";wardData.forEach(function(w,i){var p=patients[i]||patients[0];var c=document.createElement("div");c.className="ward-c";c.dataset.idx=i;var stTxt=w.st==="stable"?t("icu_stable"):t("icu_serious");c.innerHTML="<strong>"+t("w_label")+" "+esc(w.name)+"</strong><span style='font-size:.82rem;color:var(--muted)'>"+esc(p.name)+"</span><span class='badge "+(w.st==="stable"?"safe":"warn")+"'>"+esc(stTxt)+"</span>";c.onclick=function(){selectWard(i)};wg.appendChild(c)})}
-function selectWard(i){selWard=i;$("wardGrid").querySelectorAll(".ward-c").forEach(function(c,j){c.classList.toggle("sel",j===i)});var p=patients[i];$("selWardLbl").textContent=t("w_label")+" "+wardData[i].name+" — "+p.name;$("selWardLbl").style.display="block";$("nightSave").disabled=false}
-$("nightVoice").onclick=function(){if(selWard===null){toast(t("t_ward"),2000);return}var b=$("nightVoice");b.disabled=true;b.textContent="...";setTimeout(function(){$("nightObj").value="Сатурация >95%, боль не выражена.";$("nightPlan").value="Кислород 2 л/мин, контроль АД каждые 2ч.";b.disabled=false;b.textContent=t("btn_vfill");toast(t("t_filled"),2000)},1200)};
-$("nightSave").onclick=function(){if(selWard===null)return;if(!$("nightObj").value.trim()){toast(t("t_exam"),2000);return}var p=patients[selWard];histData.unshift({time:new Date().toLocaleTimeString().slice(0,5),patient:p.name,type:"round",summary:$("nightObj").value.slice(0,50)});renderHist();toast(t("t_round"));$("nightObj").value="";$("nightPlan").value="";selWard=null;$("wardGrid").querySelectorAll(".ward-c").forEach(function(c){c.classList.remove("sel")});$("selWardLbl").style.display="none";$("nightSave").disabled=true};
-function renderHist(){var hl=$("histList");hl.innerHTML="";histData.forEach(function(it){var e=document.createElement("div");e.className="hist-item";var icon=it.type==="soap"?"📋":"🌙";e.innerHTML='<div class="hist-icon">'+icon+'</div><div class="hist-body"><strong>'+esc(it.patient)+'</strong><p>'+esc(it.summary)+'</p></div><span style="font-size:.75rem;color:var(--muted);white-space:nowrap">'+esc(it.time)+'</span>';hl.appendChild(e)})}
-function renderICU(){
-  renderICUGrid($("icuGrid"),icuPats);
-  renderICUGrid($("postIcuGrid"),postPats);
-  var all=icuPats.concat(postPats);
-  var critCount=all.filter(function(p){return p.status==="critical"}).length;
-  var avgSpo2=Math.round(all.reduce(function(s,p){return s+p.vitals.spo2},0)/all.length);
-  var now=new Date();var hh=String(now.getHours()).padStart(2,"0");var mm=String(now.getMinutes()).padStart(2,"0");
-  if($("icuTotalCount"))$("icuTotalCount").textContent=all.length;
-  if($("icuCritCount"))$("icuCritCount").textContent=critCount;
-  if($("icuAvgSpo2"))$("icuAvgSpo2").textContent=avgSpo2;
-  if($("icuUpdTime"))$("icuUpdTime").textContent="обновлено: "+hh+":"+mm;
-  var icuCrit=icuPats.filter(function(p){return p.status==="critical"}).length;
-  var icuWarn=icuPats.filter(function(p){return p.status==="warning"}).length;
-  if($("icuCritBadge")){var cb=$("icuCritBadge");if(icuCrit){cb.textContent=icuCrit+" критических";cb.style.display=""}else if(icuWarn){cb.textContent=icuWarn+" под наблюдением";cb.className="icu-sec-badge warn";cb.style.display=""}else cb.style.display="none"}
-  if($("icuPostBadge")){var pb=$("icuPostBadge");pb.textContent=postPats.length+" пациентов";pb.className="icu-sec-badge warn";pb.style.display=postPats.length?"":"none"}
-}
-function renderICUGrid(container,data){container.innerHTML="";data.forEach(function(p){var el=document.createElement("div");el.className="icu-c "+p.status;var stLabel=p.status==="critical"?t("icu_critical"):p.status==="warning"?t("icu_serious"):t("icu_stable");var v=p.vitals;var hrCls=v.hr>100?"alert":v.hr>90?"vwarn":"";var spCls=v.spo2<90?"alert":v.spo2<94?"vwarn":"";var bpCls=v.sys<90?"alert":v.sys<100?"vwarn":"";var callBtn=(p.status==="critical"||p.status==="warning")?"<button class='icu-call-btn'>⚡ Вызвать врача</button>":"";el.innerHTML='<div class="icu-ch"><div class="st-dot '+esc(p.status)+'"></div><div style="flex:1"><strong style="font-size:.9rem">'+esc(p.name)+'</strong><div style="font-size:.78rem;color:var(--muted)">'+esc(p.bed)+" · "+esc(p.diag)+'</div></div><span class="badge '+(p.status==="critical"?"danger":p.status==="warning"?"warn":"safe")+'">'+esc(stLabel)+'</span></div><div class="icu-cb"><div class="icu-vg"><div class="icu-v '+hrCls+'"><div class="icu-vl">ЧСС</div><div class="icu-vv">'+v.hr+'</div><div class="icu-vu">уд/мин</div></div><div class="icu-v '+bpCls+'"><div class="icu-vl">АД</div><div class="icu-vv">'+v.sys+"/"+v.dia+'</div><div class="icu-vu">мм рт.ст.</div></div><div class="icu-v '+spCls+'"><div class="icu-vl">SpO₂</div><div class="icu-vv">'+v.spo2+'%</div><div class="icu-vu">сатурация</div></div><div class="icu-v"><div class="icu-vl">ЧДД</div><div class="icu-vv">'+v.resp+'</div><div class="icu-vu">вд/мин</div></div><div class="icu-v"><div class="icu-vl">T°C</div><div class="icu-vv">'+v.temp+'</div><div class="icu-vu">аксил.</div></div><div class="icu-v"><div class="icu-vl">'+t("icu_days")+'</div><div class="icu-vv">'+p.days+'</div><div class="icu-vu">'+t("icu_doc").split(" ")[0]+'</div></div></div></div><div class="icu-cf">'+esc(p.notes)+'<div class="icu-cf-footer">'+callBtn+'<span class="icu-upd-time">'+t("icu_upd")+": "+esc(p.upd)+'</span></div></div>';container.appendChild(el)})}
-function openModal(id){var p=patients.find(function(x){return x.id===id});if(!p)return;curModal=p;$("mName").textContent=p.name;$("mWard").textContent=p.ward+" · "+p.diag.join(", ");$("mScoreVal").textContent=p.score;$("mScoreRing").style.strokeDashoffset=RING_C*(1-p.score/100);$("mInsight").textContent=p.insight;var d=p.demo;$("mProfile").innerHTML="<span>"+t("lbl_age")+": <strong>"+d.age+"</strong></span><span>"+t("lbl_gender")+": <strong>"+esc(d.gender)+"</strong></span><span>"+t("lbl_height")+": <strong>"+esc(d.height)+"</strong></span><span>"+t("lbl_weight")+": <strong>"+esc(d.weight)+"</strong></span><span>BMI: <strong>"+esc(d.bmi)+"</strong></span><span>"+t("lbl_blood")+": <strong>"+esc(d.blood)+"</strong></span>";$("mDiag").innerHTML=p.current.map(function(x){return'<span class="tag">'+esc(x)+"</span>"}).join("");$("mAllergy").innerHTML=(p.allergy.length?p.allergy:["Нет"]).map(function(x){return'<span class="tag danger">'+esc(x)+"</span>"}).join("");$("mMeds").innerHTML=p.meds.map(function(x){return"<span>"+esc(x)+"</span>"}).join("");$("mHist").innerHTML=p.hist.map(function(x){return"<span>"+esc(x)+"</span>"}).join("");renderVTabs(p);$("patModal").classList.add("vis");requestAnimationFrame(function(){requestAnimationFrame(function(){drawChart($("patVChart"),p.vitals[activeVM],160)})})}
+/* ===== NIGHT ROUND ===== */
+function renderWards(){var wg=$("nrGrid");if(!wg)return;wg.innerHTML="";wardData.forEach(function(w,i){var p=patients[i]||patients[0];var c=document.createElement("div");c.className="nr-card"+(w.st==="warning"?" st-warn":w.st==="danger"?" st-danger":"");var stTxt=w.st==="stable"?t("icu_stable"):w.st==="danger"?t("icu_critical"):t("icu_serious");var badgeCls=w.st==="stable"?"safe":w.st==="danger"?"danger":"warn";c.innerHTML='<div class="nr-card-ward">'+t("w_label")+" "+esc(w.name)+'</div><div class="nr-card-name">'+esc(p.name)+'</div><div class="nr-card-diag">'+p.diag.join(" · ")+'</div><div class="nr-card-badge"><span class="badge '+badgeCls+'">'+esc(stTxt)+'</span></div>';c.onclick=function(){openNrModal(i)};wg.appendChild(c)})}
+function openNrModal(idx){selWard=idx;var w=wardData[idx],p=patients[idx]||patients[0];$("nrModalTitle").textContent=t("w_label")+" "+w.name+" — "+p.name;$("nrExam").value="";$("nrPlan").value="";$("nrModal").classList.add("vis")}
+$("nrModalClose").onclick=function(){$("nrModal").classList.remove("vis")};
+$("nrModalCancel").onclick=function(){$("nrModal").classList.remove("vis")};
+$("nrModalSave").onclick=function(){if(selWard===null)return;if(!$("nrExam").value.trim()){toast(t("t_exam"),2000,"err");return}var p=patients[selWard];histData.unshift({time:new Date().toLocaleTimeString().slice(0,5),patient:p.name,type:"round",summary:$("nrExam").value.slice(0,50),diag:p.diag.join(", ")});renderHist();toast(t("t_round"),3000,"ok");$("nrModal").classList.remove("vis");selWard=null};
+$("nrFab").onclick=function(){if(!$("nrModal").classList.contains("vis")){openNrModal(0);return}$("nrExam").value="Сатурация >95%, боль не выражена. Сознание ясное.";$("nrPlan").value="Кислород 2 л/мин, контроль АД каждые 2ч.";toast(t("t_filled"),2000,"ok")};
+$("nrModal").onclick=function(e){if(e.target===$("nrModal"))$("nrModal").classList.remove("vis")};
+/* ===== HISTORY ===== */
+function renderHist(){var hl=$("histList");if(!hl)return;hl.innerHTML="";var q=$("histSearch")?$("histSearch").value.trim().toLowerCase():"";var filtered=histData.filter(function(it){if(histFilter!=="all"&&it.type!==histFilter)return false;if(q&&it.patient.toLowerCase().indexOf(q)<0&&it.summary.toLowerCase().indexOf(q)<0)return false;return true});if(filtered.length===0){hl.innerHTML='<div class="hist-empty">Записи не найдены</div>';return}var groups={"Сегодня":[],"Вчера":[],"Ранее":[]};filtered.forEach(function(it){if(it.time.indexOf(":")>=0)groups["Сегодня"].push(it);else if(it.time==="Вчера")groups["Вчера"].push(it);else groups["Ранее"].push(it)});["Сегодня","Вчера","Ранее"].forEach(function(g){if(groups[g].length===0)return;var title=document.createElement("div");title.className="hist-group-title";title.textContent=g;hl.appendChild(title);groups[g].forEach(function(it){var e=document.createElement("div");e.className="hist-entry";var ini=it.patient.split(" ").map(function(w){return w.charAt(0)}).slice(0,2).join("");var typeLbl=it.type==="soap"?"SOAP":it.type==="round"?"Обход":"Экспорт";e.innerHTML='<div class="avatar" style="width:36px;height:36px;font-size:.72rem">'+esc(ini)+'</div><div class="hist-entry-info"><div class="hist-entry-name">'+esc(it.patient)+'</div><div class="hist-entry-diag">'+esc(it.summary)+'</div></div><span class="hist-entry-badge">'+esc(typeLbl)+'</span><span class="hist-entry-time">'+esc(it.time)+'</span><span class="hist-entry-open">Открыть →</span>';hl.appendChild(e)})})}
+document.querySelectorAll(".hist-pill").forEach(function(pill){pill.onclick=function(){document.querySelectorAll(".hist-pill").forEach(function(p){p.classList.remove("active")});pill.classList.add("active");histFilter=pill.dataset.hf;renderHist()}});
+if($("histSearch"))$("histSearch").oninput=function(){clearTimeout(searchTm);searchTm=setTimeout(renderHist,200)};
+/* ===== ICU ===== */
+function renderICU(){renderICUGrid($("icuGrid"),icuPats);renderICUGrid($("postIcuGrid"),postPats);var all=icuPats.concat(postPats);var critCount=all.filter(function(p){return p.status==="critical"}).length;var avgSpo2=Math.round(all.reduce(function(s,p){return s+p.vitals.spo2},0)/all.length);var now=new Date();var hh=String(now.getHours()).padStart(2,"0");var mm=String(now.getMinutes()).padStart(2,"0");if($("icuTotalCount"))$("icuTotalCount").textContent=all.length;if($("icuCritCount"))$("icuCritCount").textContent=critCount;if($("icuAvgSpo2"))$("icuAvgSpo2").textContent=avgSpo2;if($("icuUpdTime"))$("icuUpdTime").textContent="обновлено "+hh+":"+mm;var icuCrit=icuPats.filter(function(p){return p.status==="critical"}).length;var icuWarn=icuPats.filter(function(p){return p.status==="warning"}).length;if($("icuCritBadge")){var cb=$("icuCritBadge");if(icuCrit){cb.textContent=icuCrit+" критических";cb.style.display=""}else if(icuWarn){cb.textContent=icuWarn+" под наблюдением";cb.className="icu-sec-badge warn";cb.style.display=""}else cb.style.display="none"}if($("icuPostBadge")){var pb=$("icuPostBadge");pb.textContent=postPats.length+" пациентов";pb.className="icu-sec-badge warn";pb.style.display=postPats.length?"":"none"}}
+function renderICUGrid(container,data){container.innerHTML="";data.forEach(function(p){var el=document.createElement("div");el.className="icu-c "+p.status;var stLabel=p.status==="critical"?t("icu_critical"):p.status==="warning"?t("icu_serious"):t("icu_stable");var v=p.vitals;var hrCls=v.hr>100?"alert":v.hr>90?"vwarn":"";var spCls=v.spo2<90?"alert":v.spo2<94?"vwarn":"";var bpCls=v.sys<90?"alert":v.sys<100?"vwarn":"";var callBtn=(p.status==="critical"||p.status==="warning")?'<button class="icu-call-btn2">⚡ Вызвать врача</button>':"";el.innerHTML='<div class="icu-ch"><div class="st-dot '+esc(p.status)+'"></div><div style="flex:1"><strong style="font-size:.9rem">'+esc(p.name)+'</strong><div style="font-size:.78rem;color:var(--muted)">'+esc(p.bed)+' · '+esc(p.diag)+'</div></div><span class="badge '+(p.status==="critical"?"danger":p.status==="warning"?"warn":"safe")+'">'+esc(stLabel)+'</span></div><div class="icu-cb"><div class="icu-vg"><div class="icu-v '+hrCls+'"><div class="icu-vl">ЧСС</div><div class="icu-vv">'+v.hr+'</div><div class="icu-vu">уд/мин</div></div><div class="icu-v '+bpCls+'"><div class="icu-vl">АД</div><div class="icu-vv">'+v.sys+'/'+v.dia+'</div><div class="icu-vu">мм рт.ст.</div></div><div class="icu-v '+spCls+'"><div class="icu-vl">SpO₂</div><div class="icu-vv">'+v.spo2+'%</div><div class="icu-vu">сатурация</div></div><div class="icu-v"><div class="icu-vl">ЧДД</div><div class="icu-vv">'+v.resp+'</div><div class="icu-vu">вд/мин</div></div><div class="icu-v"><div class="icu-vl">T°C</div><div class="icu-vv">'+v.temp+'</div><div class="icu-vu">аксил.</div></div><div class="icu-v"><div class="icu-vl">'+t("icu_days")+'</div><div class="icu-vv">'+p.days+'</div><div class="icu-vu">'+t("icu_doc").split(" ")[0]+'</div></div></div></div><div class="icu-cf">'+esc(p.notes)+'<div class="icu-cf-footer">'+callBtn+'<span class="icu-upd-time">'+t("icu_upd")+': '+esc(p.upd)+'</span></div></div>';container.appendChild(el)})}
+/* ===== PATIENT MODAL ===== */
+function openModal(id){var p=patients.find(function(x){return x.id===id});if(!p)return;curModal=p;$("pmAvatar").textContent=p.ini;$("pmName").textContent=p.name;$("pmMeta").textContent=p.demo.age+"г · "+p.ward;$("pmScoreVal").textContent=p.score;$("pmInsight").textContent=p.insight;var ring=$("pmRing");var rc=p.score<40?"var(--danger)":p.score<70?"var(--warning)":"var(--success)";ring.style.stroke=rc;ring.style.strokeDashoffset=PM_RING_C*(1-p.score/100);var vw=$("pmVitals");vw.innerHTML="";var vKeys=[{k:"ЧСС",unit:"уд/мин",norm:"60-100"},{k:"АД",unit:"мм рт.ст.",norm:"120/80"},{k:"SpO₂",unit:"%",norm:">95%"}];vKeys.forEach(function(vi){var data=p.vitals[vi.k];var last=data?data[data.length-1]:"—";var div=document.createElement("div");div.className="pm-vital";var spark="";if(data&&data.length>1){var sw=80,sh=6;var mn=Math.min.apply(null,data),mx=Math.max.apply(null,data),rng=mx-mn||1;var pts=data.map(function(v,i){return(i*sw/(data.length-1))+","+((1-(v-mn)/rng)*sh)}).join(" ");spark='<svg class="pm-sparkline" viewBox="0 0 '+sw+' '+sh+'" width="'+sw+'" height="'+sh+'"><polyline points="'+pts+'" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'}div.innerHTML='<div class="pm-vital-val">'+esc(String(last))+'</div><div class="pm-vital-unit">'+esc(vi.unit)+'</div><div class="pm-vital-norm">'+esc(vi.norm)+'</div>'+spark;vw.appendChild(div)});var d=p.demo;$("pmProfile").innerHTML="<span>"+t("lbl_age")+": <strong>"+d.age+"</strong></span><span>"+t("lbl_gender")+": <strong>"+esc(d.gender)+"</strong></span><span>"+t("lbl_height")+": <strong>"+esc(d.height)+"</strong></span><span>"+t("lbl_weight")+": <strong>"+esc(d.weight)+"</strong></span><span>BMI: <strong>"+esc(d.bmi)+"</strong></span><span>"+t("lbl_blood")+": <strong>"+esc(d.blood)+"</strong></span>";$("pmDiag").innerHTML=p.current.map(function(x){return'<span class="tag">'+esc(x)+'</span>'}).join("");$("pmAllergy").innerHTML=p.allergy.length?p.allergy.map(function(a){return'<span class="pm-allergy-pill">⚠ '+esc(a)+'</span>'}).join(""):'<span style="font-size:.82rem;color:var(--text-muted)">Нет</span>';$("pmMeds").innerHTML=p.meds.map(function(x){return"<span>"+esc(x)+"</span>"}).join("");$("pmHist").innerHTML=p.hist.map(function(x){return"<span>"+esc(x)+"</span>"}).join("");document.querySelectorAll(".pm-tab").forEach(function(tb,i){tb.classList.toggle("active",i===0)});document.querySelectorAll(".pm-pane").forEach(function(pn,i){pn.classList.toggle("active",i===0)});$("patModal").classList.add("vis")}
 function closeModal(){$("patModal").classList.remove("vis");curModal=null}
-$("closeModal").onclick=closeModal;$("patModal").onclick=function(e){if(e.target===$("patModal"))closeModal()};
-function renderVTabs(p){var mt=$("mVTabs");mt.innerHTML="";Object.keys(p.vitals).forEach(function(k){var b=document.createElement("button");b.className="vt-tab"+(k===activeVM?" active":"");b.textContent=k;b.onclick=function(){activeVM=k;renderVTabs(p);requestAnimationFrame(function(){requestAnimationFrame(function(){drawChart($("patVChart"),p.vitals[activeVM],160)})})};mt.appendChild(b)})}
-$("themeSel").onchange=function(e){setTheme(e.target.value)};$("setLang").onchange=function(e){lang=e.target.value;applyLang()};
+$("closeModal").onclick=closeModal;
+$("patModal").onclick=function(e){if(e.target===$("patModal"))closeModal()};
+document.querySelectorAll(".pm-tab").forEach(function(tab){tab.onclick=function(){document.querySelectorAll(".pm-tab").forEach(function(tb){tb.classList.remove("active")});document.querySelectorAll(".pm-pane").forEach(function(pn){pn.classList.remove("active")});tab.classList.add("active");var pane=$(tab.dataset.pt);if(pane)pane.classList.add("active")}});
+$("pmStartExam").onclick=function(){if(!curModal)return;$("consultPat").value=curModal.id;updatePatCtx();closeModal();goTo("consultation")};
+$("pmShowHist").onclick=function(){closeModal();goTo("history")};
+/* ===== SETTINGS ===== */
+document.querySelectorAll(".set-nav-item").forEach(function(item){item.onclick=function(){document.querySelectorAll(".set-nav-item").forEach(function(i){i.classList.remove("active")});document.querySelectorAll(".set-pane").forEach(function(p){p.classList.remove("active")});item.classList.add("active");var pane=$(item.dataset.sp);if(pane)pane.classList.add("active")}});
+document.querySelectorAll(".toggle-sw").forEach(function(sw){sw.onclick=function(){sw.classList.toggle("on")}});
+$("themeSel").onchange=function(e){setTheme(e.target.value)};
+$("setLang").onchange=function(e){lang=e.target.value;applyLang()};
 $("logoutBtn").onclick=function(){confirm2(t("btn_logout"),recording?t("c_logout_rec"):t("c_logout")).then(function(ok){if(!ok)return;stopRec();$("appShell").classList.add("hidden");$("loginScreen").classList.remove("hidden")})};
-window.onresize=function(){if(curModal&&$("patModal").classList.contains("vis"))drawChart($("patVChart"),curModal.vitals[activeVM],160)};
-function init(){initClock();initWave();buildLangBtns();renderFilters();buildPatList();applyFilters();updateDash();initConsult();renderWards();renderHist();renderICU()}
+/* ===== INIT ===== */
+function init(){var saved=document.body.dataset.theme;if($("themeSel"))$("themeSel").value=saved;updThemeIcon();initClock();initWave();buildLangBtns();renderFilters();buildPatList();applyFilters();updateDash();initConsult();renderWards();renderHist();renderICU()}
 init();
 })();
 </script>
