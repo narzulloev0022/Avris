@@ -29,11 +29,64 @@
 
 ---
 
+## Текущий статус (Апрель 2026)
+
+| Компонент | Статус |
+|-----------|--------|
+| Design System (Deep Navy) | ✅ Session 1-2 COMPLETE |
+| Login Screen | ✅ Session 1 COMPLETE |
+| Dashboard | ✅ Session 2 COMPLETE |
+| Consultation (Split-Screen) | ✅ Session 2 COMPLETE |
+| Night Round / History / ICU / Settings | 🔄 Session 3 (next) |
+| Whisper STT | 🔧 Запланировано |
+| Claude Sonnet SOAP | 🔧 Запланировано |
+| Бэкенд / БД / Аутентификация | ❌ Не начато |
+
+---
+
+## Design System — Deep Navy
+
+Тёмная палитра, реализованная в Session 1-2:
+
+```css
+/* Фоны */
+--bg-base: #080e18
+--bg-surface: #0d1520
+--bg-card: #111e2e
+--bg-elevated: #162437
+--bg-input: #0d1a28
+
+/* Акцент (teal) */
+--accent: #0d9488
+--accent-bright: #14b8a6
+--accent-dim: #0f766e
+--accent-glow: rgba(13,148,136,0.15)
+
+/* Текст */
+--text-primary: #f0f4f8
+--text-secondary: #94a3b8
+--text-muted: #4a5568
+--text-accent: #5eead4
+
+/* Границы */
+--border: rgba(255,255,255,0.06)
+--border-hover: rgba(255,255,255,0.12)
+
+/* Статусы */
+--danger: #ef4444
+--warning: #f59e0b
+--success: #10b981
+--info: #2563eb
+```
+
+---
+
 ## Технологический стек
 
 | Слой | Технология | Статус |
 |------|-----------|--------|
 | Frontend | HTML/CSS/JS (no framework) | ✅ Прототип готов |
+| Design System | Deep Navy (CSS Variables) | ✅ Session 1-2 |
 | STT | OpenAI Whisper | 🔧 Запланировано |
 | LLM / SOAP-генерация | Claude Sonnet (Anthropic) | 🔧 Запланировано |
 | Аутентификация | TBD | ❌ Не начато |
