@@ -332,7 +332,8 @@ textarea{resize:vertical;min-height:90px}
 .cmd-stat{flex:1;min-width:100px;padding:0 28px;text-align:center;display:flex;flex-direction:column;justify-content:center}
 .cmd-stat:first-child{padding-left:0;text-align:left}
 .cmd-v{font-family:var(--font-data);font-size:2.5rem;font-weight:800;line-height:1;color:#fff}
-.cmd-stat.cmd-danger{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.5);border-radius:var(--radius-input);padding:12px 22px;margin:-4px 0;animation:critPulse 1.5s ease infinite}
+.cmd-stat.cmd-danger{background:linear-gradient(135deg,#8B2020,#C53030);border:1px solid rgba(255,255,255,.3);border-radius:var(--radius-input);padding:12px 22px;margin:-4px 0;animation:critPulse 1.5s ease infinite}
+.cmd-stat.cmd-danger .cmd-v,.cmd-stat.cmd-danger .cmd-l,.cmd-stat.cmd-danger .cmd-s{color:#fff!important}
 @keyframes critPulse{0%,100%{box-shadow:0 0 0 0 var(--danger-bg)}50%{box-shadow:0 0 0 4px var(--danger-bg)}}
 .cmd-stat.cmd-danger .cmd-v{color:#fff}
 .cmd-stat.cmd-danger .cmd-l{color:#fff;opacity:1}
