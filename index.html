@@ -225,7 +225,40 @@ textarea{resize:vertical;min-height:90px}
 .confirm-d .btn-row{display:flex;gap:8px;justify-content:center}
 @media(min-width:1024px){.content-area{margin-left:var(--sidebar)}.sidebar{left:0;box-shadow:none}.sidebar-overlay{display:none}.cg{grid-template-columns:1.4fr .6fr}}
 @media(max-width:1023px){.consult-split{flex-direction:column;height:auto}.consult-left,.consult-right{flex:none;width:100%;border-right:none}}
-@media(max-width:640px){.soap-g{grid-template-columns:1fr}.cmd-bar{gap:16px;padding:16px}.cmd-div{display:none}.cmd-stat{padding:0;text-align:left;min-width:calc(50% - 8px)}.cmd-upd{display:none}.stat-row{grid-template-columns:1fr}}
+@media(max-width:768px){
+.cmd-bar{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
+.cmd-div{display:none}
+.cmd-stat{padding:0;text-align:left;min-width:0}
+.cmd-stat:first-child{padding-left:0}
+.cmd-stat.cmd-danger{grid-column:1/-1;order:-1;text-align:center;margin:0;padding:10px 16px}
+.cmd-upd{grid-column:1/-1;text-align:center;margin:0;padding:0}
+.cmd-v{font-size:1.8rem}
+.cmd-l{font-size:10px}
+.cmd-s{font-size:10px}
+.stat-row{grid-template-columns:repeat(3,1fr);gap:10px}
+.stat-card{padding:16px}
+.stat-v{font-size:1.4rem}
+.stat-l{font-size:11px}
+.stat-s{font-size:.65rem}
+.stat-icon{width:32px;height:32px;margin-bottom:8px}
+.stat-icon svg{width:16px;height:16px}
+.main{padding:14px}
+.topbar{padding:0 14px}
+.topbar-l h1{font-size:.92rem}
+.filter-bar{flex-direction:column;gap:8px}
+.filter-bar>div{min-width:100%}
+.p-item{padding:10px 12px;gap:10px}
+.p-name{font-size:.82rem}
+.p-det{font-size:12px}
+.soap-g{grid-template-columns:1fr}
+.cg{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+.stat-row{grid-template-columns:1fr}
+.cmd-bar{grid-template-columns:1fr}
+.cmd-stat{text-align:center}
+.cmd-v{font-size:1.6rem}
+}
 /* ===== CONSULTATION ===== */
 .pat-ctx{background:var(--bg-card);border:1px solid var(--border);border-radius:0;padding:16px 24px;margin:0 -20px;cursor:pointer;transition:border-color var(--transition);position:relative;user-select:none}
 .pat-ctx:hover{border-color:var(--border-hover)}
