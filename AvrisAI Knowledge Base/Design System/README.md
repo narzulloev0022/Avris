@@ -203,6 +203,61 @@ Legacy-алиасы: `--r: 12px`, `--r2: 16px`, `--r3: 8px`
 
 ---
 
+## Градиенты
+
+### Основной градиент (stats bar, stat cards)
+```css
+background: linear-gradient(135deg, #1A4A3E 0%, #4AA391 100%);
+```
+Тёмный forest green → яркий teal. Всегда 135deg. Текст на градиентах — белый (`#fff`), подписи `rgba(255,255,255,0.8)`.
+
+### Критический градиент (danger-карточка в stats bar)
+```css
+background: linear-gradient(135deg, #8B2020, #C53030);
+```
+На мобильных (480px) заменяется на `rgba(239,68,68,0.2)` с бордером `rgba(239,68,68,0.5)`.
+
+### Палитра Avris Score
+
+| Диапазон | Статус | Цвет | CSS-переменная |
+|----------|--------|------|----------------|
+| 0–39 | Критический | `#EF4444` | `--danger` |
+| 40–59 | Наблюдение | `#F59E0B` | `--warning` |
+| 60–79 | Умеренный | `#3B82F6` | `--info` |
+| 80–100 | Стабильный | `#10B981` | `--success` |
+
+---
+
+## Мобильная адаптация (max-width: 480px)
+
+### Stats bar (`.cmd-bar`)
+- `display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px`
+- «КРИТИЧЕСКИХ» — `grid-column: 1/-1`, красный фон, на всю ширину сверху
+- 4 оставшихся стата — grid 2x2
+- «Обновлено» — `grid-column: 1/-1`, по центру
+- Dividers (`.cmd-div`) — `display: none`
+
+### Stat cards (`.stat-card`)
+- 1 колонка (`grid-template-columns: 1fr`)
+- Каждая карточка: CSS grid `36px 1fr` — иконка слева (spans all rows), текст справа
+- Иконка в круге `rgba(255,255,255,0.2)`, 36x36px
+
+### Фильтры
+- Поиск на полную ширину
+- Два селекта в grid 2 колонки
+
+### Пациенты
+- Аватар 36px, имя+диагноз, бейдж справа
+
+### Порядок медиа-запросов
+Медиа-запросы размещаются ПОСЛЕ базовых стилей компонентов:
+1. `@media (min-width: 1024px)` — desktop sidebar
+2. `@media (max-width: 1023px)` — tablet
+3. `@media (max-width: 768px)` — mobile
+4. `@media (max-width: 480px)` — small mobile (iPhone)
+
+---
+
 ## Подготовлено (CSS готов, JS не подключён)
 
 - **Skeleton loading:** класс `.skeleton` с `skeletonPulse` для SOAP-текстарей
