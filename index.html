@@ -51,6 +51,10 @@ body{font-family:var(--font-ui);background:var(--bg);color:var(--text);transitio
 .btn.sm{height:34px;padding:0 12px;font-size:.8rem}
 .icon-btn{width:38px;height:38px;border-radius:var(--r3);border:1px solid var(--border);background:var(--card);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;font-size:1rem}
 .icon-btn:hover{background:var(--ghost);border-color:var(--accent)}
+.topbar-r .icon-btn{width:36px;height:36px;border-radius:50%;border:none;background:transparent}
+.topbar-r .icon-btn:hover{background:rgba(74,163,145,.12);border:none}
+.topbar-r #themeToggle{background:#4AA391;color:#fff}
+.topbar-r #themeToggle:hover{background:#3d8a79}
 input,select,textarea{width:100%;border-radius:var(--r);border:1px solid var(--border);padding:10px 14px;background:var(--card);color:var(--text);font-size:.88rem;font-family:var(--font);transition:all .2s}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,163,145,.15)}
 label{font-size:.75rem;font-weight:600;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
@@ -594,6 +598,10 @@ body[data-theme="light"] .stat-card{background:linear-gradient(135deg,#1A4A3E 0%
 body[data-theme="light"] .stat-card:hover{filter:brightness(1.08)}
 body[data-theme="light"] .icon-btn{background:#F2EDE5;border-color:rgba(0,0,0,.08);color:#1a202c}
 body[data-theme="light"] .icon-btn:hover{background:rgba(74,163,145,.08)}
+body[data-theme="light"] .topbar-r .icon-btn{background:transparent;border:none;color:#1a202c}
+body[data-theme="light"] .topbar-r .icon-btn:hover{background:rgba(74,163,145,.12)}
+body[data-theme="light"] .topbar-r #themeToggle{background:#4AA391;color:#fff}
+body[data-theme="light"] .topbar-r #themeToggle:hover{background:#3d8a79}
 body[data-theme="light"] .notif-item{background:#F2EDE5;border-color:rgba(0,0,0,.06)}
 body[data-theme="light"] .confirm-d{background:#F2EDE5}
 body[data-theme="light"] .toast{background:#F2EDE5;color:#1a202c;border-color:rgba(0,0,0,.08)}
@@ -613,8 +621,8 @@ body[data-theme="light"] input:focus,body[data-theme="light"] select:focus,body[
 <div class="login-screen" id="loginScreen">
 <div class="login-top-bar">
 <div class="login-theme" id="loginThemeSw">
-<button data-th="dark" class="login-theme-btn">🌙</button>
-<button data-th="light" class="login-theme-btn">☀️</button>
+<button data-th="dark" class="login-theme-btn" aria-label="Dark"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg></button>
+<button data-th="light" class="login-theme-btn" aria-label="Light"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
 </div>
 <div class="login-lang" id="langSelLogin"></div>
 </div>
