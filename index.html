@@ -254,25 +254,8 @@ textarea{resize:vertical;min-height:90px}
 .cg{grid-template-columns:1fr}
 }
 @media(max-width:480px){
-.cmd-bar{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
-.cmd-div{display:none}
-.cmd-stat{padding:0;text-align:center;min-width:0}
-.cmd-stat:first-child{padding-left:0}
-.cmd-stat.cmd-danger{grid-column:1/-1;order:-1;margin:0;padding:12px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.5);border-radius:12px;text-align:center}
-.cmd-stat.cmd-danger .cmd-v{color:#fff}
-.cmd-stat.cmd-danger .cmd-l{color:#fff;opacity:1}
-.cmd-stat.cmd-danger .cmd-s{color:#fff;opacity:.85}
-.cmd-upd{grid-column:1/-1;order:10;text-align:center;font-size:.75rem;margin:0;padding:0}
-.cmd-v{font-size:1.5rem}
-.cmd-l{font-size:9px}
-.cmd-s{font-size:9px}
-.stat-row{grid-template-columns:1fr;gap:12px}
-.stat-card{display:grid;grid-template-columns:36px 1fr;column-gap:14px;row-gap:0;align-items:center;padding:14px 18px;text-align:left}
-.stat-icon{grid-row:1/4;margin:0;width:36px;height:36px;align-self:center}
-.stat-icon svg{width:18px;height:18px}
-.stat-v{font-size:1.3rem;margin:0;line-height:1.2}
-.stat-l{margin:0;font-size:.8rem}
-.stat-s{grid-column:2;margin:0;font-size:.68rem}
+.soap-g{grid-template-columns:1fr}
+.cg{grid-template-columns:1fr}
 }
 /* ===== CONSULTATION ===== */
 .pat-ctx{background:var(--bg-card);border:1px solid var(--border);border-radius:0;padding:16px 24px;margin:0 -20px;cursor:pointer;transition:border-color var(--transition);position:relative;user-select:none}
@@ -388,6 +371,35 @@ textarea{resize:vertical;min-height:90px}
 .icu-call-btn{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:4px;background:var(--danger-bg);color:var(--danger);font-size:.72rem;font-weight:700;border:1px solid rgba(220,38,38,.2);cursor:pointer;font-family:var(--font-ui);font-style:normal}
 .icu-call-btn:hover{background:var(--danger);color:#fff}
 .icu-upd-time{font-family:var(--font-data);font-size:.7rem;color:var(--muted);font-weight:500;margin-left:auto}
+/* ===== MOBILE 480px DASHBOARD ===== */
+@media(max-width:480px){
+.cmd-bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0;background:none!important;border:none;box-shadow:none;margin-bottom:16px}
+.cmd-div{display:none}
+.cmd-stat{padding:14px 16px;text-align:center;min-width:0;background:linear-gradient(135deg,#1A4A3E,#4AA391);border-radius:12px;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.cmd-stat:first-child{padding-left:16px;text-align:center}
+.cmd-stat.cmd-danger{grid-column:1/-1;order:-1;margin:0;padding:14px 16px;background:linear-gradient(135deg,#8B2020,#C53030);border:none;border-radius:12px;text-align:center;animation:none;box-shadow:none}
+.cmd-stat.cmd-danger .cmd-v{color:#fff}
+.cmd-stat.cmd-danger .cmd-l{color:#fff;opacity:1}
+.cmd-stat.cmd-danger .cmd-s{color:#fff;opacity:.85}
+.cmd-v{color:#fff;font-size:1.5rem}
+.cmd-l{color:rgba(255,255,255,.85);font-size:9px}
+.cmd-s{color:rgba(255,255,255,.65);font-size:9px}
+.cmd-upd{grid-column:1/-1;order:10;text-align:center;font-size:11px;margin:0;padding:4px 0 0;background:none}
+.stat-row{grid-template-columns:repeat(3,1fr);gap:10px}
+.stat-card{display:flex;flex-direction:column;align-items:center;padding:12px;text-align:center}
+.stat-icon{width:36px;height:36px;margin:0 auto 8px;background:rgba(255,255,255,.15)}
+.stat-icon svg{width:18px;height:18px}
+.stat-v{font-size:20px;margin:0;line-height:1.2}
+.stat-l{margin:4px 0 0;font-size:11px;text-align:center}
+.stat-s{margin:2px 0 0;font-size:.65rem;text-align:center}
+.filter-bar{display:grid!important;grid-template-columns:1fr 1fr;gap:8px;flex-direction:unset}
+.filter-bar>div:first-child{grid-column:1/-1;min-width:100%}
+.filter-bar>div:not(:first-child){min-width:0}
+.p-item{padding:10px 12px;gap:10px}
+.p-avatar{width:36px;height:36px;font-size:.75rem}
+.p-name{font-size:.82rem}
+.p-det{font-size:12px}
+}
 /* ===== FOCUS & TRANSITIONS ===== */
 input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @keyframes screenIn{from{opacity:0}to{opacity:1}}
