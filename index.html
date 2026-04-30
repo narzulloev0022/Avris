@@ -159,9 +159,9 @@ textarea{resize:vertical;min-height:90px}
 .tl-body h4{font-size:.82rem;font-weight:600;margin-bottom:1px}
 .tl-body p{font-size:.78rem;color:var(--text-secondary)}
 .tl-body time{font-size:.7rem;color:var(--text-muted)}
-.consult-split{display:flex;height:calc(100vh - var(--topbar) - 92px)}
-.consult-left{flex:0 0 55%;background:var(--bg-surface);border-right:1px solid var(--border);padding:24px;overflow-y:auto}
-.consult-right{flex:0 0 45%;background:var(--bg-surface);padding:24px;overflow-y:auto}
+.consult-split{display:flex;gap:16px;padding:16px;height:calc(100vh - var(--topbar) - 92px)}
+.consult-left{flex:0 0 55%;background:var(--bg-card);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px;overflow-y:auto}
+.consult-right{flex:0 0 45%;background:var(--bg-card);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px;overflow-y:auto}
 .ward-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .ward-c{border-radius:var(--r);border:1px solid var(--border);padding:14px;background:var(--card);cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:6px}
 .ward-c:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--sh2)}
@@ -262,7 +262,7 @@ textarea{resize:vertical;min-height:90px}
 .cg{grid-template-columns:1fr}
 }
 /* ===== CONSULTATION ===== */
-.pat-ctx{background:var(--bg-card);border:1px solid var(--border);border-radius:0;padding:16px 24px;margin:0 -20px;cursor:pointer;transition:border-color var(--transition);position:relative;user-select:none}
+.pat-ctx{background:var(--bg-card);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px 20px;margin:0 16px 0;cursor:pointer;transition:border-color var(--transition);position:relative;user-select:none}
 .pat-ctx:hover{border-color:var(--border-hover)}
 .pat-ctx-top{display:flex;align-items:center;gap:12px}
 .pat-ctx-info{flex:1;min-width:0}
@@ -285,7 +285,7 @@ textarea{resize:vertical;min-height:90px}
 .pat-ctx-opt-name{font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pat-ctx-opt-ward{font-size:.75rem;color:var(--text-muted)}
 /* Recording */
-.rec-wave-wrap{background:var(--bg-elevated);border-radius:var(--radius-input);padding:12px 16px;height:76px;display:flex;align-items:center;margin-bottom:16px;overflow:hidden;border:1px solid var(--border)}
+.rec-wave-wrap{background:var(--bg-surface);border-radius:12px;padding:12px 16px;height:76px;display:flex;align-items:center;margin-bottom:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.06)}
 .rec-wave-wrap .wave{width:100%;height:48px;justify-content:center}
 .rec-wave-wrap .wave span{width:3px}
 .wave{display:flex;align-items:center;gap:3px;height:40px}
@@ -307,9 +307,9 @@ textarea{resize:vertical;min-height:90px}
 .rec-footer{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .rec-badge{font-size:.72rem;font-weight:500;color:var(--text-muted);background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-pill);padding:3px 9px}
 .rec-lang-pill{font-family:var(--font-data);font-size:.72rem;font-weight:700;color:#fff;background:var(--accent);border-radius:var(--radius-pill);padding:3px 9px}
-.rec-lang-sw{display:inline-flex;gap:2px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:2px}
-.rec-lang-btn{font-family:var(--font-data);font-size:.72rem;font-weight:700;color:var(--text-muted);background:transparent;border:none;border-radius:8px;padding:3px 10px;cursor:pointer;transition:all var(--transition);letter-spacing:.04em}
-.rec-lang-btn:hover{color:var(--text-primary)}
+.rec-lang-sw{display:flex;gap:4px;align-items:center}
+.rec-lang-btn{font-family:var(--font-ui);font-size:12px;font-weight:600;color:#4AA391;background:rgba(74,163,145,0.1);border:none;border-radius:8px;padding:4px 12px;cursor:pointer;transition:all var(--transition)}
+.rec-lang-btn:hover{background:rgba(74,163,145,0.18)}
 .rec-lang-btn.active{background:#4AA391;color:#fff}
 /* Transcript */
 .transcript-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px}
@@ -321,12 +321,9 @@ textarea{resize:vertical;min-height:90px}
 .transcript .word.highlight{background:var(--accent-glow)}
 /* SOAP */
 .soap-g{display:grid;grid-template-columns:1fr;gap:12px}
-.soap-c{border-radius:var(--radius-card);border:1px solid var(--border);border-left:3px solid var(--border);padding:16px;background:var(--bg-card);transition:box-shadow var(--transition)}
+.soap-c{border-radius:12px;border:1px solid rgba(255,255,255,0.06);border-left:3px solid #4AA391;padding:16px;background:var(--bg-surface);transition:box-shadow var(--transition)}
 .soap-c:focus-within{box-shadow:0 0 0 3px var(--accent-glow)}
-.soap-s{border-left-color:#3b82f6}
-.soap-o{border-left-color:#10b981}
-.soap-a{border-left-color:#f59e0b}
-.soap-p{border-left-color:#4AA391}
+.soap-s,.soap-o,.soap-a,.soap-p{border-left-color:#4AA391}
 .soap-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .soap-hdr h5{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin:0}
 .soap-ai-tag{font-size:.68rem;font-weight:600;color:var(--text-muted);background:var(--bg-elevated);border-radius:4px;padding:2px 7px}
@@ -570,14 +567,13 @@ body[data-theme="light"] .login-screen{background:#E9E0D2}
 body[data-theme="light"] .login-field input{background:#F2EDE5;border-color:rgba(0,0,0,.1);color:#1a202c}
 body[data-theme="light"] .login-field input::placeholder{color:#a0aec0}
 body[data-theme="light"] .login-submit{box-shadow:0 2px 8px rgba(74,163,145,.25)}
-body[data-theme="light"] .consult-left,body[data-theme="light"] .consult-right{background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);box-shadow:0 2px 8px rgba(0,0,0,0.06);border-radius:16px;margin:12px;padding:24px}
-body[data-theme="light"] .consult-left{border-right:1px solid rgba(0,0,0,0.08)}
-body[data-theme="light"] .pat-ctx{background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin:0 0 16px 0;padding:16px 20px}
+body[data-theme="light"] .consult-left,body[data-theme="light"] .consult-right{background:#FFFFFF;border-color:rgba(0,0,0,0.08);box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+body[data-theme="light"] .pat-ctx{background:#FFFFFF;border-color:rgba(0,0,0,0.08);box-shadow:0 2px 8px rgba(0,0,0,0.06)}
 body[data-theme="light"] .pat-ctx:hover{border-color:rgba(0,0,0,0.12)}
 body[data-theme="light"] .pat-ctx-diag{background:#F0EBE3;border:1px solid rgba(0,0,0,0.08);border-radius:8px;color:#1a202c}
-body[data-theme="light"] .rec-wave-wrap{background:#F8F5F0;border-color:rgba(0,0,0,0.06);border-radius:12px}
+body[data-theme="light"] .rec-wave-wrap{background:#F8F5F0;border-color:rgba(0,0,0,0.06)}
 body[data-theme="light"] .transcript{background:#F8F5F0;color:#1a202c;border-radius:12px}
-body[data-theme="light"] .soap-c{background:#FFFFFF;border:1px solid rgba(0,0,0,0.06);border-left:3px solid #4AA391;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.05);padding:20px}
+body[data-theme="light"] .soap-c{background:#FFFFFF;border-color:rgba(0,0,0,0.06);border-left:3px solid #4AA391;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
 body[data-theme="light"] .soap-hdr h5{font-weight:600;color:#1A4A3E;font-size:13px;letter-spacing:.5px;text-transform:uppercase}
 body[data-theme="light"] .soap-ai-tag{background:linear-gradient(135deg,#1A4A3E,#4AA391);color:#fff;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;border:none}
 body[data-theme="light"] .ai-badge{background:#4AA391;color:#fff;border:none;border-radius:10px;padding:6px 16px;font-weight:600}
@@ -806,7 +802,7 @@ body[data-theme="light"] input:focus,body[data-theme="light"] select:focus,body[
 <span id="recBarLabel">НАЧАТЬ ЗАПИСЬ</span>
 </button>
 <div class="rec-footer">
-<span class="rec-badge">Whisper AI · Распознавание</span>
+<span class="rec-badge" id="recBadge">Whisper AI · Распознавание</span>
 <div class="rec-lang-sw" id="recLangSw"><button class="rec-lang-btn active" data-rl="ru">RU</button><button class="rec-lang-btn" data-rl="tj">TJ</button><button class="rec-lang-btn" data-rl="en">EN</button></div>
 </div>
 <div class="transcript-hdr">
@@ -1059,7 +1055,7 @@ function buildPatCtxDropdown(){var dd=$("patCtxDropdown");if(!dd)return;dd.inner
 function initConsult(){var cp=$("consultPat");cp.innerHTML="";patients.forEach(function(p){var o=document.createElement("option");o.value=p.id;o.textContent=p.name;cp.appendChild(o)});updatePatCtx();buildPatCtxDropdown()}
 $("patCtx").onclick=function(e){if(e.target.closest(".pat-ctx-opt"))return;$("patCtx").classList.toggle("open")};
 $("micBtn").onclick=function(){recording?stopRec():startRec()};$("stopRec").onclick=stopRec;
-var recLang="ru";document.querySelectorAll(".rec-lang-btn").forEach(function(b){b.onclick=function(){recLang=b.dataset.rl;document.querySelectorAll(".rec-lang-btn").forEach(function(x){x.classList.toggle("active",x===b)});if(!recording){var tt=$("transcriptText");if(tt&&(!tt.textContent.trim()||tt.dataset.ph==="1")){tt.textContent=TR[recLang].tr_ph;tt.dataset.ph="1"}}}});
+var recLang="ru";var recBadgeMap={ru:"Whisper AI · Распознавание",tj:"Whisper AI · Шинохт",en:"Whisper AI · Recognition"};document.querySelectorAll(".rec-lang-btn").forEach(function(b){b.onclick=function(){recLang=b.dataset.rl;document.querySelectorAll(".rec-lang-btn").forEach(function(x){x.classList.toggle("active",x===b)});if($("recBadge"))$("recBadge").textContent=recBadgeMap[recLang];if(!recording){var tt=$("transcriptText");if(tt)tt.textContent=TR[recLang].tr_ph}}});
 $("clearRec").onclick=function(){$("transcriptText").textContent=t("tr_ph");if($("transcriptMeta"))$("transcriptMeta").textContent="0 слов";$("soapS").value="";$("soapO").value="";$("soapA").value="";$("soapP").value=""};
 $("soapConfirm").onclick=function(){if(!$("soapS").value.trim()&&!$("soapO").value.trim()){toast(t("t_soap_e"),2000,"err");return}var cp=$("consultPat"),pt=patients.find(function(p){return p.id===cp.value});histData.unshift({time:new Date().toLocaleTimeString().slice(0,5),patient:pt?pt.name:"—",type:"soap",summary:($("soapA").value||"").slice(0,50)||"Запись сохранена",diag:pt?pt.diag.join(", "):""});renderHist();toast(t("t_soap"),3000,"ok");$("soapS").value="";$("soapO").value="";$("soapA").value="";$("soapP").value=""};
 function startRec(){recording=true;recStart=Date.now();$("micBtn").classList.add("rec");$("waveform").classList.add("rec");$("recInd").classList.add("on");$("transcriptText").textContent="";if($("recBarLabel"))$("recBarLabel").textContent="ОСТАНОВИТЬ ЗАПИСЬ";if($("recStatusLbl"))$("recStatusLbl").textContent="Идёт запись...";if($("transcriptMeta"))$("transcriptMeta").textContent="0 слов";startTimer();startTypewriter()}
