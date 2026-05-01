@@ -1,12 +1,30 @@
-# Дизайн-система Avris AI — Deep Navy
+# Дизайн-система Avris AI — Deep Navy + RAL 9016
 
-Dark-first дизайн-система, реализованная в `index.html` через CSS-переменные (`:root`). Обновлена в Session 1-2 (апрель 2026).
+Двойная тема, реализованная в `index.html` через CSS-переменные (`:root` для тёмной + `body[data-theme="light"]` override). Тёмная — Deep Navy (Session 1-2). Светлая — обновлена с RAL 9001 на **RAL 9016 Pure White (`#F1F0EA`)** в мае 2026.
 
 ---
 
 ## Палитра
 
-### Фоны
+### Светлая тема — RAL 9016 Pure White (официальный фон)
+
+`#F1F0EA` выбран как основной фон вместо ранее использованного RAL 9001 Cream (`#E9E0D2`). Более холодный нейтральный белый, лучше сочетается с teal-акцентом.
+
+| Роль | Значение | CSS-переменные |
+|------|----------|----------------|
+| Фон страницы | `#F1F0EA` | `--bg`, `--bg-base`, `--bg-light` |
+| Карточки / поверхности | `#FFFFFF` | `--card`, `--bg-card`, `--bg-surface`, `--bg-input` |
+| Sidebar / elevated | `#E8E7E2` | `--bg-elevated`, `--card2`, `--sidebar-light` |
+| Панели inner (transcript, waveform, SOAP внутри) | `#F8F5F0` | (используется напрямую) |
+| Diagnosis pills | `#F0EBE3` | `.pat-ctx-diag` |
+| Текст основной | `#1a202c` | `--text`, `--text-primary` |
+| Текст вторичный | `#4a5568` | `--text-secondary` |
+| Текст приглушённый (тёплый, контрастен на `#F1F0EA`) | `#8a8275` | `--text-muted`, `--muted` |
+| Граница | `rgba(0,0,0,0.08)` | `--border` |
+| Граница hover | `rgba(0,0,0,0.12)` | `--border-hover` |
+| Mobile «Обновлено» override | `#5C5C5C` | (специально под cream/white) |
+
+### Тёмная тема — Deep Navy
 
 | Токен | Значение | Назначение |
 |-------|----------|------------|
@@ -15,60 +33,43 @@ Dark-first дизайн-система, реализованная в `index.htm
 | `--bg-card` | `#111e2e` | Карточки |
 | `--bg-elevated` | `#162437` | Hover-состояния карточек |
 | `--bg-input` | `#0d1a28` | Поля ввода |
-
-### Акцент (Teal)
-
-| Токен | Значение | Назначение |
-|-------|----------|------------|
-| `--accent` | `#0d9488` | Основной бренд-цвет |
-| `--accent-bright` | `#14b8a6` | Hover-состояние |
-| `--accent-dim` | `#0f766e` | Приглушённый акцент |
-| `--accent-glow` | `rgba(13,148,136,0.15)` | Свечение, фон кнопок |
-
-### Текст
-
-| Токен | Значение | Назначение |
-|-------|----------|------------|
 | `--text-primary` | `#f0f4f8` | Основной текст |
 | `--text-secondary` | `#94a3b8` | Вторичный текст |
 | `--text-muted` | `#4a5568` | Приглушённый / лейблы |
-| `--text-accent` | `#5eead4` | Акцентный текст (теги, ссылки) |
-
-### Границы
-
-| Токен | Значение | Назначение |
-|-------|----------|------------|
 | `--border` | `rgba(255,255,255,0.06)` | Обычная граница |
 | `--border-hover` | `rgba(255,255,255,0.12)` | Hover-граница |
 
-### Статусы
+### Акцент (Teal) — единый в обеих темах
+
+| Токен | Значение | Назначение |
+|-------|----------|------------|
+| `--accent` | `#4AA391` | Основной бренд-цвет |
+| `--accent-bright` | `#5ab8a1` | Hover-состояние |
+| `--accent-dim` | `#3d8a79` | Приглушённый акцент |
+| `--accent-glow` | `rgba(74,163,145,0.15)` (dark) / `0.10` (light) | Свечение, фон кнопок |
+| `--text-accent` | `#5eead4` (dark) / `#4AA391` (light) | Акцентный текст, теги |
+
+### Статусы — единые в обеих темах
 
 | Токен | Значение | Назначение |
 |-------|----------|------------|
 | `--danger` | `#ef4444` | Critical / ошибка |
 | `--warning` | `#f59e0b` | Warning / наблюдение |
-| `--success` | `#10b981` | Stable / успех |
+| `--success` / `--ok` | `#10b981` | Stable / успех |
 | `--info` | `#2563eb` | Информационный |
+| `--danger-bg` | `rgba(239,68,68,0.10)` (dark) / `0.08` (light) | Подложка |
+| `--warning-bg` | `rgba(245,158,11,0.10)` (dark) / `0.08` (light) | Подложка |
+| `--success-bg` | `rgba(16,185,129,0.10)` (dark) / `0.08` (light) | Подложка |
 
----
-
-## Legacy-алиасы
-
-Для обратной совместимости с существующими CSS-правилами:
+### Legacy-алиасы
 
 ```css
---brand: #0d9488          /* = --accent */
---accent-l: #14b8a6       /* = --accent-bright */
+--brand: #4AA391          /* = --accent */
+--accent-l: #5ab8a1       /* = --accent-bright */
 --ok: #10b981             /* = --success */
 --warn: #f59e0b           /* = --warning */
---bg: #080e18             /* = --bg-base */
---bg2: #0d1520            /* = --bg-surface */
---card: #111e2e           /* = --bg-card */
---card2: #162437          /* = --bg-elevated */
---text: #f0f4f8           /* = --text-primary */
---muted: #94a3b8          /* = --text-secondary */
---ghost: rgba(13,148,136,.12)
---tag-bg: rgba(13,148,136,.15)
+--ghost: rgba(74,163,145,.12)
+--tag-bg: rgba(74,163,145,.15)
 --tag-c: #5eead4
 --safe-bg: rgba(16,185,129,.1)
 --warn-bg: rgba(245,158,11,.1)
@@ -228,33 +229,42 @@ background: linear-gradient(135deg, #8B2020, #C53030);
 
 ---
 
-## Мобильная адаптация (max-width: 480px)
+## Мобильная адаптация — все breakpoints
 
-### Stats bar (`.cmd-bar`)
-- `display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px`
-- «КРИТИЧЕСКИХ» — `grid-column: 1/-1`, красный фон, на всю ширину сверху
-- 4 оставшихся стата — grid 2x2
-- «Обновлено» — `grid-column: 1/-1`, по центру
-- Dividers (`.cmd-div`) — `display: none`
+| Breakpoint | Что меняется |
+|------------|--------------|
+| `≥1024px` | `.content-area` отступ слева под фиксированный sidebar; `.cg` дашборда → `1.4fr .6fr` |
+| `≤1023px` | Sidebar становится drawer (overlay); `.consult-split` `flex-direction: column`, `height: auto` |
+| `≤768px` | `.cmd-bar` 2-col grid + danger на всю ширину сверху, `.cmd-div` скрыты; consult-tabs горизонтальный скролл; lab-order-btn full-width; settings tabs горизонтальные с overflow-x:auto; labs-table в `.labs-table-wrap` со скроллом и `min-width: 380px`; pm-vitals → column |
+| `≤640px` | Lab-modal grid из 2 колонок → 1 колонка; modal padding 18px |
+| `≤480px` | `.cmd-bar` grid 1fr+1fr с danger `grid-column:1/-1` сверху, gradient cards; `.stat-row` 3 col компактные с ellipsis на label/sub; `.nr-grid` 1 col; `.icu-vg` 6 vital-боксов в **2 колонки** (3 ряда по 2); `.filter-bar` grid 2 col + reset full-width; settings `.set-nav` flex-wrap:nowrap + overflow-x; `.hist-entry:hover` margin -12px (под padding 14px) |
 
-### Stat cards (`.stat-card`)
-- 1 колонка (`grid-template-columns: 1fr`)
-- Каждая карточка: CSS grid `36px 1fr` — иконка слева (spans all rows), текст справа
-- Иконка в круге `rgba(255,255,255,0.2)`, 36x36px
+### Cmd-bar mobile spec (480px)
+- Grid `1fr 1fr; gap: 10px`, без общего фона
+- «КРИТИЧЕСКИХ» — `grid-column: 1/-1; order: -1`, красный градиент `linear-gradient(135deg, #8B2020, #C53030)`, без анимации pulse
+- Остальные cmd-stat — зелёный градиент `linear-gradient(135deg, #1A4A3E, #4AA391)`, `border-radius: 12px`, `padding: 14px 16px`
+- «Обновлено» — `grid-column: 1/-1`, центрированный, на light-теме `color: #5C5C5C; font-weight: 500`
 
-### Фильтры
-- Поиск на полную ширину
-- Два селекта в grid 2 колонки
+### Stat cards mobile (480px)
+- Остаются 3 колонки `repeat(3, 1fr)` с компактным `padding: 10px 6px`
+- Label и sub получают `text-overflow: ellipsis; white-space: nowrap` чтобы не переносились на 145px ширине
+- Иконка 36×36 в круге `rgba(255,255,255,0.15)`
 
-### Пациенты
-- Аватар 36px, имя+диагноз, бейдж справа
+### ICU mobile (480px)
+- Карточки ICU-c в 1 колонку
+- Vital-сетка `.icu-vg` — 2 колонки вместо 3, `font-size: 1.05rem` для значений (числа типа 118/72 для АД помещаются)
+
+### Lab-modal mobile (640px и ниже)
+- `.lab-group-tests` сетка с 2 колонок → 1 колонка
+- `.lab-modal-card` padding 18px, width 96%
 
 ### Порядок медиа-запросов
-Медиа-запросы размещаются ПОСЛЕ базовых стилей компонентов:
+Размещаются ПОСЛЕ базовых стилей компонентов (правила ниже выигрывают при равной специфичности):
 1. `@media (min-width: 1024px)` — desktop sidebar
-2. `@media (max-width: 1023px)` — tablet
-3. `@media (max-width: 768px)` — mobile
-4. `@media (max-width: 480px)` — small mobile (iPhone)
+2. `@media (max-width: 1023px)` — tablet (consult-split column)
+3. `@media (max-width: 768px)` — mobile primary
+4. `@media (max-width: 640px)` — lab-modal column
+5. `@media (max-width: 480px)` — small mobile (iPhone SE и уже)
 
 ---
 

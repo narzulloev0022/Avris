@@ -6,7 +6,7 @@
 |------|--------|-------------|
 | Session 1: Design System + Login | ✅ Готово | Deep Navy палитра, dark-first CSS variables, Login redesign (centered form, AVRIS + teal dot) |
 | Session 2: Dashboard + Consultation | ✅ Готово | Metrics bar, stat cards, patient list с hover-slide, Consultation 55/45 split-screen, recording surface, SOAP panel |
-| Session 3: Night Round + History + ICU + Settings + Patient Modal | 🔄 Следующий | Переделка оставшихся экранов под Deep Navy |
+| Session 3: Cream theme + Mobile + i18n | ✅ Готово | RAL 9001 Cream light theme, mobile dashboard (480px), SVG icons, Settings tab redesign, unified Consultation light/dark, STT lang switcher (RU/TJ/EN), full RU/TJ/EN translation. См. [[Session3-Progress]] и [[i18n-Reference]] |
 
 ---
 
