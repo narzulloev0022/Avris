@@ -125,11 +125,12 @@ index.html
 --ok: #22c55e           /* зелёный — stable */
 --warn: #f59e0b         /* янтарный — watch */
 --danger: #ef4444       /* красный — critical */
---bg: #f0f8f7           /* фон (light) */
---card: #fff            /* карточки (light) */
---text: #0f1f1e         /* текст (light) */
---muted: #5e7876        /* приглушённый */
---border: #d9ecea       /* границы */
+--bg-light: #F1F0EA     /* фон (RAL 9016 Pure White) */
+--card: #ffffff         /* карточки (light) */
+--sidebar-light: #E8E7E2 /* sidebar / elevated (light) */
+--text: #1a202c         /* текст (light) */
+--muted: #8a8275        /* приглушённый */
+--border: rgba(0,0,0,0.08) /* границы */
 ```
 Dark mode полностью реализован через `body[data-theme=dark]`.
 
