@@ -378,7 +378,7 @@ body[data-theme="light"] .lab-test-row{background:#F1F0EA}
 .notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#ef4444;border:2px solid var(--bg-base);box-sizing:content-box}
 body[data-theme="light"] .notif-dot{border-color:#F1F0EA}
 .lab-notif{border-left:3px solid #4AA391}
-@media(max-width:768px){.lab-order-btn{margin-left:0;width:100%;justify-content:center;margin-top:8px}.consult-tabs{margin:0 0 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap}.labs-card{margin:0;padding:16px}.labs-table{font-size:.78rem}.labs-table td,.labs-table th{padding:6px 3px}}
+@media(max-width:768px){.lab-order-btn{margin-left:0;width:100%;justify-content:center;margin-top:8px}.consult-tabs{margin:0 0 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap}.labs-card{margin:0;padding:16px}.labs-table{font-size:.78rem}.labs-table td,.labs-table th{padding:6px 3px}.labs-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.labs-table-wrap .labs-table{min-width:380px}}
 .evidence-link-ic{display:inline-flex;align-items:center;gap:5px;color:#4AA391;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-left:8px;padding:3px 8px;border-radius:6px;background:rgba(74,163,145,.1)}
 .evidence-link-ic svg{flex-shrink:0}
 .evidence-phrase{position:relative;cursor:pointer;border-radius:3px;border-bottom:2px solid transparent;transition:all .2s ease;padding:0 2px}
@@ -474,8 +474,9 @@ body[data-theme="light"] .cmd-upd{color:#5C5C5C;font-weight:500;font-size:12px}
 .time-saved-banner{flex-direction:column;gap:8px;text-align:center;padding:14px 16px}
 .tsb-left{flex-direction:column;gap:6px;text-align:center}
 .tsb-text{align-items:center}
-.stat-row{grid-template-columns:repeat(3,1fr);gap:10px}
-.stat-card{display:flex;flex-direction:column;align-items:center;padding:12px;text-align:center}
+.stat-row{grid-template-columns:repeat(3,1fr);gap:8px}
+.stat-card{display:flex;flex-direction:column;align-items:center;padding:10px 6px;text-align:center;min-width:0}
+.stat-card .stat-l,.stat-card .stat-s{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
 .stat-icon{width:36px;height:36px;margin:0 auto 8px;background:rgba(255,255,255,.15)}
 .stat-icon svg{width:18px;height:18px}
 .stat-v{font-size:20px;margin:0;line-height:1.2}
@@ -624,7 +625,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .set-cont{padding:20px 0}
 .pm-vitals{flex-direction:column}
 }
-@media(max-width:480px){.nr-grid{grid-template-columns:1fr}}
+@media(max-width:480px){.nr-grid{grid-template-columns:1fr}.icu-vg{grid-template-columns:repeat(2,1fr)}.icu-vv{font-size:1.05rem}}
 /* ===== LIGHT THEME ===== */
 body[data-theme="light"]{
 --bg-base:#F1F0EA;--bg-surface:#FFFFFF;--bg-card:#FFFFFF;--bg-elevated:#E8E7E2;--bg-input:#FFFFFF;
@@ -955,7 +956,7 @@ body[data-theme="light"] input:focus,body[data-theme="light"] select:focus,body[
 </div>
 <button class="btn ghost sm">PDF</button>
 </div>
-<table class="labs-table">
+<div class="labs-table-wrap"><table class="labs-table">
 <thead><tr><th data-i18n="lab_param">Показатель</th><th data-i18n="lab_value">Значение</th><th data-i18n="lab_norm">Норма</th><th data-i18n="lab_status">Статус</th></tr></thead>
 <tbody>
 <tr><td data-i18n="lab_hb">Гемоглобин</td><td class="warn">118 <span data-i18n="unit_gl">г/л</span></td><td>120–160</td><td><span class="lab-flag warn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> <span data-i18n="lab_low">НИЗКИЙ</span></span></td></tr>
@@ -963,7 +964,7 @@ body[data-theme="light"] input:focus,body[data-theme="light"] select:focus,body[
 <tr><td data-i18n="lab_plt">Тромбоциты</td><td>245 <span data-i18n="unit_109l">× 10⁹/л</span></td><td>150–400</td><td><span class="lab-flag ok"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <span data-i18n="lab_normal">НОРМА</span></span></td></tr>
 <tr><td data-i18n="lab_esr">СОЭ</td><td class="danger">28 <span data-i18n="unit_mmh">мм/ч</span></td><td>2–15</td><td><span class="lab-flag danger"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="9"/></svg> <span data-i18n="lab_high">ВЫСОКИЙ</span></span></td></tr>
 </tbody>
-</table>
+</table></div>
 <div class="lab-ai-comment">
 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
 <div>
