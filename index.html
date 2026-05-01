@@ -319,6 +319,16 @@ textarea{resize:vertical;min-height:90px}
 .transcript .word{cursor:pointer;border-radius:3px;transition:background var(--transition)}
 .transcript .word:hover{background:var(--accent-glow)}
 .transcript .word.highlight{background:var(--accent-glow)}
+/* Evidence Link */
+.evidence-link-ic{display:inline-flex;align-items:center;gap:5px;color:#4AA391;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-left:8px;padding:3px 8px;border-radius:6px;background:rgba(74,163,145,.1)}
+.evidence-link-ic svg{flex-shrink:0}
+.evidence-phrase{position:relative;cursor:pointer;border-radius:3px;border-bottom:2px solid transparent;transition:all .2s ease;padding:0 2px}
+.evidence-phrase:hover{background:rgba(74,163,145,.15);border-bottom-color:#4AA391}
+.evidence-phrase[data-tip]:hover::after{content:"→ "attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1A4A3E;color:#fff;border-radius:6px;font-size:11px;font-weight:600;padding:3px 8px;white-space:nowrap;pointer-events:none;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.evidence-phrase[data-tip]:hover::before{content:"";position:absolute;bottom:100%;left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:#1A4A3E;z-index:10}
+.soap-c.ev-highlight{border-left-color:#FFB800!important;background:linear-gradient(0deg,rgba(255,184,0,0.08),rgba(255,184,0,0.08)),var(--bg-surface)}
+body[data-theme="light"] .soap-c.ev-highlight{background:linear-gradient(0deg,rgba(255,184,0,0.08),rgba(255,184,0,0.08)),#FFFFFF}
+.soap-c{transition:all .3s ease}
 /* SOAP */
 .soap-g{display:grid;grid-template-columns:1fr;gap:12px}
 .soap-c{border-radius:12px;border:1px solid rgba(255,255,255,0.06);border-left:3px solid #4AA391;padding:16px;background:var(--bg-surface);transition:box-shadow var(--transition)}
@@ -831,6 +841,7 @@ body[data-theme="light"] input:focus,body[data-theme="light"] select:focus,body[
 </div>
 <div class="transcript-hdr">
 <label data-i18n="lbl_transcript">ТРАНСКРИПТ</label>
+<span class="evidence-link-ic" id="evLinkIc" title="Evidence Link"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg><span>Evidence Link</span></span>
 <span class="transcript-meta" id="transcriptMeta">0 <span data-i18n="rec_words">слов</span></span>
 <button class="btn ghost sm" id="clearRec" data-i18n="btn_clear">Очистить</button>
 </div>
@@ -1078,6 +1089,9 @@ function updatePatCtx(){var cp=$("consultPat");if(!cp)return;var p=patients.find
 function buildPatCtxDropdown(){var dd=$("patCtxDropdown");if(!dd)return;dd.innerHTML="";patients.forEach(function(p){var rc=p.score<40?"danger":p.score<70?"warn":"safe";var d=document.createElement("div");d.className="pat-ctx-opt";d.innerHTML='<div class="avatar" style="width:30px;height:30px;font-size:.65rem;flex-shrink:0">'+esc(p.ini)+'</div><div class="pat-ctx-opt-info"><div class="pat-ctx-opt-name">'+esc(p.name)+'</div><div class="pat-ctx-opt-ward">'+esc(p.ward)+'</div></div><span class="score-pill '+rc+'">'+p.score+'</span>';d.onclick=function(e){e.stopPropagation();$("consultPat").value=p.id;updatePatCtx();$("patCtx").classList.remove("open")};dd.appendChild(d)})}
 function initConsult(){var cp=$("consultPat");cp.innerHTML="";patients.forEach(function(p){var o=document.createElement("option");o.value=p.id;o.textContent=p.name;cp.appendChild(o)});updatePatCtx();buildPatCtxDropdown()}
 $("patCtx").onclick=function(e){if(e.target.closest(".pat-ctx-opt"))return;$("patCtx").classList.toggle("open")};
+function renderEvidenceTranscript(){var el=$("transcriptText");if(!el)return;el.innerHTML='Пациент <span class="evidence-phrase" data-tip="S" data-link="soapS">жалуется на головную боль</span> уже три дня. На приёме измерено: <span class="evidence-phrase" data-tip="O" data-link="soapO">давление 140/90</span>, пульс 88. Поставлен диагноз: <span class="evidence-phrase" data-tip="A" data-link="soapA">гипертония 2 степени</span>. Решено <span class="evidence-phrase" data-tip="P" data-link="soapP">назначить эналаприл 10мг</span> утром и контроль АД через неделю.';$("soapS").value="Жалобы на головную боль в течение 3 дней.";$("soapO").value="АД 140/90, пульс 88 уд/мин.";$("soapA").value="Гипертония 2 степени.";$("soapP").value="Эналаприл 10 мг утром. Контроль АД через 7 дней.";var meta=$("transcriptMeta");if(meta){var wc=el.textContent.trim().split(/\s+/).filter(function(w){return w.length>0}).length;meta.innerHTML=wc+' <span data-i18n="rec_words">'+t("rec_words")+'</span>'}}
+function clearEvHighlight(){document.querySelectorAll(".soap-c.ev-highlight").forEach(function(c){c.classList.remove("ev-highlight")})}
+document.addEventListener("click",function(e){var ph=e.target.closest(".evidence-phrase");if(ph){var id=ph.getAttribute("data-link");if(!id)return;clearEvHighlight();var ta=$(id);if(ta){var card=ta.closest(".soap-c");if(card){card.classList.add("ev-highlight");card.scrollIntoView({behavior:"smooth",block:"nearest"});setTimeout(clearEvHighlight,2500)}}}else if(!e.target.closest(".soap-c")){clearEvHighlight()}});
 $("micBtn").onclick=function(){recording?stopRec():startRec()};$("stopRec").onclick=stopRec;
 var recLang="ru";var recBadgeMap={ru:"Whisper AI · Распознавание",tj:"Whisper AI · Шинохт",en:"Whisper AI · Recognition"};document.querySelectorAll(".rec-lang-btn").forEach(function(b){b.onclick=function(){recLang=b.dataset.rl;document.querySelectorAll(".rec-lang-btn").forEach(function(x){x.classList.toggle("active",x===b)});if($("recBadge"))$("recBadge").textContent=recBadgeMap[recLang];if(!recording){var tt=$("transcriptText");if(tt)tt.textContent=TR[recLang].tr_ph}}});
 $("clearRec").onclick=function(){$("transcriptText").textContent=t("tr_ph");if($("transcriptMeta"))$("transcriptMeta").innerHTML='0 <span data-i18n="rec_words">'+t("rec_words")+'</span>';$("soapS").value="";$("soapO").value="";$("soapA").value="";$("soapP").value=""};
@@ -1116,7 +1130,7 @@ $("themeSel").onchange=function(e){setTheme(e.target.value)};
 $("setLang").onchange=function(e){lang=e.target.value;applyLang()};
 $("logoutBtn").onclick=function(){confirm2(t("btn_logout"),recording?t("c_logout_rec"):t("c_logout")).then(function(ok){if(!ok)return;stopRec();$("appShell").classList.add("hidden");$("loginScreen").classList.remove("hidden")})};
 /* ===== INIT ===== */
-function init(){var saved=document.body.dataset.theme;if($("themeSel"))$("themeSel").value=saved;updThemeIcon();initClock();initWave();buildLangBtns();renderFilters();buildPatList();applyFilters();updateDash();initConsult();renderWards();renderHist();renderICU()}
+function init(){var saved=document.body.dataset.theme;if($("themeSel"))$("themeSel").value=saved;updThemeIcon();initClock();initWave();buildLangBtns();renderFilters();buildPatList();applyFilters();updateDash();initConsult();renderWards();renderHist();renderICU();renderEvidenceTranscript()}
 init();
 })();
 </script>
