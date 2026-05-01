@@ -14,85 +14,80 @@
 Врачи в Таджикистане и СНГ тратят 30–40% рабочего времени на бумажную документацию. EMR-системы неудобны, часто на русском/английском, без голосового ввода.
 
 ### Решение
-- Голосовой ввод на родном языке (русский, таджикский, узбекский)
-- Автоматическая SOAP-документация через AI
+- Голосовой ввод на родном языке (RU/TJ/EN сейчас в UI; узбекский, казахский — V4)
+- Автоматическая SOAP-документация через Claude Sonnet
+- Lab Connect — единое окно для назначений и AI-комментариев к результатам
 - Интеграция с ночными обходами и мониторингом ОРИТ
 
 ### Целевые сегменты
 - **ICP:** Врачи-терапевты, пульмонологи, кардиологи в государственных больницах Таджикистана
-- **Расширение:** Частные клиники СНГ, Казахстан, Узбекистан
+- **Расширение:** Частные клиники СНГ, Казахстан, Узбекистан, далее — масштабирование на госсектор Минздрава
 
-### Модель монетизации
-*(TBD — заполнить по мере разработки)*
-- Подписка на больницу / отделение
-- Возможно: per-seat для частных врачей
+### Модель монетизации (см. полный pricing в Product/README)
+- **Starter $19/мес** — 1 врач, 100 SOAP/мес
+- **Pro $39/мес** — до 5 врачей, Lab Connect, 500 SOAP/мес
+- **Clinical $99/мес** — больница / отделение, до 50 врачей, безлимит
+- **Enterprise** — гос-сектор, on-premise, по запросу
+- 30 дней trial без карты, 20% скидка при годовой
 
 ---
 
-## Текущий статус (Апрель 2026)
+## Текущий статус (Май 2026) — готово к запуску демо
 
 | Компонент | Статус |
 |-----------|--------|
-| Design System (Deep Navy) | ✅ Session 1-2 COMPLETE |
-| Login Screen | ✅ Session 1 COMPLETE |
-| Dashboard | ✅ Session 2 COMPLETE |
-| Consultation (Split-Screen) | ✅ Session 2 COMPLETE |
-| Night Round / History / ICU / Settings | 🔄 Session 3 (next) |
-| Whisper STT | 🔧 Запланировано |
-| Claude Sonnet SOAP | 🔧 Запланировано |
-| Бэкенд / БД / Аутентификация | ❌ Не начато |
+| Design System (Deep Navy + RAL 9016 light) | ✅ Готово |
+| Login / Dashboard / Consultation / Night Round / History / ICU / Settings | ✅ Все 6 экранов готовы |
+| Lab Connect (38 тестов в 6 группах) | ✅ Готово |
+| Evidence Link, Time Saved Banner, Activity Timeline | ✅ Готово |
+| Полное покрытие RU / TJ / EN UI и data-layer | ✅ Готово |
+| Mobile 480px на всех экранах | ✅ Готово |
+| A11y (role="tab", aria-selected, aria-hidden SVGs) | ✅ Готово |
+| Whisper STT интеграция | 🔧 V2 (Q3 2026) |
+| Claude Sonnet SOAP-генерация | 🔧 V2 (Q3 2026) |
+| Аутентификация / БД / Бэкенд | ❌ V2 (Q3 2026) |
+| Realtime ОРИТ (WebSocket) | ❌ V3 (Q4 2026) |
+| Lab Connect production (QR + портал лаборатории) | ❌ V2 (Q3 2026) |
+
+**Готовность к:** инвесторскому демо, клиническим пилотам, переговорам с лабораториями.
 
 ---
 
-## Design System — Deep Navy
+## Технологический стек (финал)
 
-Тёмная палитра, реализованная в Session 1-2:
-
-```css
-/* Фоны */
---bg-base: #080e18
---bg-surface: #0d1520
---bg-card: #111e2e
---bg-elevated: #162437
---bg-input: #0d1a28
-
-/* Акцент (teal) */
---accent: #0d9488
---accent-bright: #14b8a6
---accent-dim: #0f766e
---accent-glow: rgba(13,148,136,0.15)
-
-/* Текст */
---text-primary: #f0f4f8
---text-secondary: #94a3b8
---text-muted: #4a5568
---text-accent: #5eead4
-
-/* Границы */
---border: rgba(255,255,255,0.06)
---border-hover: rgba(255,255,255,0.12)
-
-/* Статусы */
---danger: #ef4444
---warning: #f59e0b
---success: #10b981
---info: #2563eb
-```
-
----
-
-## Технологический стек
-
+### Frontend (текущее)
 | Слой | Технология | Статус |
 |------|-----------|--------|
-| Frontend | HTML/CSS/JS (no framework) | ✅ Прототип готов |
-| Design System | Deep Navy (CSS Variables) | ✅ Session 1-2 |
-| STT | OpenAI Whisper | 🔧 Запланировано |
-| LLM / SOAP-генерация | Claude Sonnet (Anthropic) | 🔧 Запланировано |
-| Аутентификация | TBD | ❌ Не начато |
-| База данных | TBD | ❌ Не начато |
-| Бэкенд | TBD | ❌ Не начато |
-| Деплой | TBD | ❌ Не начато |
+| HTML/CSS/JS | Без фреймворков, без бандлера. Один `index.html` ~1300 строк | ✅ |
+| Шрифты | Inter (UI) + JetBrains Mono (числа) | ✅ |
+| Иконки | ~30 inline SVG (без эмодзи в продакшен-UI) | ✅ |
+| Дизайн-система | CSS-переменные, Deep Navy + RAL 9016 light | ✅ |
+| i18n | Кастомный `TR` объект + `applyLang()`, ~200 ключей × 3 языка | ✅ |
+
+### AI / Backend (планируется)
+| Слой | Технология | Статус |
+|------|-----------|--------|
+| STT | **OpenAI Whisper** (фиксировано) | 🔧 V2 |
+| LLM (SOAP + lab insights) | **Claude Sonnet 4.5** (Anthropic, фиксировано) | 🔧 V2 |
+| Auth | Supabase Auth или Auth0 (TBD) | 🔧 V2 |
+| Database | PostgreSQL через Supabase (TBD) | 🔧 V2 |
+| Backend | TBD — вероятно Node.js / Hono на Cloudflare Workers | 🔧 V2 |
+| File storage | S3-совместимое (для PDF результатов и DICOM в V3) | 🔧 V3 |
+| Deploy | Cloudflare Pages (frontend) + Workers (API) | 🔧 V2 |
+
+---
+
+## Репозиторий и инфраструктура
+
+| Сервис | Адрес / статус |
+|--------|----------------|
+| **Git** | `git@github.com:narzulloev0022/Avris.git` (приватный) |
+| **Ветка** | `main` |
+| **Локальное превью** | `python3 -m http.server 8080` или просто открыть `index.html` |
+| **Домен (запланирован)** | `avris.ai` (продакшен) / `app.avris.ai` (приложение) |
+| **Демо-домен** | `demo.avris.ai` или GitHub Pages для инвесторов |
+| **Docs / KB** | этот Obsidian vault (`AvrisAI Knowledge Base/`) |
+| **Email** | TBD — `team@avris.ai` |
 
 ---
 
