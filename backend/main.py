@@ -14,6 +14,7 @@ from stt import router as stt_router
 from llm import router as llm_router
 from consultations import router as consultations_router
 from patients import router as patients_router
+from lab_orders import router as lab_orders_router
 
 load_dotenv()
 
@@ -53,6 +54,7 @@ app.include_router(stt_router)
 app.include_router(llm_router)
 app.include_router(consultations_router)
 app.include_router(patients_router)
+app.include_router(lab_orders_router)
 
 
 @app.get("/api/health")
@@ -65,6 +67,17 @@ def serve_frontend():
     if INDEX_HTML.exists():
         return FileResponse(INDEX_HTML)
     return {"message": "Avris backend running. Frontend not found at " + str(INDEX_HTML)}
+
+
+LAB_HTML = PROJECT_ROOT / "lab.html"
+
+
+@app.get("/lab")
+@app.get("/lab.html")
+def serve_lab():
+    if LAB_HTML.exists():
+        return FileResponse(LAB_HTML)
+    return {"message": "Lab portal not found"}
 
 
 # Mount any sibling static assets (favicons, future bundled JS) if present
