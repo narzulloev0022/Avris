@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Avris Lab — Портал лаборатории</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#4AA391;--accent-dim:#3d8a79;--ok:#10b981;--warn:#f59e0b;--danger:#ef4444;--bg:#080e18;--card:#111e2e;--elev:#162437;--text:#f0f4f8;--muted:#8a98a8;--border:rgba(255,255,255,.08);--font:'Inter',-apple-system,sans-serif;--font-data:'JetBrains Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+.shell{max-width:760px;margin:0 auto;padding:32px 20px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:baseline;gap:3px}
+.brand-text{font-weight:800;font-size:1.4rem;letter-spacing:-.02em}
+.brand-dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.brand-sub{margin-left:10px;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em}
+.lang-sel{display:flex;gap:2px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:999px;padding:2px}
+.lang-sel button{padding:5px 11px;border:none;background:transparent;color:var(--muted);border-radius:999px;cursor:pointer;font:600 .78rem var(--font)}
+.lang-sel button.active{background:var(--accent);color:#fff}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:18px}
+h1{font-size:1.5rem;font-weight:800;margin-bottom:6px}
+h2{font-size:1.05rem;font-weight:700;margin-bottom:14px}
+h3{font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:20px 0 10px}
+.help{color:var(--muted);font-size:.88rem;margin-bottom:18px}
+label{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+input,textarea{width:100%;background:var(--elev);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font:14px var(--font);transition:border-color .15s,box-shadow .15s}
+input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,163,145,.18)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:10px;padding:0 20px;height:42px;font:600 14px var(--font);cursor:pointer;transition:filter .15s,transform .1s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){filter:brightness(1.08)}
+.btn-primary:disabled{opacity:.5;cursor:wait}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-ghost:hover{background:var(--elev)}
+.row{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px;align-items:end}
+.row .test-name{font-weight:600;font-size:.92rem;padding:10px 0;color:var(--text)}
+.meta{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:14px;font-size:.88rem}
+.meta-item{display:flex;flex-direction:column}
+.meta-item .lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:2px}
+.meta-item .val{font-weight:600}
+.status-pill{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:700;text-transform:uppercase;padding:4px 12px;border-radius:999px;background:rgba(245,158,11,.15);color:#f59e0b}
+.status-pill.received{background:rgba(16,185,129,.15);color:#10b981}
+.error-box{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#ef4444;border-radius:10px;padding:12px 14px;font-size:.88rem;margin-bottom:14px;display:none}
+.error-box.vis{display:block}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 22px;box-shadow:0 10px 40px rgba(0,0,0,.4);font-weight:600;font-size:.88rem;opacity:0;pointer-events:none;transition:all .25s;z-index:99}
+.toast.vis{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.toast.ok{border-color:rgba(16,185,129,.4);color:#10b981}
+.toast.err{border-color:rgba(239,68,68,.4);color:#ef4444}
+.search-row{display:flex;gap:10px}
+.search-row input{flex:1}
+.received-banner{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:10px;padding:14px;margin-bottom:14px;font-size:.88rem;color:#10b981}
+@media(max-width:600px){
+.row{grid-template-columns:1fr;gap:4px}
+.row .test-name{padding:6px 0 2px;border-bottom:none}
+.search-row{flex-direction:column}
+.btn{width:100%}
+header{flex-wrap:wrap;gap:12px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<header>
+<div>
+<div class="brand"><span class="brand-text">AVRIS</span><span class="brand-dot"></span><span class="brand-sub" data-i18n="brand_sub">Лаборатория</span></div>
+</div>
+<div class="lang-sel" id="langSel"></div>
+</header>
+
+<section class="card" id="searchSec">
+<h1 data-i18n="title">Портал лаборатории</h1>
+<p class="help" data-i18n="search_help">Введите код направления или отсканируйте QR-код</p>
+<div class="error-box" id="searchErr"></div>
+<div class="search-row">
+<input id="tokenInput" autocomplete="off" data-phk="ph_token" placeholder="3f8d9c12-...">
+<button class="btn btn-primary" id="loadBtn" data-i18n="btn_load">Загрузить</button>
+</div>
+</section>
+
+<section id="orderSec" hidden>
+<div class="card">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap">
+<h2 data-i18n="order_title" style="margin:0">Направление</h2>
+<span class="status-pill" id="statusPill"></span>
+</div>
+<div class="meta">
+<div class="meta-item"><span class="lbl" data-i18n="lbl_patient">Пациент</span><span class="val" id="patName">—</span></div>
+<div class="meta-item"><span class="lbl" data-i18n="lbl_age">Возраст</span><span class="val" id="patAge">—</span></div>
+<div class="meta-item"><span class="lbl" data-i18n="lbl_ward">Палата</span><span class="val" id="patWard">—</span></div>
+<div class="meta-item"><span class="lbl" data-i18n="lbl_doctor">Врач</span><span class="val" id="docName">—</span></div>
+</div>
+<div id="receivedBanner" class="received-banner" hidden></div>
+
+<form id="resultsForm">
+<h3 data-i18n="tests_h">Назначенные анализы</h3>
+<div class="row" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">
+<div data-i18n="col_test">Показатель</div>
+<div data-i18n="col_value">Значение</div>
+<div data-i18n="col_unit">Ед.</div>
+<div data-i18n="col_norm">Норма</div>
+</div>
+<div id="testsList"></div>
+<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px">
+<button class="btn btn-ghost" type="button" id="cancelBtn" data-i18n="btn_back">Назад</button>
+<button class="btn btn-primary" type="submit" id="submitBtn" data-i18n="btn_send">Отправить результаты</button>
+</div>
+</form>
+</div>
+</section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+var API_BASE = (location.host === "localhost:8080" || location.host === "127.0.0.1:8080") ? "http://localhost:8000" : "";
+function $(id){return document.getElementById(id)}
+
+var TR = {
+  ru:{brand_sub:"Лаборатория",title:"Портал лаборатории",search_help:"Введите код направления или отсканируйте QR-код",ph_token:"3f8d9c12-...",btn_load:"Загрузить",order_title:"Направление",lbl_patient:"Пациент",lbl_age:"Возраст",lbl_ward:"Палата",lbl_doctor:"Врач",tests_h:"Назначенные анализы",col_test:"Показатель",col_value:"Значение",col_unit:"Ед.",col_norm:"Норма",btn_back:"Назад",btn_send:"Отправить результаты",status_pending:"Ожидание",status_received:"Получено",err_not_found:"Направление не найдено",err_load:"Не удалось загрузить",err_send:"Не удалось отправить",err_value:"Заполните хотя бы одно значение",ok_sent:"Результаты отправлены врачу",info_received:"Результаты уже получены и отправлены врачу.",ph_value:"118",ph_unit:"г/л",ph_norm:"120-160"},
+  tj:{brand_sub:"Лаборатория",title:"Портали лаборатория",search_help:"Рамзи равонкуниро ворид кунед ё QR-кодро скан кунед",ph_token:"3f8d9c12-...",btn_load:"Боргирӣ",order_title:"Равонкунӣ",lbl_patient:"Бемор",lbl_age:"Синну сол",lbl_ward:"Палата",lbl_doctor:"Духтур",tests_h:"Таҳлилҳои таъиншуда",col_test:"Нишондод",col_value:"Қимат",col_unit:"Воҳид",col_norm:"Меъёр",btn_back:"Бозгашт",btn_send:"Натиҷаҳоро фиристед",status_pending:"Дар интизор",status_received:"Қабул шуд",err_not_found:"Равонкунӣ ёфт нашуд",err_load:"Боргирӣ ноком",err_send:"Фиристодан ноком",err_value:"Камаш як қимат ворид кунед",ok_sent:"Натиҷаҳо ба духтур фиристода шуданд",info_received:"Натиҷаҳо аллакай қабул ва фиристода шудаанд.",ph_value:"118",ph_unit:"г/л",ph_norm:"120-160"},
+  en:{brand_sub:"Lab",title:"Laboratory Portal",search_help:"Enter the referral code or scan the QR",ph_token:"3f8d9c12-...",btn_load:"Load",order_title:"Referral",lbl_patient:"Patient",lbl_age:"Age",lbl_ward:"Ward",lbl_doctor:"Doctor",tests_h:"Ordered tests",col_test:"Test",col_value:"Value",col_unit:"Unit",col_norm:"Range",btn_back:"Back",btn_send:"Send results",status_pending:"Pending",status_received:"Received",err_not_found:"Referral not found",err_load:"Failed to load",err_send:"Failed to send",err_value:"Fill at least one value",ok_sent:"Results sent to doctor",info_received:"Results have already been submitted.",ph_value:"118",ph_unit:"g/L",ph_norm:"120-160"}
+};
+
+var lang = "ru";
+try { var saved = localStorage.getItem("avris-lab-lang"); if (saved && TR[saved]) lang = saved; } catch(e){}
+
+function t(k){ return (TR[lang] && TR[lang][k]) || k; }
+
+function applyLang(){
+  document.querySelectorAll("[data-i18n]").forEach(function(el){ el.textContent = t(el.getAttribute("data-i18n")); });
+  document.querySelectorAll("[data-phk]").forEach(function(el){ el.placeholder = t(el.getAttribute("data-phk")); });
+  document.documentElement.lang = lang;
+  buildLangBtns();
+  // Re-render any visible test rows for column placeholders
+  document.querySelectorAll(".value-input").forEach(function(el){ el.placeholder = t("ph_value"); });
+  document.querySelectorAll(".unit-input").forEach(function(el){ el.placeholder = t("ph_unit"); });
+  document.querySelectorAll(".norm-input").forEach(function(el){ el.placeholder = t("ph_norm"); });
+  if (currentOrder) updateStatusPill();
+}
+
+function buildLangBtns(){
+  var sel = $("langSel"); sel.innerHTML = "";
+  ["ru","tj","en"].forEach(function(c){
+    var b = document.createElement("button");
+    b.textContent = c.toUpperCase();
+    if (c === lang) b.className = "active";
+    b.onclick = function(){ lang = c; try{ localStorage.setItem("avris-lab-lang", c); }catch(e){} applyLang(); };
+    sel.appendChild(b);
+  });
+}
+
+function showErr(msg){ var el=$("searchErr"); el.textContent=msg; el.classList.add("vis"); }
+function hideErr(){ $("searchErr").classList.remove("vis"); }
+
+var toastTm = null;
+function toast(msg, kind){
+  var el = $("toast");
+  el.textContent = msg;
+  el.className = "toast vis " + (kind || "");
+  clearTimeout(toastTm);
+  toastTm = setTimeout(function(){ el.className = "toast"; }, 2800);
+}
+
+// Lab test labels (mapped from test_keys → human strings in current lang)
+var TEST_LABELS = {
+  ru: { lab_oak:"ОАК (общий анализ крови)", lab_oam:"ОАМ", lab_blood_group:"Группа крови и резус", lab_coagulo:"Коагулограмма", lab_glucose:"Глюкоза", lab_protein:"Общий белок", lab_alat_asat:"АЛТ/АСТ", lab_creatinine:"Креатинин/Мочевина", lab_cholesterol:"Холестерин", lab_bilirubin:"Билирубин", lab_iron:"Железо/Ферритин", lab_hba1c:"HbA1c", lab_vit_d:"Витамин D", lab_vit_b12:"Витамин B12", lab_folate:"Фолиевая кислота", lab_homocysteine:"Гомоцистеин", lab_hiv:"ВИЧ", lab_hep_b:"Гепатит B", lab_hep_c:"Гепатит C", lab_syphilis:"Сифилис (RPR)", lab_covid:"COVID-19", lab_quantiferon:"Квантиферон", lab_strep:"Стрептококк A", lab_tsh:"ТТГ", lab_t4:"Свободный T4", lab_t3:"Свободный T3", lab_cortisol:"Кортизол", lab_testosterone:"Тестостерон", lab_estradiol:"Эстрадиол", lab_ekg:"ЭКГ", lab_xray:"Рентген ОГК", lab_ultrasound:"УЗИ ОБП", lab_ct:"КТ ОГК", lab_mri:"МРТ", lab_holter:"Холтер ЭКГ", lab_eeg:"ЭЭГ", lab_endoscopy:"Эндоскопия", lab_colonoscopy:"Колоноскопия" },
+  tj: { lab_oak:"Таҳлили умумии хун", lab_oam:"Таҳлили пешоб", lab_blood_group:"Гурӯҳи хун", lab_coagulo:"Коагулограмма", lab_glucose:"Глюкоза", lab_protein:"Сафедаи умумӣ", lab_alat_asat:"АЛТ/АСТ", lab_creatinine:"Креатинин", lab_cholesterol:"Холестерин", lab_bilirubin:"Билирубин", lab_iron:"Оҳан", lab_hba1c:"HbA1c", lab_vit_d:"Витамини D", lab_vit_b12:"Витамини B12", lab_folate:"Фолиевая", lab_homocysteine:"Гомоцистеин", lab_hiv:"ВНМЭ", lab_hep_b:"Гепатити B", lab_hep_c:"Гепатити C", lab_syphilis:"Сифилис", lab_covid:"COVID-19", lab_quantiferon:"Квантиферон", lab_strep:"Стрептококк", lab_tsh:"ТТГ", lab_t4:"T4", lab_t3:"T3", lab_cortisol:"Кортизол", lab_testosterone:"Тестостерон", lab_estradiol:"Эстрадиол", lab_ekg:"ЭКГ", lab_xray:"Рентген", lab_ultrasound:"УЗИ", lab_ct:"КТ", lab_mri:"МРТ", lab_holter:"Холтер", lab_eeg:"ЭЭГ", lab_endoscopy:"Эндоскопия", lab_colonoscopy:"Колоноскопия" },
+  en: { lab_oak:"CBC (Complete Blood Count)", lab_oam:"Urinalysis", lab_blood_group:"Blood Group + Rh", lab_coagulo:"Coagulogram", lab_glucose:"Glucose", lab_protein:"Total Protein", lab_alat_asat:"ALT/AST", lab_creatinine:"Creatinine/Urea", lab_cholesterol:"Cholesterol", lab_bilirubin:"Bilirubin", lab_iron:"Iron/Ferritin", lab_hba1c:"HbA1c", lab_vit_d:"Vitamin D", lab_vit_b12:"Vitamin B12", lab_folate:"Folate", lab_homocysteine:"Homocysteine", lab_hiv:"HIV", lab_hep_b:"Hepatitis B", lab_hep_c:"Hepatitis C", lab_syphilis:"Syphilis (RPR)", lab_covid:"COVID-19", lab_quantiferon:"QuantiFERON", lab_strep:"Strep A", lab_tsh:"TSH", lab_t4:"Free T4", lab_t3:"Free T3", lab_cortisol:"Cortisol", lab_testosterone:"Testosterone", lab_estradiol:"Estradiol", lab_ekg:"ECG", lab_xray:"Chest X-ray", lab_ultrasound:"Abdominal US", lab_ct:"CT Chest", lab_mri:"MRI", lab_holter:"Holter ECG", lab_eeg:"EEG", lab_endoscopy:"Endoscopy", lab_colonoscopy:"Colonoscopy" }
+};
+function testLabel(key){
+  var L = TEST_LABELS[lang] || TEST_LABELS.ru;
+  return L[key] || key;
+}
+
+var currentOrder = null;
+
+function updateStatusPill(){
+  if (!currentOrder) return;
+  var pill = $("statusPill");
+  if (currentOrder.status === "received") {
+    pill.textContent = t("status_received");
+    pill.className = "status-pill received";
+  } else {
+    pill.textContent = t("status_pending");
+    pill.className = "status-pill";
+  }
+}
+
+function renderOrder(o){
+  currentOrder = o;
+  $("patName").textContent = o.patient_name || "—";
+  $("patAge").textContent = o.patient_age != null ? String(o.patient_age) : "—";
+  $("patWard").textContent = o.patient_ward || "—";
+  $("docName").textContent = o.doctor_name || "—";
+  updateStatusPill();
+  var list = $("testsList"); list.innerHTML = "";
+  var tests = o.tests || [];
+  if (!tests.length) {
+    var emptyRow = document.createElement("div");
+    emptyRow.style.color = "var(--muted)";
+    emptyRow.style.padding = "10px 0";
+    emptyRow.textContent = "—";
+    list.appendChild(emptyRow);
+  }
+  tests.forEach(function(key){
+    var row = document.createElement("div");
+    row.className = "row";
+    row.dataset.key = key;
+    var prev = (o.results && o.results[key]) || {};
+    row.innerHTML = '<div class="test-name">' + testLabel(key) + '</div>'
+                  + '<div><input class="value-input" data-f="value" placeholder="' + t("ph_value") + '" value="' + (prev.value != null ? prev.value : "") + '"></div>'
+                  + '<div><input class="unit-input"  data-f="unit"  placeholder="' + t("ph_unit")  + '" value="' + (prev.unit  || "") + '"></div>'
+                  + '<div><input class="norm-input"  data-f="range" placeholder="' + t("ph_norm")  + '" value="' + (prev.range || "") + '"></div>';
+    list.appendChild(row);
+  });
+
+  var banner = $("receivedBanner");
+  var submitBtn = $("submitBtn");
+  if (o.status === "received") {
+    banner.textContent = t("info_received");
+    banner.hidden = false;
+    submitBtn.textContent = t("btn_send");
+  } else {
+    banner.hidden = true;
+  }
+  $("orderSec").hidden = false;
+  $("searchSec").hidden = true;
+}
+
+function loadByToken(token){
+  hideErr();
+  if (!token) return;
+  fetch(API_BASE + "/api/lab-orders/by-token/" + encodeURIComponent(token))
+    .then(function(r){
+      if (r.status === 404) { showErr(t("err_not_found")); return null; }
+      if (!r.ok) { showErr(t("err_load")); return null; }
+      return r.json();
+    })
+    .then(function(o){ if (o) renderOrder(o); })
+    .catch(function(){ showErr(t("err_load")); });
+}
+
+function collectResults(){
+  var out = {};
+  document.querySelectorAll("#testsList .row").forEach(function(row){
+    var key = row.dataset.key;
+    var v = row.querySelector('[data-f="value"]').value.trim();
+    var u = row.querySelector('[data-f="unit"]').value.trim();
+    var n = row.querySelector('[data-f="range"]').value.trim();
+    if (v || u || n) out[key] = { value: v, unit: u, range: n };
+  });
+  return out;
+}
+
+$("loadBtn").onclick = function(){
+  var token = $("tokenInput").value.trim();
+  // Accept full URL too: avris://lab/<token> or http://.../?token=...
+  var m = token.match(/avris:\/\/lab\/([^\/?#]+)/i);
+  if (m) token = m[1];
+  loadByToken(token);
+};
+$("tokenInput").addEventListener("keydown", function(e){ if (e.key === "Enter") $("loadBtn").click(); });
+
+$("cancelBtn").onclick = function(){
+  $("orderSec").hidden = true;
+  $("searchSec").hidden = false;
+  $("tokenInput").value = "";
+  currentOrder = null;
+};
+
+$("resultsForm").onsubmit = function(e){
+  e.preventDefault();
+  if (!currentOrder) return;
+  var results = collectResults();
+  if (!Object.keys(results).length) { toast(t("err_value"), "err"); return; }
+  var btn = $("submitBtn");
+  btn.disabled = true;
+  fetch(API_BASE + "/api/lab-orders/" + currentOrder.id + "/results", {
+    method: "PUT",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ results: results })
+  }).then(function(r){
+    if (!r.ok) {
+      return r.json().catch(function(){ return {}; }).then(function(d){
+        toast((d && typeof d.detail === "string") ? d.detail : t("err_send"), "err");
+      });
+    }
+    return r.json().then(function(updated){
+      currentOrder = Object.assign({}, currentOrder, updated, { patient_name: currentOrder.patient_name, doctor_name: currentOrder.doctor_name, patient_age: currentOrder.patient_age, patient_ward: currentOrder.patient_ward });
+      updateStatusPill();
+      $("receivedBanner").textContent = t("info_received");
+      $("receivedBanner").hidden = false;
+      toast(t("ok_sent"), "ok");
+    });
+  }).catch(function(){
+    toast(t("err_send"), "err");
+  }).finally(function(){
+    btn.disabled = false;
+  });
+};
+
+// Auto-load if ?token= is in URL
+var qsToken = new URLSearchParams(location.search).get("token");
+if (qsToken) {
+  $("tokenInput").value = qsToken;
+  setTimeout(function(){ $("loadBtn").click(); }, 100);
+}
+
+applyLang();
+})();
+</script>
+</body>
+</html>

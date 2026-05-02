@@ -87,7 +87,7 @@ class LabOrder(Base):
     __tablename__ = "lab_orders"
 
     id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=False, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=True, index=True)
     doctor_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     qr_token = Column(String, unique=True, nullable=False, index=True)
     tests = Column(JSON, nullable=False, default=list)
