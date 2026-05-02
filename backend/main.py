@@ -10,6 +10,9 @@ from dotenv import load_dotenv
 
 from database import init_db
 from auth import router as auth_router
+from stt import router as stt_router
+from llm import router as llm_router
+from consultations import router as consultations_router
 
 load_dotenv()
 
@@ -45,6 +48,9 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+app.include_router(stt_router)
+app.include_router(llm_router)
+app.include_router(consultations_router)
 
 
 @app.get("/api/health")

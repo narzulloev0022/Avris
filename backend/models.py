@@ -52,7 +52,7 @@ class Consultation(Base):
     __tablename__ = "consultations"
 
     id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=False, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=True, index=True)
     doctor_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     transcript = Column(Text, nullable=True)
     soap_s = Column(Text, nullable=True)
