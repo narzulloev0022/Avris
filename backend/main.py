@@ -13,6 +13,7 @@ from auth import router as auth_router
 from stt import router as stt_router
 from llm import router as llm_router
 from consultations import router as consultations_router
+from patients import router as patients_router
 
 load_dotenv()
 
@@ -51,6 +52,7 @@ app.include_router(auth_router)
 app.include_router(stt_router)
 app.include_router(llm_router)
 app.include_router(consultations_router)
+app.include_router(patients_router)
 
 
 @app.get("/api/health")
