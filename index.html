@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -119,6 +120,8 @@ textarea{resize:vertical;min-height:90px}
 .topbar{position:sticky;top:0;height:var(--topbar);background:rgba(13,21,32,.85);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:800;backdrop-filter:blur(14px);transition:background .2s}
 .topbar-l{display:flex;align-items:center;gap:12px}
 .topbar-l h1{font-size:1.05rem;font-weight:700}
+.screen-title{font-size:16px;font-weight:500;color:var(--text);letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:480px){.screen-title{font-size:14px}}
 .topbar-r{display:flex;align-items:center;gap:6px}
 .rec-ind{display:none;align-items:center;gap:5px;padding:3px 10px;border-radius:var(--r3);background:var(--danger-bg);color:var(--danger);font-size:.75rem;font-weight:700;animation:blink 1.2s ease infinite}
 .rec-ind.on{display:inline-flex}
@@ -195,6 +198,8 @@ textarea{resize:vertical;min-height:90px}
 .set-sec h4{font-size:.88rem;font-weight:700;margin-bottom:14px}
 .notif-panel{position:fixed;top:0;right:-340px;width:320px;height:100%;background:var(--card);border-left:1px solid var(--border);box-shadow:var(--sh2);padding:20px;transition:right .3s;z-index:950;overflow-y:auto}
 .notif-panel.open{right:0}
+.notif-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:opacity .25s;z-index:940}
+.notif-backdrop.vis{opacity:1;pointer-events:auto}
 .notif-list{display:flex;flex-direction:column;gap:10px;margin-top:14px}
 .notif-item{padding:12px;border-radius:var(--r);border:1px solid var(--border);background:var(--card2)}
 .notif-item h4{font-size:.82rem;margin-bottom:3px;display:flex;align-items:center;gap:6px}.notif-item p{font-size:.78rem;color:var(--muted)}.notif-item time{font-size:.7rem;color:var(--muted)}
@@ -267,6 +272,7 @@ textarea{resize:vertical;min-height:90px}
 @media(max-width:480px){
 .soap-g{grid-template-columns:1fr}
 .cg{grid-template-columns:1fr}
+.stat-row{display:none}
 }
 /* ===== CONSULTATION ===== */
 .pat-ctx{background:var(--bg-card);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px 20px;margin:0 16px 0;cursor:pointer;transition:border-color var(--transition);position:relative;user-select:none}
@@ -583,7 +589,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .toggle-sw.on{background:var(--accent);border-color:var(--accent)}
 .toggle-sw::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform var(--transition);box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .toggle-sw.on::after{transform:translateX(20px)}
-.set-pane{display:none}
+.set-pane{display:none;max-width:720px}
 .set-pane.active{display:block}
 .set-profile-card{display:flex;align-items:center;gap:16px;padding:20px;background:var(--bg-elevated);border-radius:var(--radius-card);margin-bottom:20px}
 .set-profile-card strong{font-size:.95rem;display:block}
@@ -771,7 +777,7 @@ body[data-theme="light"] input:focus,body[data-theme="light"] select:focus,body[
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <div class="content-area">
 <header class="topbar">
-<div class="topbar-l"><button class="icon-btn" id="sidebarToggle" aria-label="Menu"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></div>
+<div class="topbar-l"><button class="icon-btn" id="sidebarToggle" aria-label="Menu"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><span id="screenTitle" class="screen-title">Дашборд</span></div>
 <div class="topbar-r">
 <span class="rec-ind" id="recInd">● REC</span>
 <div class="lang-sel lang-sel-top" id="langSel"></div>
@@ -1082,6 +1088,7 @@ body[data-theme="light"] input:focus,body[data-theme="light"] select:focus,body[
 </div>
 </section>
 </div></div></div>
+<div class="notif-backdrop" id="notifBackdrop"></div>
 <div class="notif-panel" id="notifPanel">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><h3 data-i18n="notif_title">Уведомления</h3><button class="icon-btn" id="closeNotif" aria-label="Close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
 <div class="notif-list">
@@ -1150,7 +1157,7 @@ body[data-theme="light"] input:focus,body[data-theme="light"] select:focus,body[
 <h3><span data-i18n="lab_modal_title">Направление на анализ</span> — <span id="labPatName">Иванова А.М.</span></h3>
 <button class="icon-btn" id="labModalClose" type="button" aria-label="Close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
 </div>
-<div class="lab-qr"><svg aria-hidden="true" id="labQrSvg" viewBox="0 0 10 10" width="200" height="200" shape-rendering="crispEdges"></svg></div>
+<div class="lab-qr"><svg aria-hidden="true" id="labQrSvg" width="200" height="200" shape-rendering="crispEdges"></svg></div>
 <div class="lab-qr-help" data-i18n="lab_qr_help">Покажите этот код в лаборатории</div>
 <input class="lab-search-input" id="labSearch" data-phk="lab_search_ph" placeholder="Поиск анализов..." type="search">
 <div id="labGroups"></div>
@@ -1217,7 +1224,9 @@ navs.forEach(function(b){b.onclick=function(){goTo(b.dataset.screen)}});
 $("sidebarToggle").onclick=function(){$("sidebar").classList.toggle("open");$("sidebarOverlay").classList.toggle("vis")};
 $("sidebarOverlay").onclick=function(){$("sidebar").classList.remove("open");$("sidebarOverlay").classList.remove("vis")};
 document.onkeydown=function(e){if(e.key!=="Escape")return;if($("nrModal")&&$("nrModal").classList.contains("vis")){$("nrModal").classList.remove("vis");return}if($("patModal").classList.contains("vis")){closeModal();return}if($("notifPanel").classList.contains("open")){$("notifPanel").classList.remove("open");return}if($("confirmOv").classList.contains("show")){closeC(false)}};
-$("notifToggle").onclick=function(){$("notifPanel").classList.add("open")};$("closeNotif").onclick=function(){$("notifPanel").classList.remove("open")};
+function openNotif(){$("notifPanel").classList.add("open");$("notifBackdrop").classList.add("vis")}
+function closeNotif(){$("notifPanel").classList.remove("open");$("notifBackdrop").classList.remove("vis")}
+$("notifToggle").onclick=openNotif;$("closeNotif").onclick=closeNotif;$("notifBackdrop").onclick=closeNotif;
 function renderFilters(){var df=$("diagFilter"),wf=$("wardFilter");if(!df||!wf)return;while(df.options.length>1)df.remove(1);while(wf.options.length>1)wf.remove(1);var diags={},wards={};patients.forEach(function(p){p.diag.forEach(function(d){diags[d]=1});wards[p.ward]=1});Object.keys(diags).forEach(function(d){var o=document.createElement("option");o.value=d;o.textContent=d;df.appendChild(o)});Object.keys(wards).forEach(function(w){var o=document.createElement("option");o.value=w;o.textContent=w;wf.appendChild(o)})}
 var ps=$("patSearch"),dfl=$("diagFilter"),wfl=$("wardFilter");
 ps.oninput=function(){clearTimeout(searchTm);searchTm=setTimeout(applyFilters,200)};dfl.onchange=applyFilters;wfl.onchange=applyFilters;$("resetF").onclick=function(){ps.value="";dfl.value="all";wfl.value="all";applyFilters()};
@@ -1229,7 +1238,7 @@ function updatePatCtx(){var cp=$("consultPat");if(!cp)return;var p=patients.find
 function buildPatCtxDropdown(){var dd=$("patCtxDropdown");if(!dd)return;dd.innerHTML="";patients.forEach(function(p){var rc=p.score<40?"danger":p.score<70?"warn":"safe";var wardTxt=(lang==="en"&&p.ward_en)?p.ward_en:p.ward;var d=document.createElement("div");d.className="pat-ctx-opt";d.innerHTML='<div class="avatar" style="width:30px;height:30px;font-size:.65rem;flex-shrink:0">'+esc(p.ini)+'</div><div class="pat-ctx-opt-info"><div class="pat-ctx-opt-name">'+esc(p.name)+'</div><div class="pat-ctx-opt-ward">'+esc(wardTxt)+'</div></div><span class="score-pill '+rc+'">'+p.score+'</span>';d.onclick=function(e){e.stopPropagation();$("consultPat").value=p.id;updatePatCtx();$("patCtx").classList.remove("open")};dd.appendChild(d)})}
 function initConsult(){var cp=$("consultPat");cp.innerHTML="";patients.forEach(function(p){var o=document.createElement("option");o.value=p.id;o.textContent=p.name;cp.appendChild(o)});updatePatCtx();buildPatCtxDropdown()}
 $("patCtx").onclick=function(e){if(e.target.closest(".pat-ctx-opt"))return;$("patCtx").classList.toggle("open")};
-function buildQR(){var svg=$("labQrSvg");if(!svg)return;svg.innerHTML="";var seed=42;function rnd(){seed=(seed*9301+49297)%233280;return seed/233280}var corners=[[0,0],[7,0],[0,7]];for(var y=0;y<10;y++)for(var x=0;x<10;x++){var skip=false;corners.forEach(function(c){if(x>=c[0]&&x<c[0]+3&&y>=c[1]&&y<c[1]+3)skip=true});if(skip)continue;if(rnd()<0.5){var r=document.createElementNS("http://www.w3.org/2000/svg","rect");r.setAttribute("x",x);r.setAttribute("y",y);r.setAttribute("width",1);r.setAttribute("height",1);r.setAttribute("fill","#000");svg.appendChild(r)}}corners.forEach(function(c){var outer=document.createElementNS("http://www.w3.org/2000/svg","rect");outer.setAttribute("x",c[0]);outer.setAttribute("y",c[1]);outer.setAttribute("width",3);outer.setAttribute("height",3);outer.setAttribute("fill","#000");svg.appendChild(outer);var inner=document.createElementNS("http://www.w3.org/2000/svg","rect");inner.setAttribute("x",c[0]+1);inner.setAttribute("y",c[1]+1);inner.setAttribute("width",1);inner.setAttribute("height",1);inner.setAttribute("fill","#fff");svg.appendChild(inner)})}
+function buildQR(){var svg=$("labQrSvg");if(!svg)return;svg.innerHTML="";var cp=$("consultPat"),pid=(cp&&cp.value)||"unknown";var payload="avris://lab/"+pid+"/"+Date.now();if(typeof qrcode!=="function"){svg.setAttribute("viewBox","0 0 1 1");return}var qr=qrcode(0,"M");qr.addData(payload);qr.make();var n=qr.getModuleCount();svg.setAttribute("viewBox","0 0 "+n+" "+n);for(var y=0;y<n;y++){for(var x=0;x<n;x++){if(qr.isDark(y,x)){var r=document.createElementNS("http://www.w3.org/2000/svg","rect");r.setAttribute("x",x);r.setAttribute("y",y);r.setAttribute("width",1);r.setAttribute("height",1);r.setAttribute("fill","#000");svg.appendChild(r)}}}}
 var LAB_GROUPS=[
 {k:"clinical",tk:"lab_grp_clinical",tests:[{k:"lab_oak",chk:true},{k:"lab_oam"},{k:"lab_blood_type"},{k:"lab_coag"}]},
 {k:"biochem",tk:"lab_grp_biochem",tests:[{k:"lab_glucose",chk:true},{k:"lab_protein"},{k:"lab_alt_ast"},{k:"lab_creat_urea"},{k:"lab_chol"},{k:"lab_bili"},{k:"lab_iron_ferr"},{k:"lab_hba1c"}]},
