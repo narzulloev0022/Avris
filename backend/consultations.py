@@ -1,12 +1,15 @@
 from datetime import datetime
+from io import BytesIO
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import Consultation, User
+from models import Consultation, Patient, User
 from auth import get_current_user
+from pdf_export import render_consultation_pdf
 
 router = APIRouter(prefix="/api/consultations", tags=["consultations"])
 
@@ -53,15 +56,14 @@ def create_consultation(
 
 @router.get("/", response_model=List[ConsultationResponse])
 def list_consultations(
+    patient_id: Optional[int] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return (
-        db.query(Consultation)
-        .filter(Consultation.doctor_id == current_user.id)
-        .order_by(Consultation.created_at.desc())
-        .all()
-    )
+    q = db.query(Consultation).filter(Consultation.doctor_id == current_user.id)
+    if patient_id is not None:
+        q = q.filter(Consultation.patient_id == patient_id)
+    return q.order_by(Consultation.created_at.desc()).all()
 
 
 @router.get("/{cid}", response_model=ConsultationResponse)
@@ -76,3 +78,26 @@ def get_consultation(
     if c.doctor_id != current_user.id:
         raise HTTPException(status_code=403, detail="Нет доступа к этой консультации")
     return c
+
+
+@router.get("/{cid}/pdf")
+def consultation_pdf(
+    cid: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    c = db.query(Consultation).filter(Consultation.id == cid).first()
+    if not c:
+        raise HTTPException(status_code=404, detail="Консультация не найдена")
+    if c.doctor_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Нет доступа к этой консультации")
+    patient = None
+    if c.patient_id:
+        patient = db.query(Patient).filter(Patient.id == c.patient_id).first()
+    pdf_bytes = render_consultation_pdf(c, patient, current_user)
+    fname = f"avris-consultation-{cid}.pdf"
+    return StreamingResponse(
+        BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{fname}"'},
+    )
