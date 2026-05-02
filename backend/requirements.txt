@@ -10,3 +10,4 @@ bcrypt<5.0
 python-dotenv
 httpx
 resend
+reportlab

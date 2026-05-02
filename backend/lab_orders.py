@@ -1,10 +1,12 @@
 import json
 import logging
 from datetime import datetime
+from io import BytesIO
 from typing import List, Optional, Any
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
@@ -12,6 +14,7 @@ from database import get_db
 from models import LabOrder, User, Patient
 from auth import get_current_user
 from llm import _claude_call, ANTHROPIC_API_KEY
+from pdf_export import render_lab_order_pdf
 
 logger = logging.getLogger(__name__)
 
@@ -159,6 +162,25 @@ def get_order(
     current_user: User = Depends(get_current_user),
 ):
     return _owned_order(db, oid, current_user)
+
+
+@router.get("/{oid}/pdf")
+def lab_order_pdf(
+    oid: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    o = _owned_order(db, oid, current_user)
+    patient = None
+    if o.patient_id:
+        patient = db.query(Patient).filter(Patient.id == o.patient_id).first()
+    pdf_bytes = render_lab_order_pdf(o, patient, current_user)
+    fname = f"avris-lab-order-{oid}.pdf"
+    return StreamingResponse(
+        BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{fname}"'},
+    )
 
 
 # ---------- Public endpoints (lab portal — no auth) ----------
