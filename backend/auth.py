@@ -127,6 +127,12 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     db.refresh(user)
+    # Seed demo patients for the freshly registered doctor (best-effort)
+    try:
+        from patients import seed_demo_patients_for
+        seed_demo_patients_for(db, user.id)
+    except Exception:
+        db.rollback()
     token = create_access_token(user.id)
     return Token(access_token=token, user=UserResponse.model_validate(user))
 
