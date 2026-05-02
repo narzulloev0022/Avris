@@ -1,5 +1,5 @@
-from datetime import datetime
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON, Float
+from datetime import datetime, date
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON, Float, Date
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -11,13 +11,26 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
     full_name = Column(String, nullable=False)
+    first_name = Column(String, nullable=True)
+    last_name = Column(String, nullable=True)
+    patronymic = Column(String, nullable=True)
+    date_of_birth = Column(Date, nullable=True)
+    phone = Column(String, nullable=True)
     specialty = Column(String, nullable=True)
+    hospital_name = Column(String, nullable=True)
+    hospital_address = Column(String, nullable=True)
+    department = Column(String, nullable=True)
+    position = Column(String, nullable=True)
+    experience_years = Column(Integer, nullable=True)
+    license_number = Column(String, nullable=True)
+    avatar_url = Column(String, nullable=True)
     role = Column(String, nullable=False, default="doctor")
     language_pref = Column(String, nullable=False, default="ru")
     theme_pref = Column(String, nullable=False, default="dark")
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     is_active = Column(Boolean, nullable=False, default=True)
     is_verified = Column(Boolean, nullable=False, default=False)
+    profile_completed = Column(Boolean, nullable=False, default=False)
 
     patients = relationship("Patient", back_populates="doctor", cascade="all, delete-orphan")
     consultations = relationship("Consultation", back_populates="doctor", cascade="all, delete-orphan")
