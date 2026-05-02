@@ -5,7 +5,8 @@ from typing import Optional
 from urllib.parse import urlencode
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, status
+import base64
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -264,6 +265,32 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
 
 @router.get("/me", response_model=UserResponse)
 def me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
+AVATAR_MAX_BYTES = 2 * 1024 * 1024  # 2 MB
+AVATAR_ALLOWED_PREFIXES = ("image/jpeg", "image/png", "image/webp")
+
+
+@router.post("/avatar", response_model=UserResponse)
+async def upload_avatar(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    ct = (file.content_type or "").lower()
+    if not any(ct.startswith(p) for p in AVATAR_ALLOWED_PREFIXES):
+        raise HTTPException(status_code=400, detail="Допустимы только JPEG, PNG, WEBP")
+    data = await file.read()
+    if not data:
+        raise HTTPException(status_code=400, detail="Пустой файл")
+    if len(data) > AVATAR_MAX_BYTES:
+        raise HTTPException(status_code=413, detail="Файл слишком большой (макс 2 МБ)")
+    # Pilot-grade storage: base64 data URI inline in the row
+    b64 = base64.b64encode(data).decode("ascii")
+    current_user.avatar_url = f"data:{ct};base64,{b64}"
+    db.commit()
+    db.refresh(current_user)
     return current_user
 
 
