@@ -26,7 +26,7 @@ class User(Base):
     avatar_url = Column(String, nullable=True)
     role = Column(String, nullable=False, default="doctor")
     language_pref = Column(String, nullable=False, default="ru")
-    theme_pref = Column(String, nullable=False, default="dark")
+    theme_pref = Column(String, nullable=False, default="system")
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     is_active = Column(Boolean, nullable=False, default=True)
     is_verified = Column(Boolean, nullable=False, default=False)
