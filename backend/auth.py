@@ -5,7 +5,7 @@ from typing import Optional
 from urllib.parse import urlencode
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -45,14 +45,6 @@ MAILRU_REDIRECT_URI = os.getenv("MAILRU_REDIRECT_URI", "http://localhost:8000/ap
 MAILRU_AUTH_URL = "https://oauth.mail.ru/login"
 MAILRU_TOKEN_URL = "https://oauth.mail.ru/token"
 MAILRU_USERINFO_URL = "https://oauth.mail.ru/userinfo"
-
-APPLE_CLIENT_ID = os.getenv("APPLE_CLIENT_ID", "")
-APPLE_TEAM_ID = os.getenv("APPLE_TEAM_ID", "")
-APPLE_KEY_ID = os.getenv("APPLE_KEY_ID", "")
-APPLE_PRIVATE_KEY = os.getenv("APPLE_PRIVATE_KEY", "").replace("\\n", "\n")
-APPLE_REDIRECT_URI = os.getenv("APPLE_REDIRECT_URI", "http://localhost:8000/api/auth/apple/callback")
-APPLE_AUTH_URL = "https://appleid.apple.com/auth/authorize"
-APPLE_TOKEN_URL = "https://appleid.apple.com/auth/token"
 
 _oauth_states: set[str] = set()
 
@@ -370,82 +362,6 @@ async def google_callback(code: str, state: str, db: Session = Depends(get_db)):
     name = info.get("name") or ""
     if not email:
         raise HTTPException(status_code=400, detail="Google did not return email")
-    user = _upsert_oauth_user(db, email, name)
-    return _redirect_with_token(create_access_token(user.id))
-
-
-def _apple_client_secret() -> str:
-    """Apple requires a JWT signed ES256 with the .p8 private key as client_secret."""
-    if not (APPLE_TEAM_ID and APPLE_KEY_ID and APPLE_PRIVATE_KEY and APPLE_CLIENT_ID):
-        raise HTTPException(status_code=503, detail="Apple OAuth not fully configured")
-    now = int(datetime.utcnow().timestamp())
-    payload = {
-        "iss": APPLE_TEAM_ID,
-        "iat": now,
-        "exp": now + 60 * 60,
-        "aud": "https://appleid.apple.com",
-        "sub": APPLE_CLIENT_ID,
-    }
-    return jwt.encode(
-        payload,
-        APPLE_PRIVATE_KEY,
-        algorithm="ES256",
-        headers={"kid": APPLE_KEY_ID, "alg": "ES256"},
-    )
-
-
-@router.get("/apple")
-def apple_login():
-    if not APPLE_CLIENT_ID:
-        raise HTTPException(status_code=503, detail="Apple OAuth not configured")
-    state = secrets.token_urlsafe(16)
-    _oauth_states.add(state)
-    params = {
-        "client_id": APPLE_CLIENT_ID,
-        "redirect_uri": APPLE_REDIRECT_URI,
-        "response_type": "code",
-        "scope": "name email",
-        "response_mode": "form_post",
-        "state": state,
-    }
-    return RedirectResponse(APPLE_AUTH_URL + "?" + urlencode(params))
-
-
-@router.api_route("/apple/callback", methods=["GET", "POST"])
-async def apple_callback(request: Request, db: Session = Depends(get_db)):
-    # Apple sends form_post on success when scope=email is requested
-    if request.method == "POST":
-        form = await request.form()
-        code = form.get("code")
-        state = form.get("state")
-    else:
-        code = request.query_params.get("code")
-        state = request.query_params.get("state")
-    if not code or not state or state not in _oauth_states:
-        raise HTTPException(status_code=400, detail="Invalid Apple OAuth callback")
-    _oauth_states.discard(state)
-
-    client_secret = _apple_client_secret()
-    async with httpx.AsyncClient(timeout=10) as client:
-        tr = await client.post(APPLE_TOKEN_URL, data={
-            "code": code,
-            "client_id": APPLE_CLIENT_ID,
-            "client_secret": client_secret,
-            "redirect_uri": APPLE_REDIRECT_URI,
-            "grant_type": "authorization_code",
-        })
-        if tr.status_code != 200:
-            raise HTTPException(status_code=400, detail="Apple token exchange failed")
-        token_data = tr.json()
-    id_token = token_data.get("id_token")
-    if not id_token:
-        raise HTTPException(status_code=400, detail="Apple did not return id_token")
-    # We just received id_token directly from Apple over TLS — decode without re-verifying signature
-    claims = jwt.decode(id_token, options={"verify_signature": False, "verify_aud": False})
-    email = (claims.get("email") or "").lower()
-    if not email:
-        raise HTTPException(status_code=400, detail="Apple did not return email (revoke and re-auth)")
-    name = email.split("@")[0]
     user = _upsert_oauth_user(db, email, name)
     return _redirect_with_token(create_access_token(user.id))
 
