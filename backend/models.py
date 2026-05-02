@@ -83,6 +83,22 @@ class Consultation(Base):
     doctor = relationship("User", back_populates="consultations")
 
 
+class NightRound(Base):
+    __tablename__ = "night_rounds"
+
+    id = Column(Integer, primary_key=True, index=True)
+    doctor_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=True, index=True)
+    ward = Column(String, nullable=True)
+    vitals = Column(JSON, nullable=True)
+    notes = Column(Text, nullable=True)
+    plan = Column(Text, nullable=True)
+    transcript = Column(Text, nullable=True)
+    status = Column(String, nullable=True)
+    language = Column(String, nullable=False, default="ru")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 class LabOrder(Base):
     __tablename__ = "lab_orders"
 
