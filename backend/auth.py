@@ -16,10 +16,12 @@ from dotenv import load_dotenv
 from database import get_db
 from models import User
 from schemas import (
-    UserCreate, UserLogin, UserResponse, Token,
-    ForgotPasswordRequest, ResetPasswordRequest, MessageResponse,
+    UserCreate, UserLogin, UserResponse, Token, RegisterResponse,
+    VerifyEmailRequest, ResendCodeRequest,
+    ForgotPasswordRequest, ResetPasswordRequest,
+    UpdateProfileRequest, MessageResponse,
 )
-from email_service import send_password_reset_code
+from email_service import send_password_reset_code, send_verification_code
 
 load_dotenv()
 
@@ -57,8 +59,11 @@ _oauth_states: set[str] = set()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 
-# In-memory store for password reset codes: { email: (code, expires_at) }
+# In-memory stores
 _reset_codes: dict[str, tuple[str, datetime]] = {}
+_verify_codes: dict[str, tuple[str, datetime]] = {}
+_resend_cooldowns: dict[str, datetime] = {}
+RESEND_COOLDOWN_SECONDS = 60
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -110,31 +115,103 @@ def get_current_user(
 
 # ---------- endpoints ----------
 
-@router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
+def _generate_code() -> str:
+    return f"{secrets.randbelow(1_000_000):06d}"
+
+
+def _set_verify_code(email: str) -> str:
+    code = _generate_code()
+    _verify_codes[email] = (code, datetime.utcnow() + timedelta(minutes=15))
+    _resend_cooldowns[email] = datetime.utcnow() + timedelta(seconds=RESEND_COOLDOWN_SECONDS)
+    return code
+
+
+@router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
 def register(payload: UserCreate, db: Session = Depends(get_db)):
-    existing = db.query(User).filter(User.email == payload.email.lower()).first()
+    email = payload.email.lower()
+    existing = db.query(User).filter(User.email == email).first()
     if existing:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Пользователь с таким email уже существует",
+        if existing.is_verified:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Пользователь с таким email уже существует",
+            )
+        # Unverified — allow re-registration: update password + resend code
+        existing.password_hash = hash_password(payload.password)
+        if payload.full_name:
+            existing.full_name = payload.full_name
+        db.commit()
+        user = existing
+    else:
+        user = User(
+            email=email,
+            password_hash=hash_password(payload.password),
+            full_name=payload.full_name or email.split("@")[0],
+            specialty=payload.specialty,
+            is_verified=False,
         )
-    user = User(
-        email=payload.email.lower(),
-        password_hash=hash_password(payload.password),
-        full_name=payload.full_name,
-        specialty=payload.specialty,
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    code = _set_verify_code(email)
+    send_verification_code(email, code, user.full_name)
+    return RegisterResponse(
+        message="Код отправлен на email",
+        requires_verification=True,
+        email=email,
     )
-    db.add(user)
+
+
+@router.post("/verify-email", response_model=Token)
+def verify_email(payload: VerifyEmailRequest, db: Session = Depends(get_db)):
+    email = payload.email.lower()
+    entry = _verify_codes.get(email)
+    if not entry:
+        raise HTTPException(status_code=400, detail="Код не найден или устарел")
+    code, expires_at = entry
+    if datetime.utcnow() > expires_at:
+        _verify_codes.pop(email, None)
+        raise HTTPException(status_code=400, detail="Код истёк, запросите новый")
+    if not secrets.compare_digest(code, payload.code.strip()):
+        raise HTTPException(status_code=400, detail="Неверный код")
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+    user.is_verified = True
     db.commit()
     db.refresh(user)
-    # Seed demo patients for the freshly registered doctor (best-effort)
+    _verify_codes.pop(email, None)
+    # Seed demo patients on first successful verification (idempotent: skip if already seeded)
     try:
         from patients import seed_demo_patients_for
-        seed_demo_patients_for(db, user.id)
+        from models import Patient
+        if not db.query(Patient).filter(Patient.doctor_id == user.id).first():
+            seed_demo_patients_for(db, user.id)
     except Exception:
         db.rollback()
     token = create_access_token(user.id)
     return Token(access_token=token, user=UserResponse.model_validate(user))
+
+
+@router.post("/resend-code", response_model=MessageResponse)
+def resend_code(payload: ResendCodeRequest, db: Session = Depends(get_db)):
+    email = payload.email.lower()
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+    if user.is_verified:
+        raise HTTPException(status_code=400, detail="Email уже подтверждён")
+    cooldown_until = _resend_cooldowns.get(email)
+    if cooldown_until and datetime.utcnow() < cooldown_until:
+        wait = int((cooldown_until - datetime.utcnow()).total_seconds())
+        raise HTTPException(
+            status_code=429,
+            detail=f"Подождите {wait} секунд перед повторной отправкой",
+        )
+    code = _set_verify_code(email)
+    send_verification_code(email, code, user.full_name)
+    return MessageResponse(message="Новый код отправлен на email")
 
 
 @router.post("/login", response_model=Token)
@@ -150,6 +227,11 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Аккаунт деактивирован",
         )
+    if not user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Email не подтверждён",
+        )
     token = create_access_token(user.id)
     return Token(access_token=token, user=UserResponse.model_validate(user))
 
@@ -158,15 +240,13 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
 def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
     email = payload.email.lower()
     user = db.query(User).filter(User.email == email).first()
-    # Always return same message to avoid leaking which emails are registered
-    generic_msg = MessageResponse(message="Если email зарегистрирован, код отправлен на почту")
     if not user:
-        return generic_msg
+        raise HTTPException(status_code=404, detail="Пользователь с таким email не найден")
     code = f"{secrets.randbelow(1_000_000):06d}"
     expires_at = datetime.utcnow() + timedelta(minutes=RESET_CODE_TTL_MINUTES)
     _reset_codes[email] = (code, expires_at)
     send_password_reset_code(email, code, user.full_name)
-    return generic_msg
+    return MessageResponse(message="Код отправлен на email")
 
 
 @router.post("/reset-password", response_model=MessageResponse)
@@ -192,6 +272,29 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
 
 @router.get("/me", response_model=UserResponse)
 def me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
+@router.put("/profile", response_model=UserResponse)
+def update_profile(
+    payload: UpdateProfileRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    updates = payload.model_dump(exclude_unset=True)
+    for k, v in updates.items():
+        setattr(current_user, k, v)
+    # Auto-derive full_name from parts if user supplied first/last but no full_name
+    if (payload.first_name or payload.last_name) and not payload.full_name:
+        parts = [current_user.last_name, current_user.first_name, current_user.patronymic]
+        derived = " ".join([p for p in parts if p])
+        if derived:
+            current_user.full_name = derived
+    # Mark profile complete when last_name + first_name + specialty are filled
+    if current_user.last_name and current_user.first_name and current_user.specialty:
+        current_user.profile_completed = True
+    db.commit()
+    db.refresh(current_user)
     return current_user
 
 
