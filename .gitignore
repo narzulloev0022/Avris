@@ -5,6 +5,11 @@ backend/.env
 !.env.example
 !*.env.example
 
+# OAuth client secret JSONs (Google / Apple / Mail.ru downloads)
+client_secret*.json
+*-credentials.json
+*-oauth.json
+
 # Project knowledge / dev workspace (kept local)
 CLAUDE.md
 .claude/
