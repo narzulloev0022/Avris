@@ -5,6 +5,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Avris AI • Hyperion Labs</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -77,7 +78,8 @@ textarea{resize:vertical;min-height:90px}
 .login-lang button{padding:5px 10px;border:none;background:transparent;color:var(--text-muted);border-radius:var(--radius-pill);cursor:pointer;font-size:.78rem;font-weight:600;transition:var(--transition);font-family:var(--font)}
 .login-lang button.active{background:var(--accent);color:#fff}
 .login-form-wrap{width:100%;max-width:380px;padding:0 20px;display:flex;flex-direction:column;align-items:center}
-.login-brand{display:flex;align-items:baseline;margin-bottom:12px}
+.login-brand{display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.login-brand-logo{height:48px;width:auto;display:block}
 .login-brand-text{font-size:2rem;font-weight:800;letter-spacing:-0.5px;color:var(--text-primary)}
 .login-brand-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-left:3px}
 .login-tagline{font-size:13px;color:var(--text-muted);margin-bottom:28px;text-align:center}
@@ -151,7 +153,8 @@ body[data-theme="light"] .profile-setup-card{background:#FFFFFF}
 .sidebar{position:fixed;top:0;left:calc(-1*var(--sidebar));width:var(--sidebar);height:100%;background:var(--card);border-right:1px solid var(--border);padding:20px 14px;z-index:1000;transition:left .3s;display:flex;flex-direction:column;box-shadow:var(--sh2)}
 .sidebar.open{left:0}
 .sidebar-logo{display:flex;align-items:center;gap:10px;padding:0 6px;margin-bottom:28px}
-.sidebar-logo-i{width:36px;height:36px;border-radius:var(--r);background:linear-gradient(135deg,var(--accent),var(--accent-l));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1.1rem}
+.sidebar-logo-i{width:36px;height:36px;display:flex;align-items:center;justify-content:center}
+.sidebar-logo-i img{width:32px;height:32px;display:block}
 .sidebar-logo span{font-weight:700;font-size:1rem}
 .sidebar-logo small{font-size:.68rem;color:var(--muted);display:block}
 .nav-sec{margin-bottom:6px}
@@ -281,7 +284,7 @@ body[data-theme="light"] .profile-setup-card{background:#FFFFFF}
 .vt-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
 .vt-tab{padding:5px 10px;border-radius:var(--r3);border:1px solid var(--border);background:transparent;cursor:pointer;font-weight:600;font-size:.78rem;color:var(--muted);transition:all .15s;font-family:var(--font)}
 .vt-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-.toast{position:fixed;bottom:24px;right:24px;transform:translateX(120%);z-index:9999;padding:12px 20px;border-radius:var(--radius-card);background:var(--bg-elevated);color:var(--text-primary);font-weight:600;font-size:.82rem;border:1px solid var(--border);box-shadow:var(--shadow);transition:transform 200ms cubic-bezier(.4,0,.2,1);border-left:3px solid var(--accent);max-width:320px;display:flex;align-items:center;gap:8px}
+.toast{position:fixed;bottom:24px;right:24px;transform:translateX(calc(100% + 48px));z-index:9999;padding:12px 20px;border-radius:var(--radius-card);background:var(--bg-elevated);color:var(--text-primary);font-weight:600;font-size:.82rem;border:1px solid var(--border);box-shadow:var(--shadow);transition:transform 200ms cubic-bezier(.4,0,.2,1);border-left:3px solid var(--accent);max-width:320px;display:flex;align-items:center;gap:8px}
 .toast .toast-ic{display:inline-flex;flex-shrink:0;color:var(--accent)}
 .toast.toast-ok .toast-ic{color:var(--success)}
 .toast.toast-err .toast-ic{color:var(--danger)}
@@ -657,9 +660,9 @@ body[data-theme="light"] .nr-card.checked{background:linear-gradient(0deg,rgba(1
 .nr-queue-pill{display:inline-flex;align-items:center;font-size:.7rem;font-weight:700;background:var(--accent);color:#fff;border-radius:999px;padding:2px 10px;margin-left:8px;letter-spacing:.04em}
 .nr-queue-pill[hidden]{display:none}
 @media(max-width:480px){.nr-voice-hero{padding:18px 14px}.nr-voice-mic{width:72px;height:72px}.nr-vitals-row{grid-template-columns:repeat(2,1fr)}.nr-voice-transcript{font-size:.82rem}}
-.fab{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;border:none;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:100;font-size:1.4rem;transition:all var(--transition);animation:fabPulse 2s ease infinite}
+.fab{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;border:none;box-shadow:var(--shadow);display:none;align-items:center;justify-content:center;cursor:pointer;z-index:100;font-size:1.4rem;transition:all var(--transition);animation:fabPulse 2s ease infinite}
+.fab.show-fab{display:flex}
 .fab:hover{background:var(--accent-bright);transform:scale(1.1)}
-.fab.hidden-fab{display:none}
 @keyframes fabPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 .nr-modal-ov{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(12px);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 200ms}
 .nr-modal-ov.vis{opacity:1;pointer-events:auto}
@@ -774,7 +777,7 @@ body[data-theme="dark"] .btn-logout:hover{background:rgba(255,255,255,0.06)}
 .set-cont{padding:20px 0}
 .pm-vitals{flex-direction:column}
 }
-@media(max-width:480px){.nr-grid{grid-template-columns:1fr}.nr-card{padding:12px}.nr-card-ward{font-size:14px}.icu-vg{grid-template-columns:repeat(2,1fr)}.icu-vv{font-size:1.05rem}.icu-vl{font-size:10px}.icu-title-full{display:none}.icu-title-short{display:inline}.icu-post-section{margin-top:16px;padding-top:12px}.icu-post-section .icu-g{display:none}.icu-post-section.expanded .icu-g{display:grid}.icu-post-header{cursor:pointer;user-select:none}.post-chevron{display:inline-block;color:var(--text-muted);flex-shrink:0;transition:transform .2s}.icu-post-section.expanded .post-chevron{transform:rotate(90deg)}}
+@media(max-width:480px){.nr-grid{grid-template-columns:1fr}.nr-card{padding:12px}.nr-card-ward{font-size:14px}.icu-vg{grid-template-columns:repeat(2,1fr)}.icu-vv{font-size:1.05rem}.icu-vl{font-size:10px}.icu-title-full{display:none}.icu-title-short{display:inline}.icu-post-section{margin-top:16px;padding-top:12px}.icu-post-section .icu-g{display:none}.icu-post-section.expanded .icu-g{display:grid}.icu-post-header{cursor:pointer;user-select:none}.post-chevron{display:inline-block;color:var(--text-muted);flex-shrink:0;transition:transform .2s}.icu-post-section.expanded .post-chevron{transform:rotate(90deg)}#demoBadge{display:none}.set-nav-item{font-size:10px;padding:8px 10px}#newPatBtn{font-size:0;width:36px;height:36px;padding:0;border-radius:50%;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center}#newPatBtn::before{content:"+";font-size:1.5rem;font-weight:700;line-height:1}.badge.prof-active-badge{font-size:0;width:10px;height:10px;padding:0;border-radius:50%;border:none;flex-shrink:0;box-shadow:0 0 4px rgba(16,185,129,.5);min-width:10px;line-height:0}#nightRound{padding-bottom:100px}}
 @media(max-width:768px){
 .cmd-bar{display:grid!important;grid-template-columns:1fr 1fr;gap:12px;padding:16px;flex-wrap:wrap}
 .cmd-stat.cmd-danger{grid-column:1/-1;order:-1;text-align:center;margin:0;padding:10px 16px;width:100%}
@@ -891,7 +894,7 @@ body[data-theme="light"] input:-webkit-autofill,body[data-theme="light"] input:-
 <div class="login-lang" id="langSelLogin"></div>
 </div>
 <div class="login-form-wrap">
-<div class="login-brand"><span class="login-brand-text">AVRIS</span><span class="login-brand-dot"></span></div>
+<div class="login-brand"><img class="login-brand-logo" src="assets/logo.svg" alt="Avris"></div>
 <p class="login-tagline" data-i18n="login_tagline">Голосовой AI · Для врачей · Центральная Азия</p>
 <div class="login-divider"></div>
 <div class="login-error" id="loginError" role="alert"></div>
@@ -949,7 +952,7 @@ body[data-theme="light"] input:-webkit-autofill,body[data-theme="light"] input:-
 <div class="profile-setup hidden" id="profileSetup">
 <div class="profile-setup-card">
 <div class="profile-setup-hdr">
-<div class="login-brand"><span class="login-brand-text">AVRIS</span><span class="login-brand-dot"></span></div>
+<div class="login-brand"><img class="login-brand-logo" src="assets/logo.svg" alt="Avris"></div>
 <h2 data-i18n="prof_setup_title">Заполните профиль врача</h2>
 <p class="profile-setup-sub" data-i18n="prof_setup_sub">Эти данные будут использованы в SOAP-документации и направлениях</p>
 </div>
@@ -979,7 +982,7 @@ body[data-theme="light"] input:-webkit-autofill,body[data-theme="light"] input:-
 </div>
 <div class="app-shell hidden" id="appShell">
 <aside class="sidebar" id="sidebar">
-<div class="sidebar-logo"><div class="sidebar-logo-i">A</div><div><span>Avris AI</span><small>Hyperion Labs</small></div></div>
+<div class="sidebar-logo"><div class="sidebar-logo-i"><img src="assets/logo.svg" alt="Avris"></div><div><span>Avris AI</span><small>Hyperion Labs</small></div></div>
 <div class="nav-sec"><div class="nav-sec-t" data-i18n="nav_main">Основное</div>
 <nav class="nav-list">
 <button class="nav-link active" data-screen="dashboard" data-tkey="nav_dashboard"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span data-i18n="nav_dashboard">Дашборд</span></button>
@@ -1007,7 +1010,7 @@ body[data-theme="light"] input:-webkit-autofill,body[data-theme="light"] input:-
 <div class="lang-sel lang-sel-top" id="langSel"></div>
 <button class="icon-btn notif-bell" id="notifToggle" aria-label="Notifications"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 003.4 0"/></svg><span class="notif-dot"></span></button>
 <button class="icon-btn" id="themeToggle" aria-label="Theme"><svg aria-hidden="true" id="themeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg></button>
-<script>!function(){var pref=localStorage.getItem("avris-theme")||"system";var eff=pref==="system"?(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"):pref;document.body.dataset.theme=eff;var ic=document.getElementById("themeIcon");if(ic)ic.innerHTML=eff==="dark"?'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>':'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>';document.querySelectorAll(".login-theme-btn").forEach(function(b){b.classList.toggle("active",b.dataset.th===pref)})}()</script>
+<script>!function(){var pref=localStorage.getItem("avris-theme")||"system";var eff=pref==="system"?(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"):pref;document.body.dataset.theme=eff;var ic=document.getElementById("themeIcon");if(ic)ic.innerHTML=eff==="dark"?'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>':'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';document.querySelectorAll(".login-theme-btn").forEach(function(b){b.classList.toggle("active",b.dataset.th===pref)})}()</script>
 <span class="clock" id="clock">--:--</span>
 </div>
 </header>
@@ -1309,7 +1312,7 @@ body[data-theme="light"] input:-webkit-autofill,body[data-theme="light"] input:-
 <span class="avatar-edit-hint" data-i18n="prof_change_photo">Изменить фото</span>
 </div>
 <div style="flex:1;min-width:0"><strong id="setProfileName">—</strong><span id="setProfileRole">—</span></div>
-<span class="badge safe" style="margin-left:auto" data-i18n="st_active">Активен</span>
+<span class="badge safe prof-active-badge" style="margin-left:auto" data-i18n="st_active" title="Активен">Активен</span>
 </div>
 <form id="setProfileForm">
 <div class="prof-grid" style="margin-bottom:18px">
@@ -1452,7 +1455,7 @@ body[data-theme="light"] input:-webkit-autofill,body[data-theme="light"] input:-
 </div>
 </div>
 </div>
-<button class="fab hidden-fab" id="nrFab" data-i18n-title="fab_voice" title="Голосовой ввод" aria-label="Voice input"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></button>
+<button class="fab" id="nrFab" data-i18n-title="fab_voice" title="Голосовой ввод" aria-label="Voice input"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></button>
 <div class="lab-modal-ov" id="labModal">
 <div class="lab-modal-card">
 <div class="lab-modal-hdr">
@@ -1518,7 +1521,7 @@ function effectiveTheme(){if(themePref==="system"){return(window.matchMedia&&mat
 function applyTheme(){var eff=effectiveTheme();document.body.dataset.theme=eff;document.querySelectorAll(".set-theme-btn").forEach(function(b){b.classList.toggle("active",b.dataset.th===themePref);b.setAttribute("aria-checked",b.dataset.th===themePref?"true":"false")});document.querySelectorAll(".login-theme-btn").forEach(function(b){b.classList.toggle("active",b.dataset.th===themePref)});updThemeIcon()}
 function setTheme(th,persist){if(th!=="light"&&th!=="dark"&&th!=="system")return;themePref=th;try{localStorage.setItem("avris-theme",th)}catch(e){}applyTheme();if(persist!==false&&currentUser&&!window.DEMO_MODE&&authToken()){apiFetch("/api/auth/profile",{method:"PUT",body:JSON.stringify({theme_pref:th})}).catch(function(){})}}
 function toggleTheme(){setTheme(effectiveTheme()==="light"?"dark":"light")}
-function updThemeIcon(){var d=document.body.dataset.theme==="dark";var ic=$("themeIcon");if(ic)ic.innerHTML=d?'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>':'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>';document.querySelectorAll(".login-theme-btn").forEach(function(b){b.classList.toggle("active",b.dataset.th===themePref)})}
+function updThemeIcon(){var d=document.body.dataset.theme==="dark";var ic=$("themeIcon");if(ic)ic.innerHTML=d?'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>':'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';document.querySelectorAll(".login-theme-btn").forEach(function(b){b.classList.toggle("active",b.dataset.th===themePref)})}
 if(window.matchMedia){var _mm=matchMedia("(prefers-color-scheme:dark)");if(_mm.addEventListener)_mm.addEventListener("change",function(){if(themePref==="system")applyTheme()});else if(_mm.addListener)_mm.addListener(function(){if(themePref==="system")applyTheme()})}
 $("themeToggle").onclick=toggleTheme;
 document.querySelectorAll(".login-theme-btn").forEach(function(b){b.onclick=function(){setTheme(b.dataset.th)}});
@@ -1589,7 +1592,7 @@ $("patFormClose").onclick=closePatForm;$("patFormCancel").onclick=closePatForm;
 $("patFormModal").onclick=function(e){if(e.target===$("patFormModal"))closePatForm()};
 $("patForm").onsubmit=function(e){e.preventDefault();savePatForm()};
 var navs=document.querySelectorAll(".nav-link"),screens=document.querySelectorAll(".screen");
-function goTo(target){navs.forEach(function(n){n.classList.toggle("active",n.dataset.screen===target)});screens.forEach(function(s){s.classList.toggle("active",s.id===target)});var ac=document.querySelector('.nav-link[data-screen="'+target+'"]');if(ac){var k=ac.getAttribute("data-tkey");var st=$("screenTitle");if(st)st.textContent=k?t(k):ac.textContent.trim()}if(innerWidth<1024){$("sidebar").classList.remove("open");$("sidebarOverlay").classList.remove("vis")}if(target!=="consultation"&&recording)stopRec();var fab=$("nrFab");if(fab)fab.classList.toggle("hidden-fab",target!=="nightRound")}
+function goTo(target){navs.forEach(function(n){n.classList.toggle("active",n.dataset.screen===target)});screens.forEach(function(s){s.classList.toggle("active",s.id===target)});var ac=document.querySelector('.nav-link[data-screen="'+target+'"]');if(ac){var k=ac.getAttribute("data-tkey");var st=$("screenTitle");if(st)st.textContent=k?t(k):ac.textContent.trim()}if(innerWidth<1024){$("sidebar").classList.remove("open");$("sidebarOverlay").classList.remove("vis")}if(target!=="consultation"&&recording)stopRec();var fab=$("nrFab");if(fab)fab.classList.toggle("show-fab",target==="nightRound")}
 navs.forEach(function(b){b.onclick=function(){goTo(b.dataset.screen)}});
 $("sidebarToggle").onclick=function(){$("sidebar").classList.toggle("open");$("sidebarOverlay").classList.toggle("vis")};
 $("sidebarOverlay").onclick=function(){$("sidebar").classList.remove("open");$("sidebarOverlay").classList.remove("vis")};
