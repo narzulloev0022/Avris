@@ -11,6 +11,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 
@@ -136,12 +137,16 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
         db.commit()
         user = existing
     else:
+        # First registered user becomes admin and is auto-approved
+        is_first = db.query(User).count() == 0
         user = User(
             email=email,
             password_hash=hash_password(payload.password),
             full_name=payload.full_name or email.split("@")[0],
             specialty=payload.specialty,
             is_verified=False,
+            is_admin=is_first,
+            is_approved=is_first,
         )
         db.add(user)
         db.commit()
@@ -183,6 +188,18 @@ def verify_email(payload: VerifyEmailRequest, db: Session = Depends(get_db)):
             seed_demo_patients_for(db, user.id)
     except Exception:
         db.rollback()
+    # Notify admins of pending doctor (only if user not auto-approved)
+    if not user.is_approved:
+        try:
+            from email_service import send_admin_new_doctor_alert
+            admins = db.query(User).filter(User.is_admin.is_(True)).all()
+            for adm in admins:
+                send_admin_new_doctor_alert(
+                    adm.email, user.full_name, user.email,
+                    user.specialty or "", user.hospital_name or "",
+                )
+        except Exception:
+            pass
     token = create_access_token(user.id)
     return Token(access_token=token, user=UserResponse.model_validate(user))
 
@@ -327,16 +344,92 @@ def _upsert_oauth_user(db: Session, email: str, full_name: str) -> User:
             user.is_verified = True
             db.commit()
         return user
+    is_first = db.query(User).count() == 0
     user = User(
         email=email,
         password_hash=hash_password(secrets.token_urlsafe(32)),
         full_name=full_name or email.split("@")[0],
         is_verified=True,
+        is_admin=is_first,
+        is_approved=is_first,
     )
     db.add(user)
     db.commit()
     db.refresh(user)
+    if not user.is_approved:
+        try:
+            from email_service import send_admin_new_doctor_alert
+            admins = db.query(User).filter(User.is_admin.is_(True)).all()
+            for adm in admins:
+                send_admin_new_doctor_alert(
+                    adm.email, user.full_name, user.email, "", "",
+                )
+        except Exception:
+            pass
     return user
+
+
+def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Доступ только для администратора")
+    return current_user
+
+
+@router.get("/admin/pending-doctors")
+def admin_pending_doctors(current_user: User = Depends(require_admin), db: Session = Depends(get_db)):
+    items = db.query(User).filter(User.is_approved.is_(False), User.is_active.is_(True)).order_by(User.created_at.desc()).all()
+    return [
+        {
+            "id": u.id,
+            "email": u.email,
+            "full_name": u.full_name,
+            "specialty": u.specialty,
+            "hospital_name": u.hospital_name,
+            "department": u.department,
+            "license_number": u.license_number,
+            "phone": u.phone,
+            "is_verified": u.is_verified,
+            "created_at": u.created_at.isoformat() if u.created_at else None,
+        }
+        for u in items
+    ]
+
+
+@router.post("/admin/approve/{user_id}")
+def admin_approve(user_id: int, current_user: User = Depends(require_admin), db: Session = Depends(get_db)):
+    target = db.query(User).filter(User.id == user_id).first()
+    if not target:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+    target.is_approved = True
+    target.rejection_reason = None
+    db.commit()
+    try:
+        from email_service import send_doctor_approved
+        send_doctor_approved(target.email, target.full_name)
+    except Exception:
+        pass
+    return {"ok": True, "id": target.id, "is_approved": True}
+
+
+class _RejectBody(BaseModel):
+    reason: Optional[str] = None
+
+
+@router.post("/admin/reject/{user_id}")
+def admin_reject(user_id: int, payload: _RejectBody, current_user: User = Depends(require_admin), db: Session = Depends(get_db)):
+    target = db.query(User).filter(User.id == user_id).first()
+    if not target:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+    target.is_approved = False
+    target.is_active = False
+    target.rejection_reason = payload.reason or ""
+    db.commit()
+    try:
+        from email_service import send_doctor_rejected
+        send_doctor_rejected(target.email, target.full_name, payload.reason or "")
+    except Exception:
+        pass
+    return {"ok": True, "id": target.id, "is_approved": False}
 
 
 def _redirect_with_token(token: str) -> RedirectResponse:

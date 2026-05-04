@@ -40,6 +40,9 @@ class UserResponse(BaseModel):
     is_active: bool
     is_verified: bool
     profile_completed: bool
+    is_admin: bool = False
+    is_approved: bool = False
+    rejection_reason: Optional[str] = None
     created_at: datetime
 
 

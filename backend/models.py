@@ -31,6 +31,9 @@ class User(Base):
     is_active = Column(Boolean, nullable=False, default=True)
     is_verified = Column(Boolean, nullable=False, default=False)
     profile_completed = Column(Boolean, nullable=False, default=False)
+    is_admin = Column(Boolean, nullable=False, default=False)
+    is_approved = Column(Boolean, nullable=False, default=False)
+    rejection_reason = Column(String, nullable=True)
 
     patients = relationship("Patient", back_populates="doctor", cascade="all, delete-orphan")
     consultations = relationship("Consultation", back_populates="doctor", cascade="all, delete-orphan")
