@@ -85,7 +85,9 @@ textarea{resize:vertical;min-height:90px}
 .login-brand{display:flex;align-items:center;justify-content:center;margin-bottom:12px}
 .login-brand-logo{height:48px;width:auto;max-width:100%;display:block}
 .login-screen{padding:20px 16px}
-@media(max-width:480px){.login-brand-logo{height:40px}.login-screen{padding:64px 12px 24px;flex-direction:column;align-items:center;justify-content:flex-start}.login-top-bar{position:absolute;top:12px;right:12px;left:auto;justify-content:flex-end;flex-wrap:wrap;gap:6px;width:auto;margin-bottom:0}}
+.login-theme-toggle{position:absolute;top:16px;left:16px;z-index:5}
+.login-lang-corner{position:absolute;top:16px;right:16px;z-index:5}
+@media(max-width:480px){.login-brand-logo{height:40px}.login-screen{padding:64px 12px 24px;flex-direction:column;align-items:center;justify-content:flex-start}.login-theme-toggle{top:12px;left:12px;width:36px;height:36px}.login-lang-corner{top:12px;right:12px}}
 .login-brand-text{font-size:2rem;font-weight:800;letter-spacing:-0.5px;color:var(--text-primary)}
 .login-brand-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-left:3px}
 .login-tagline{font-size:13px;color:var(--text-muted);margin-bottom:28px;text-align:center}
@@ -1042,14 +1044,8 @@ body[data-theme="light"] input:-webkit-autofill,body[data-theme="light"] input:-
 </head>
 <body data-theme="light">
 <div class="login-screen" id="loginScreen">
-<div class="login-top-bar">
-<div class="login-theme" id="loginThemeSw">
-<button data-th="light" class="login-theme-btn" type="button" aria-label="Light" data-i18n-title="th_light" title="Светлая"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
-<button data-th="dark" class="login-theme-btn" type="button" aria-label="Dark" data-i18n-title="th_dark" title="Тёмная"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg></button>
-<button data-th="system" class="login-theme-btn" type="button" aria-label="System" data-i18n-title="th_system" title="Системная"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="14" rx="2"/><line x1="8" y1="22" x2="16" y2="22"/><line x1="12" y1="18" x2="12" y2="22"/></svg></button>
-</div>
-<div class="login-lang" id="langSelLogin"></div>
-</div>
+<button class="icon-btn login-theme-toggle" id="loginThemeToggle" type="button" aria-label="Toggle theme"><svg aria-hidden="true" id="loginThemeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg></button>
+<div class="login-lang login-lang-corner" id="langSelLogin"></div>
 <div class="login-form-wrap">
 <div class="login-brand"><img class="login-brand-logo" src="assets/logo.svg" alt="Avris"></div>
 <p class="login-tagline" data-i18n="login_tagline">Голосовой AI · Для врачей · Центральная Азия</p>
@@ -1170,7 +1166,7 @@ body[data-theme="light"] input:-webkit-autofill,body[data-theme="light"] input:-
 <button class="icon-btn" id="voiceCmdToggle" aria-label="Voice commands" data-i18n-title="vc_btn" title="Голосовые команды"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h2M6 8v8M10 4v16M14 8v8M18 10v4M22 12h-2"/></svg></button>
 <button class="icon-btn" id="focusToggle" aria-label="Focus" data-i18n-title="focus_mode" title="Режим фокуса" hidden><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V3h4M21 7V3h-4M3 17v4h4M21 17v4h-4"/></svg></button>
 <button class="icon-btn" id="themeToggle" aria-label="Theme"><svg aria-hidden="true" id="themeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg></button>
-<script>!function(){var pref=localStorage.getItem("avris-theme")||"system";var eff=pref==="system"?(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"):pref;document.body.dataset.theme=eff;var ic=document.getElementById("themeIcon");if(ic)ic.innerHTML=eff==="dark"?'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>':'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';document.querySelectorAll(".login-theme-btn").forEach(function(b){b.classList.toggle("active",b.dataset.th===pref)})}()</script>
+<script>!function(){var pref=localStorage.getItem("avris-theme")||"system";var eff=pref==="system"?(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"):pref;document.body.dataset.theme=eff;var paths=eff==="dark"?'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>':'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';var ic=document.getElementById("themeIcon");if(ic)ic.innerHTML=paths;var lic=document.getElementById("loginThemeIcon");if(lic)lic.innerHTML=paths}()</script>
 <span class="clock" id="clock">--:--</span>
 </div>
 </header>
@@ -1699,12 +1695,13 @@ function closeC(v){$("confirmOv").classList.remove("show");if(cRes){cRes(v);cRes
 $("cCancel").onclick=function(){closeC(false)};$("cOk").onclick=function(){closeC(true)};
 var themePref=(function(){var s;try{s=localStorage.getItem("avris-theme")}catch(e){}return s||"system"})();
 function effectiveTheme(){if(themePref==="system"){return(window.matchMedia&&matchMedia("(prefers-color-scheme:dark)").matches)?"dark":"light"}return themePref}
-function applyTheme(){var eff=effectiveTheme();document.body.dataset.theme=eff;document.querySelectorAll(".set-theme-btn").forEach(function(b){b.classList.toggle("active",b.dataset.th===themePref);b.setAttribute("aria-checked",b.dataset.th===themePref?"true":"false")});document.querySelectorAll(".login-theme-btn").forEach(function(b){b.classList.toggle("active",b.dataset.th===themePref)});updThemeIcon()}
+function applyTheme(){var eff=effectiveTheme();document.body.dataset.theme=eff;document.querySelectorAll(".set-theme-btn").forEach(function(b){b.classList.toggle("active",b.dataset.th===themePref);b.setAttribute("aria-checked",b.dataset.th===themePref?"true":"false")});updThemeIcon()}
 function setTheme(th,persist){if(th!=="light"&&th!=="dark"&&th!=="system")return;themePref=th;try{localStorage.setItem("avris-theme",th)}catch(e){}applyTheme();if(persist!==false&&currentUser&&!window.DEMO_MODE&&authToken()){apiFetch("/api/auth/profile",{method:"PUT",body:JSON.stringify({theme_pref:th})}).catch(function(){})}}
 function toggleTheme(){setTheme(effectiveTheme()==="light"?"dark":"light")}
-function updThemeIcon(){var d=document.body.dataset.theme==="dark";var ic=$("themeIcon");if(ic)ic.innerHTML=d?'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>':'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';document.querySelectorAll(".login-theme-btn").forEach(function(b){b.classList.toggle("active",b.dataset.th===themePref)})}
+function updThemeIcon(){var d=document.body.dataset.theme==="dark";var paths=d?'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>':'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';var ic=$("themeIcon");if(ic)ic.innerHTML=paths;var lic=$("loginThemeIcon");if(lic)lic.innerHTML=paths}
 if(window.matchMedia){var _mm=matchMedia("(prefers-color-scheme:dark)");if(_mm.addEventListener)_mm.addEventListener("change",function(){if(themePref==="system")applyTheme()});else if(_mm.addListener)_mm.addListener(function(){if(themePref==="system")applyTheme()})}
 $("themeToggle").onclick=toggleTheme;
+if($("loginThemeToggle"))$("loginThemeToggle").onclick=toggleTheme;
 document.querySelectorAll(".login-theme-btn").forEach(function(b){b.onclick=function(){setTheme(b.dataset.th)}});
 function initClock(){function u(){var n=new Date(),s=String(n.getHours()).padStart(2,"0")+":"+String(n.getMinutes()).padStart(2,"0");$("clock").textContent=s;$("heroTS").textContent=s}u();setInterval(u,30000)}
 var API_BASE=location.port==="8080"?location.protocol+"//"+location.hostname+":8000":"";
