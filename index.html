@@ -61,6 +61,9 @@ html,body{max-width:100vw;overflow-x:hidden}
 input,select,textarea{width:100%;border-radius:var(--r);border:1px solid var(--border);padding:10px 14px;background:var(--card);color:var(--text);font-size:.88rem;font-family:var(--font);transition:all .2s}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,163,145,.15)}
 label{font-size:.75rem;font-weight:600;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+label.chk-lbl{text-transform:none;letter-spacing:normal;font-weight:500;color:var(--text-primary);font-size:.88rem;margin-bottom:0;display:grid;grid-template-columns:auto 1fr;align-items:start;gap:8px;width:100%;cursor:pointer}
+label.chk-lbl input{margin:2px 0 0;justify-self:start}
+label.chk-lbl span{min-width:0;line-height:1.4;text-align:left;text-transform:none;letter-spacing:normal;color:inherit}
 textarea{resize:vertical;min-height:90px}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:.75rem;font-weight:600}
 .badge.safe{background:var(--safe-bg);color:var(--ok)}.badge.warn{background:var(--warn-bg);color:var(--warn)}.badge.danger{background:var(--danger-bg);color:var(--danger)}.badge.info{background:var(--tag-bg);color:var(--tag-c)}
@@ -721,18 +724,18 @@ body[data-theme="light"] .icu-c.critical{background:linear-gradient(90deg,rgba(2
 .icu-upd-time{font-family:var(--font-data);font-size:.7rem;color:var(--muted);font-weight:500;margin-left:auto}
 /* ===== MOBILE 480px DASHBOARD ===== */
 @media(max-width:480px){
-.cmd-bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0;background:none!important;border:none;box-shadow:none;margin-bottom:16px}
+.cmd-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:0;background:none!important;border:none;box-shadow:none;margin-bottom:16px}
 .cmd-div{display:none}
-.cmd-stat{padding:14px 16px;text-align:center;min-width:0;background:linear-gradient(135deg,#1A4A3E,#4AA391);border-radius:12px;display:flex;flex-direction:column;justify-content:center;align-items:center}
-.cmd-stat:first-child{padding-left:16px;text-align:center}
-.cmd-stat.cmd-danger{grid-column:1/-1;order:-1;margin:0;padding:14px 16px;background:linear-gradient(135deg,#8B2020,#C53030);border:none;border-radius:12px;text-align:center;animation:none;box-shadow:none}
+.cmd-stat{padding:10px 4px!important;text-align:center;min-width:0;background:linear-gradient(135deg,#1A4A3E,#4AA391);border-radius:10px;display:flex;flex-direction:column;justify-content:center;align-items:center;overflow:hidden}
+.cmd-stat:first-child{padding-left:4px!important;text-align:center}
+.cmd-stat.cmd-danger{grid-column:auto;order:0;margin:0;padding:10px 4px!important;background:linear-gradient(135deg,#8B2020,#C53030);border:none;border-radius:10px;text-align:center;animation:none;box-shadow:none}
 .cmd-stat.cmd-danger .cmd-v{color:#fff}
 .cmd-stat.cmd-danger .cmd-l{color:#fff;opacity:1}
-.cmd-stat.cmd-danger .cmd-s{color:#fff;opacity:.85}
-.cmd-v{color:#fff;font-size:1.5rem}
-.cmd-l{color:rgba(255,255,255,.85);font-size:9px}
-.cmd-s{color:rgba(255,255,255,.65);font-size:9px}
-.cmd-upd{grid-column:1/-1;order:10;text-align:center;font-size:11px;margin:0;padding:4px 0 0;background:none}
+.cmd-stat.cmd-danger .cmd-s{display:none}
+.cmd-v{color:#fff;font-size:1.05rem;font-weight:700;line-height:1.1}
+.cmd-l{color:rgba(255,255,255,.92)!important;font-size:8.5px!important;line-height:1.15;letter-spacing:.02em;margin-top:3px;font-weight:600}
+.cmd-s{display:none}
+.cmd-upd{grid-column:1/-1;order:10;text-align:center;font-size:11px;margin:0;padding:6px 0 0;background:none}
 body[data-theme="light"] .cmd-upd{color:#5C5C5C;font-weight:500;font-size:12px}
 .time-saved-banner{flex-direction:column;gap:8px;text-align:center;padding:14px 16px}
 .tsb-left{flex-direction:column;gap:6px;text-align:center}
@@ -1599,7 +1602,7 @@ body[data-theme="light"] input:-webkit-autofill,body[data-theme="light"] input:-
 <div style="margin-bottom:12px;position:relative"><label data-i18n="pat_f_diag">Диагнозы (через запятую)</label><input id="pf_diagnoses" type="text" placeholder="Гипертония, Диабет II" autocomplete="off"><div class="icd-suggest" id="icdSuggest" hidden></div></div>
 <div style="margin-bottom:14px"><label data-i18n="pat_f_allergy">Аллергии (через запятую)</label><input id="pf_allergies" type="text" placeholder="Метформин"></div>
 <fieldset style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px"><legend style="padding:0 6px;font-size:.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em" data-i18n="epi_title">Эпиданамнез</legend>
-<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px"><label style="display:flex;align-items:center;gap:6px;font-size:.85rem"><input type="checkbox" id="pf_epi_contact"> <span data-i18n="epi_contact">Контакт с инфекционными больными</span></label><label style="display:flex;align-items:center;gap:6px;font-size:.85rem"><input type="checkbox" id="pf_epi_travel"> <span data-i18n="epi_travel">Выезд за рубеж</span></label></div>
+<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:8px"><label class="chk-lbl"><input type="checkbox" id="pf_epi_contact"> <span data-i18n="epi_contact">Контакт с инфекционными больными</span></label><label class="chk-lbl"><input type="checkbox" id="pf_epi_travel"> <span data-i18n="epi_travel">Выезд за рубеж</span></label></div>
 <div class="epi-grid"><div><label style="font-size:.78rem;color:var(--text-muted)" data-i18n="epi_country">Страна выезда</label><input id="pf_epi_country" type="text" placeholder="—" style="font-size:.85rem"></div><div><label style="font-size:.78rem;color:var(--text-muted)" data-i18n="epi_last_contact">Дата последнего контакта</label><input id="pf_epi_date" type="date" style="font-size:.85rem"></div></div>
 </fieldset>
 <div style="display:flex;gap:8px;justify-content:flex-end">
@@ -1649,7 +1652,7 @@ body[data-theme="light"] input:-webkit-autofill,body[data-theme="light"] input:-
 <div class="toast" id="toast"></div>
 <div class="confirm-ov" id="confirmOv"><div class="confirm-d"><h3 id="cTitle">—</h3><p id="cText"></p><div class="btn-row"><button class="btn ghost" id="cCancel" data-i18n="btn_cancel">Отмена</button><button class="btn danger" id="cOk" data-i18n="btn_yes">Да</button></div></div></div>
 <div class="vc-ov" id="vcOv"><div class="vc-card"><div class="vc-mic"><svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></div><div class="vc-state" id="vcState" data-i18n="vc_listening">Слушаю команду…</div><div class="vc-heard" id="vcHeard"></div><button class="btn ghost" id="vcCancel" data-i18n="btn_cancel">Отмена</button></div></div>
-<div class="memo-ov" id="consentOv"><div class="memo-d"><div class="memo-hdr"><h3 data-i18n="consent_title">Информированное согласие пациента</h3><button class="icon-btn" id="consentClose" aria-label="Close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div id="consentText" style="font-size:.88rem;line-height:1.55;color:var(--text-secondary);max-height:280px;overflow-y:auto;padding:8px 0"></div><label style="display:flex;align-items:flex-start;gap:8px;margin-top:12px;font-size:.88rem;cursor:pointer"><input type="checkbox" id="consentChk" style="margin-top:3px"> <span data-i18n="consent_check">Пациент ознакомлен и согласен</span></label><div id="consentSig" style="margin-top:12px;font-size:.78rem;color:var(--text-muted);font-family:var(--font-data)"></div><div class="btn-row"><button class="btn ghost" id="consentCancel" data-i18n="btn_cancel">Отмена</button><button class="btn primary" id="consentSave" data-i18n="btn_save">Сохранить</button></div></div></div>
+<div class="memo-ov" id="consentOv"><div class="memo-d"><div class="memo-hdr"><h3 data-i18n="consent_title">Информированное согласие пациента</h3><button class="icon-btn" id="consentClose" aria-label="Close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div id="consentText" style="font-size:.88rem;line-height:1.55;color:var(--text-secondary);max-height:280px;overflow-y:auto;padding:8px 0"></div><label class="chk-lbl" style="margin-top:12px"><input type="checkbox" id="consentChk"> <span data-i18n="consent_check">Пациент ознакомлен и согласен</span></label><div id="consentSig" style="margin-top:12px;font-size:.78rem;color:var(--text-muted);font-family:var(--font-data)"></div><div class="btn-row"><button class="btn ghost" id="consentCancel" data-i18n="btn_cancel">Отмена</button><button class="btn primary" id="consentSave" data-i18n="btn_save">Сохранить</button></div></div></div>
 <button class="focus-exit" id="focusExit" type="button"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span data-i18n="focus_exit">Выйти из фокуса</span></button>
 <div class="memo-ov" id="memoOv"><div class="memo-d"><div class="memo-hdr"><h3 data-i18n="memo_title">Памятка пациенту</h3><button class="icon-btn" id="memoClose" aria-label="Close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><textarea id="memoText" rows="14" style="width:100%;font-family:var(--font-ui);font-size:.92rem;border:1px solid var(--border);border-radius:8px;padding:14px;background:var(--bg-elevated);color:var(--text-primary);resize:vertical;line-height:1.5"></textarea><div class="btn-row"><button class="btn ghost" id="memoCopy" data-i18n="btn_copy">Скопировать</button><button class="btn primary" id="memoPrint" data-i18n="btn_print">Распечатать</button></div></div></div>
 <script>
