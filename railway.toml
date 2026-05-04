@@ -2,6 +2,6 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "cd backend && pip install -r requirements.txt && python main.py"
+startCommand = "cd backend && python main.py"
 healthcheckPath = "/api/health"
-healthcheckTimeout = 180
+healthcheckTimeout = 300
