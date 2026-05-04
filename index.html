@@ -1702,7 +1702,7 @@ if(window.matchMedia){var _mm=matchMedia("(prefers-color-scheme:dark)");if(_mm.a
 $("themeToggle").onclick=toggleTheme;
 document.querySelectorAll(".login-theme-btn").forEach(function(b){b.onclick=function(){setTheme(b.dataset.th)}});
 function initClock(){function u(){var n=new Date(),s=String(n.getHours()).padStart(2,"0")+":"+String(n.getMinutes()).padStart(2,"0");$("clock").textContent=s;$("heroTS").textContent=s}u();setInterval(u,30000)}
-var API_BASE=(location.host==="localhost:8080"||location.host==="127.0.0.1:8080")?"http://localhost:8000":"";
+var API_BASE=location.port==="8080"?location.protocol+"//"+location.hostname+":8000":"";
 var currentUser=null;
 function authToken(){try{return localStorage.getItem("avris-token")||""}catch(e){return""}}
 function setAuthToken(tk){try{tk?localStorage.setItem("avris-token",tk):localStorage.removeItem("avris-token")}catch(e){}}
