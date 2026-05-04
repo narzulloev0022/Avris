@@ -1,7 +1,7 @@
 [build]
-builder = "nixpacks"
+builder = "DOCKERFILE"
 
 [deploy]
-startCommand = "cd backend && python main.py"
+startCommand = "python main.py"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 300
