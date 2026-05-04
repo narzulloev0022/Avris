@@ -3,7 +3,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Avris AI • Hyperion Labs</title>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -304,6 +304,13 @@ body[data-theme="light"] .profile-setup-card{background:#FFFFFF}
 .confirm-d p{color:var(--muted);margin-bottom:20px}
 .confirm-d .btn-row{display:flex;gap:8px;justify-content:center}
 @media(min-width:1024px){.content-area{margin-left:var(--sidebar)}.sidebar{left:0;box-shadow:none}.sidebar-overlay{display:none}.cg{grid-template-columns:1.4fr .6fr}}
+@media(max-width:768px){
+.app-shell{flex-direction:column}
+.sidebar{transform:translateX(-100%);left:0;width:var(--sidebar);max-width:88vw;transition:transform .3s}
+.sidebar.open{transform:translateX(0)}
+.content-area{margin-left:0!important;width:100%!important}
+.main{margin-left:0!important;width:100%!important}
+}
 @media(max-width:1023px){.consult-split{flex-direction:column;height:auto}.consult-left,.consult-right{flex:none;width:100%;border-right:none}}
 @media(max-width:1280px){.cmd-bar .cmd-l{font-size:10px}}
 .icu-post-section{margin-top:32px;border-top:1px solid var(--border);padding-top:24px}
@@ -331,6 +338,7 @@ body[data-theme="light"] .profile-setup-card{background:#FFFFFF}
 .topbar .lang-sel-top{display:none}
 .topbar .clock{display:none}
 .topbar .demo-badge{display:none}
+#focusToggle,#focusBtn,#voiceCmdToggle,#voiceCmdBtn{display:none!important}
 .topbar-r{gap:2px}
 .topbar-l{gap:8px;min-width:0;flex:1}
 .topbar-l .screen-title{font-size:14px;overflow:hidden;text-overflow:ellipsis}
