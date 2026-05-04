@@ -335,8 +335,8 @@ body[data-theme="light"] .profile-setup-card{background:#FFFFFF}
 .topbar{padding:0 14px}
 @media(max-width:480px){
 .topbar{padding:0 6px;gap:4px}
-.topbar .lang-sel-top{display:flex;padding:1px;gap:1px}
-.topbar .lang-sel-top button{font-size:9.5px;padding:2px 5px;min-height:22px}
+.topbar .lang-sel-top{display:flex;padding:2px;gap:2px;margin-right:4px}
+.topbar .lang-sel-top button{font-size:11px;padding:4px 8px;min-height:26px;font-weight:600;letter-spacing:.02em}
 .topbar .clock{display:none}
 .topbar .demo-badge{display:none}
 #focusToggle,#focusBtn,#voiceCmdToggle,#voiceCmdBtn{display:none!important}
@@ -1772,7 +1772,7 @@ $("patFormClose").onclick=closePatForm;$("patFormCancel").onclick=closePatForm;
 $("patFormModal").onclick=function(e){if(e.target===$("patFormModal"))closePatForm()};
 $("patForm").onsubmit=function(e){e.preventDefault();savePatForm()};
 var navs=document.querySelectorAll(".nav-link"),screens=document.querySelectorAll(".screen");
-function goTo(target){navs.forEach(function(n){n.classList.toggle("active",n.dataset.screen===target)});screens.forEach(function(s){s.classList.toggle("active",s.id===target)});var ac=document.querySelector('.nav-link[data-screen="'+target+'"]');if(ac){var k=ac.getAttribute("data-tkey");var st=$("screenTitle");if(st)st.textContent=k?t(k):ac.textContent.trim()}if(innerWidth<1024){$("sidebar").classList.remove("open");$("sidebarOverlay").classList.remove("vis")}if(target!=="consultation"&&recording)stopRec();var fab=$("nrFab");if(fab)fab.classList.toggle("show-fab",target==="nightRound");if(typeof updateFocusBtnVisibility==="function")updateFocusBtnVisibility()}
+function goTo(target){navs.forEach(function(n){n.classList.toggle("active",n.dataset.screen===target)});screens.forEach(function(s){s.classList.toggle("active",s.id===target)});var ac=document.querySelector('.nav-link[data-screen="'+target+'"]');if(ac){var k=ac.getAttribute("data-tkey");var st=$("screenTitle");if(st)st.textContent=k?t(k):ac.textContent.trim()}if(innerWidth<1024){$("sidebar").classList.remove("open");$("sidebarOverlay").classList.remove("vis")}if(target!=="consultation"&&recording)stopRec();var fab=$("nrFab");if(fab)fab.classList.toggle("show-fab",target==="nightRound");if(typeof updateFocusBtnVisibility==="function")updateFocusBtnVisibility();if(target==="consultation"&&typeof restoreSoapDraft==="function")setTimeout(restoreSoapDraft,200)}
 navs.forEach(function(b){b.onclick=function(){goTo(b.dataset.screen)}});
 $("sidebarToggle").onclick=function(){$("sidebar").classList.toggle("open");$("sidebarOverlay").classList.toggle("vis")};
 $("sidebarOverlay").onclick=function(){$("sidebar").classList.remove("open");$("sidebarOverlay").classList.remove("vis")};
@@ -1883,7 +1883,7 @@ function applyConsultTemplate(key){if(!key)return;var pack=(SOAP_TPL[lang]||SOAP
 function fillSoapPack(pack){$("soapS").value=pack.S;$("soapO").value=pack.O;$("soapA").value=pack.A;$("soapP").value=pack.P;toast(t("tpl_applied"),1500,"ok")}
 function autoSaveSoap(){try{var s=$("soapS").value,o=$("soapO").value,a=$("soapA").value,p=$("soapP").value;if(!(s||o||a||p))return;var pat=$("consultPat")?$("consultPat").value:"";localStorage.setItem("avris-soap-draft",JSON.stringify({s:s,o:o,a:a,p:p,pat:pat,timestamp:Date.now()}))}catch(e){}}
 setInterval(autoSaveSoap,5000);
-function restoreSoapDraft(){if(window.DEMO_MODE)return;var sh=document.getElementById("appShell");if(!sh||sh.classList.contains("hidden"))return;try{var raw=localStorage.getItem("avris-soap-draft");if(!raw)return;var d=JSON.parse(raw);if(!d||!d.timestamp)return;var ageH=(Date.now()-d.timestamp)/3600000;if(ageH>24){localStorage.removeItem("avris-soap-draft");return}if(!(d.s||d.o||d.a||d.p))return;confirm2(t("draft_restore_title"),t("draft_restore_text")).then(function(yes){if(yes){if(d.pat&&$("consultPat")){$("consultPat").value=d.pat;$("consultPat").dispatchEvent(new Event("change",{bubbles:true}))}$("soapS").value=d.s||"";$("soapO").value=d.o||"";$("soapA").value=d.a||"";$("soapP").value=d.p||"";toast(t("draft_restored"),2000,"ok")}else{localStorage.removeItem("avris-soap-draft")}})}catch(e){}}
+function restoreSoapDraft(){if(window.DEMO_MODE)return;var sh=document.getElementById("appShell");if(!sh||sh.classList.contains("hidden"))return;var cons=document.getElementById("consultation");if(!cons||!cons.classList.contains("active"))return;try{var raw=localStorage.getItem("avris-soap-draft");if(!raw)return;var d=JSON.parse(raw);if(!d||!d.timestamp)return;var ageH=(Date.now()-d.timestamp)/3600000;if(ageH>24){localStorage.removeItem("avris-soap-draft");return}if(!(d.s||d.o||d.a||d.p))return;confirm2(t("draft_restore_title"),t("draft_restore_text")).then(function(yes){if(yes){if(d.pat&&$("consultPat")){$("consultPat").value=d.pat;$("consultPat").dispatchEvent(new Event("change",{bubbles:true}))}$("soapS").value=d.s||"";$("soapO").value=d.o||"";$("soapA").value=d.a||"";$("soapP").value=d.p||"";toast(t("draft_restored"),2000,"ok")}else{localStorage.removeItem("avris-soap-draft")}})}catch(e){}}
 setTimeout(restoreSoapDraft,1500);
 if($("consultTpl"))$("consultTpl").onchange=function(){applyConsultTemplate(this.value);this.value=""};
 function setFocusMode(on){document.body.classList.toggle("focus-mode",!!on);if($("focusToggle"))$("focusToggle").setAttribute("aria-pressed",on?"true":"false")}
