@@ -29,6 +29,17 @@ def get_db():
 def init_db():
     import models  # noqa: F401 — register models on Base
     Base.metadata.create_all(bind=engine)
+    # Cross-DB lightweight column adds for the patients table — covers prod
+    # Postgres where create_all() won't add new columns to an existing table.
+    from sqlalchemy import text, inspect
+    insp = inspect(engine)
+    if "patients" in insp.get_table_names():
+        existing = {c["name"] for c in insp.get_columns("patients")}
+        with engine.begin() as conn:
+            if "department" not in existing:
+                conn.execute(text("ALTER TABLE patients ADD COLUMN department VARCHAR"))
+            if "status" not in existing:
+                conn.execute(text("ALTER TABLE patients ADD COLUMN status VARCHAR"))
     # Lightweight in-place migrations for sqlite (idempotent)
     if DATABASE_URL.startswith("sqlite"):
         from sqlalchemy import text, inspect
