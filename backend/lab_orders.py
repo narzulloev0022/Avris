@@ -5,13 +5,13 @@ from io import BytesIO
 from typing import List, Optional, Any
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi.responses import StreamingResponse, Response
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import LabOrder, User, Patient
+from models import LabOrder, LabFile, User, Patient
 from auth import get_current_user
 from llm import _claude_call, ANTHROPIC_API_KEY
 from pdf_export import render_lab_order_pdf
@@ -209,3 +209,139 @@ async def upload_results(
     db.commit()
     db.refresh(o)
     return o
+
+
+# ---------- File upload (lab portal) + read (doctor) ----------
+
+MAX_FILE_BYTES = 10 * 1024 * 1024  # 10 MB
+ALLOWED_RESULT_TYPES = {"lab", "ecg", "xray", "us", "mri", "ct", "endo", "other"}
+ALLOWED_EXTS = {".pdf", ".jpg", ".jpeg", ".png", ".dcm"}
+ALLOWED_MIMES = {
+    "application/pdf",
+    "image/jpeg", "image/jpg", "image/png",
+    "application/dicom", "application/octet-stream",
+}
+
+
+class LabFileMeta(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    filename: str
+    content_type: str
+    result_type: str
+    size_bytes: int
+    uploaded_at: datetime
+
+
+def _ext_ok(name: str) -> bool:
+    name = (name or "").lower()
+    return any(name.endswith(ext) for ext in ALLOWED_EXTS)
+
+
+@router.post("/by-token/{qr_token}/files", response_model=LabFileMeta)
+async def upload_file_by_token(
+    qr_token: str,
+    result_type: str = Form(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    """Lab tech uploads a result file. Auth = knowledge of the QR token."""
+    if result_type not in ALLOWED_RESULT_TYPES:
+        raise HTTPException(400, f"Invalid result_type. Allowed: {sorted(ALLOWED_RESULT_TYPES)}")
+    o = db.query(LabOrder).filter(LabOrder.qr_token == qr_token).first()
+    if not o:
+        raise HTTPException(404, "Направление не найдено")
+
+    if not _ext_ok(file.filename or ""):
+        raise HTTPException(415, f"Unsupported file extension. Allowed: {sorted(ALLOWED_EXTS)}")
+    if file.content_type and file.content_type not in ALLOWED_MIMES and not file.content_type.startswith("image/"):
+        raise HTTPException(415, f"Unsupported content type: {file.content_type}")
+
+    body = await file.read()
+    if len(body) == 0:
+        raise HTTPException(400, "Empty file")
+    if len(body) > MAX_FILE_BYTES:
+        raise HTTPException(413, f"File too large (max {MAX_FILE_BYTES // (1024*1024)} MB)")
+
+    rec = LabFile(
+        lab_order_id=o.id,
+        filename=file.filename or "upload.bin",
+        content_type=file.content_type or "application/octet-stream",
+        result_type=result_type,
+        size_bytes=len(body),
+        data=body,
+    )
+    db.add(rec)
+    # Treat any uploaded file as evidence the order has been processed.
+    if o.status == "pending":
+        o.status = "received"
+        o.received_at = datetime.utcnow()
+    db.commit()
+    db.refresh(rec)
+    return rec
+
+
+@router.get("/{oid}/files", response_model=List[LabFileMeta])
+def list_files(
+    oid: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    _owned_order(db, oid, current_user)
+    rows = (
+        db.query(LabFile)
+        .filter(LabFile.lab_order_id == oid)
+        .order_by(LabFile.uploaded_at.desc())
+        .all()
+    )
+    return rows
+
+
+@router.get("/by-token/{qr_token}/files", response_model=List[LabFileMeta])
+def list_files_by_token(qr_token: str, db: Session = Depends(get_db)):
+    """Lab tech sees what was already uploaded for this order."""
+    o = db.query(LabOrder).filter(LabOrder.qr_token == qr_token).first()
+    if not o:
+        raise HTTPException(404, "Направление не найдено")
+    rows = (
+        db.query(LabFile)
+        .filter(LabFile.lab_order_id == o.id)
+        .order_by(LabFile.uploaded_at.desc())
+        .all()
+    )
+    return rows
+
+
+@router.get("/{oid}/files/{fid}")
+def download_file(
+    oid: int,
+    fid: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    _owned_order(db, oid, current_user)
+    rec = db.query(LabFile).filter(LabFile.id == fid, LabFile.lab_order_id == oid).first()
+    if not rec:
+        raise HTTPException(404, "Файл не найден")
+    safe_name = rec.filename.replace('"', "")
+    return Response(
+        content=rec.data,
+        media_type=rec.content_type or "application/octet-stream",
+        headers={"Content-Disposition": f'inline; filename="{safe_name}"'},
+    )
+
+
+@router.delete("/{oid}/files/{fid}", status_code=204)
+def delete_file(
+    oid: int,
+    fid: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    _owned_order(db, oid, current_user)
+    rec = db.query(LabFile).filter(LabFile.id == fid, LabFile.lab_order_id == oid).first()
+    if not rec:
+        raise HTTPException(404, "Файл не найден")
+    db.delete(rec)
+    db.commit()
+    return Response(status_code=204)

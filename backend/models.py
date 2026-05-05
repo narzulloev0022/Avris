@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON, Float, Date
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON, Float, Date, LargeBinary
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -131,3 +131,19 @@ class LabOrder(Base):
 
     patient = relationship("Patient", back_populates="lab_orders")
     doctor = relationship("User", back_populates="lab_orders")
+    files = relationship("LabFile", back_populates="lab_order", cascade="all, delete-orphan")
+
+
+class LabFile(Base):
+    __tablename__ = "lab_files"
+
+    id = Column(Integer, primary_key=True, index=True)
+    lab_order_id = Column(Integer, ForeignKey("lab_orders.id", ondelete="CASCADE"), nullable=False, index=True)
+    filename = Column(String, nullable=False)
+    content_type = Column(String, nullable=False)
+    result_type = Column(String, nullable=False)  # lab|ecg|xray|us|mri|ct|endo|other
+    size_bytes = Column(Integer, nullable=False)
+    data = Column(LargeBinary, nullable=False)
+    uploaded_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    lab_order = relationship("LabOrder", back_populates="files")
