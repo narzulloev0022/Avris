@@ -2,11 +2,13 @@ import logging
 import os
 import secrets
 
-from fastapi import APIRouter, Header, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
-from database import Base, engine, init_db
+from database import Base, engine, get_db, init_db
 import models  # noqa: F401 — register tables on Base.metadata
+from models import Consultation, LabOrder, NightRound, Patient, User
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 log = logging.getLogger(__name__)
@@ -56,4 +58,84 @@ def reset_db(
         "status": "ok",
         "dropped": tables,
         "recreated": sorted(Base.metadata.tables.keys()),
+    }
+
+
+@router.post("/cleanup-non-admins")
+def cleanup_non_admins(
+    payload: ResetRequest,
+    x_admin_reset_key: str = Header(default=""),
+    db: Session = Depends(get_db),
+):
+    """Delete every non-admin user and all rows they own (patients,
+    consultations, lab orders incl. attached files via FK CASCADE,
+    night rounds). The admin row itself is preserved.
+
+    Auth and safety match /reset-db: X-Admin-Reset-Key + confirm body.
+    """
+    expected = _admin_key()
+    if not expected:
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "Cleanup endpoint disabled — neither ADMIN_RESET_KEY nor SECRET_KEY set",
+        )
+    if not secrets.compare_digest(x_admin_reset_key or "", expected):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Invalid reset key")
+    if payload.confirm != "DROP_ALL_DATA":
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            'Missing confirmation: send {"confirm": "DROP_ALL_DATA"}',
+        )
+
+    admin = db.query(User).filter(User.is_admin.is_(True)).order_by(User.id.asc()).first()
+    if not admin:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            "No admin user exists — refusing to delete every user",
+        )
+
+    log.warning(
+        "admin/cleanup-non-admins invoked, preserving admin id=%s email=%s",
+        admin.id, admin.email,
+    )
+
+    # Order matters: child rows first to avoid FK violations even though
+    # most relationships use ondelete=CASCADE.
+    nr_deleted = (
+        db.query(NightRound)
+        .filter(NightRound.doctor_id != admin.id)
+        .delete(synchronize_session=False)
+    )
+    lab_deleted = (
+        db.query(LabOrder)
+        .filter(LabOrder.doctor_id != admin.id)
+        .delete(synchronize_session=False)
+    )
+    cons_deleted = (
+        db.query(Consultation)
+        .filter(Consultation.doctor_id != admin.id)
+        .delete(synchronize_session=False)
+    )
+    pat_deleted = (
+        db.query(Patient)
+        .filter(Patient.doctor_id != admin.id)
+        .delete(synchronize_session=False)
+    )
+    users_deleted = (
+        db.query(User)
+        .filter(User.is_admin.is_(False))
+        .delete(synchronize_session=False)
+    )
+    db.commit()
+
+    return {
+        "status": "ok",
+        "preserved_admin": {"id": admin.id, "email": admin.email},
+        "deleted": {
+            "users": users_deleted,
+            "patients": pat_deleted,
+            "consultations": cons_deleted,
+            "lab_orders": lab_deleted,
+            "night_rounds": nr_deleted,
+        },
     }
