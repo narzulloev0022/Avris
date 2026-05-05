@@ -139,3 +139,52 @@ def cleanup_non_admins(
             "night_rounds": nr_deleted,
         },
     }
+
+
+@router.post("/cleanup-medical-data")
+def cleanup_medical_data(
+    payload: ResetRequest,
+    x_admin_reset_key: str = Header(default=""),
+    db: Session = Depends(get_db),
+):
+    """Wipe every patient / consultation / lab order / night round in the
+    DB while leaving every User row (including non-admins) intact.
+
+    Use case: an admin who registered before seed_demo_patients_for was
+    removed from verify_email still has 6 demo rows in their patient
+    list. cleanup-non-admins preserves admin's data, so it doesn't
+    touch them. This endpoint targets exactly that scenario without
+    having to drop the admin row and re-onboard.
+    """
+    expected = _admin_key()
+    if not expected:
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "Cleanup endpoint disabled — neither ADMIN_RESET_KEY nor SECRET_KEY set",
+        )
+    if not secrets.compare_digest(x_admin_reset_key or "", expected):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Invalid reset key")
+    if payload.confirm != "DROP_ALL_DATA":
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            'Missing confirmation: send {"confirm": "DROP_ALL_DATA"}',
+        )
+
+    log.warning("admin/cleanup-medical-data invoked, wiping all medical rows")
+
+    nr_deleted = db.query(NightRound).delete(synchronize_session=False)
+    lab_deleted = db.query(LabOrder).delete(synchronize_session=False)
+    cons_deleted = db.query(Consultation).delete(synchronize_session=False)
+    pat_deleted = db.query(Patient).delete(synchronize_session=False)
+    db.commit()
+
+    return {
+        "status": "ok",
+        "users_kept": db.query(User).count(),
+        "deleted": {
+            "patients": pat_deleted,
+            "consultations": cons_deleted,
+            "lab_orders": lab_deleted,
+            "night_rounds": nr_deleted,
+        },
+    }
