@@ -58,6 +58,8 @@ class Patient(Base):
     initials = Column(String, nullable=True)
     ward = Column(String, nullable=True)
     ward_en = Column(String, nullable=True)
+    department = Column(String, nullable=True)  # therapy|cardiology|surgery|neurology|pulmonology|icu|post_icu|other
+    status = Column(String, nullable=True)  # stable|watch|serious|critical
     allergies = Column(JSON, nullable=False, default=list)
     allergies_en = Column(JSON, nullable=False, default=list)
     diagnoses = Column(JSON, nullable=False, default=list)
