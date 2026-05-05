@@ -180,14 +180,6 @@ def verify_email(payload: VerifyEmailRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
     _verify_codes.pop(email, None)
-    # Seed demo patients on first successful verification (idempotent: skip if already seeded)
-    try:
-        from patients import seed_demo_patients_for
-        from models import Patient
-        if not db.query(Patient).filter(Patient.doctor_id == user.id).first():
-            seed_demo_patients_for(db, user.id)
-    except Exception:
-        db.rollback()
     # Notify admins of pending doctor (only if user not auto-approved)
     if not user.is_approved:
         try:
