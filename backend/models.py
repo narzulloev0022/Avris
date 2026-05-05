@@ -149,3 +149,16 @@ class LabFile(Base):
     uploaded_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     lab_order = relationship("LabOrder", back_populates="files")
+
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    doctor_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    type = Column(String, nullable=False, default="system")  # call|lab_ready|round|system
+    title = Column(String, nullable=False)
+    message = Column(Text, nullable=True)
+    payload = Column(JSON, nullable=True)
+    is_read = Column(Boolean, nullable=False, default=False, index=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)

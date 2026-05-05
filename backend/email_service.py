@@ -114,3 +114,22 @@ def send_doctor_rejected(to_email: str, full_name: str = "", reason: str = "") -
     """
     html = _render_plain("Заявка не одобрена", body, full_name)
     return _send_via_resend(to_email, "Avris AI — заявка отклонена", html, "Rejection", to_email)
+
+
+def send_call_doctor_email(to: str, doctor_name: str, patient_name: str,
+                            ward: str = "—", reason: str = "—",
+                            note: str = "", caller: str = "") -> bool:
+    note_block = f"<p><strong>Комментарий:</strong> {note}</p>" if note else ""
+    caller_block = f"<p style='color:#8a98a8;font-size:.92em'>Вызов от: {caller}</p>" if caller else ""
+    body = f"""
+      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+        <p style="color:#ef4444;font-weight:700;font-size:1.05em;margin:0 0 6px">🚨 Срочный вызов в палату</p>
+        <p style="margin:0;color:#1a202c">Пациент <strong>{patient_name}</strong> (палата {ward}) требует немедленного осмотра.</p>
+      </div>
+      <p><strong>Причина:</strong> {reason}</p>
+      {note_block}
+      {caller_block}
+      <p style="margin-top:18px"><a href="https://theavris.ai" style="background:#ef4444;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:600;display:inline-block">Открыть Avris AI</a></p>
+    """
+    html = _render_plain("🚨 Срочный вызов", body, doctor_name)
+    return _send_via_resend(to, f"🚨 Avris AI — срочный вызов: {patient_name}", html, "Call doctor", to)
