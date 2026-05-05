@@ -53,6 +53,29 @@ input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 
 .search-row{display:flex;gap:10px}
 .search-row input{flex:1}
 .received-banner{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:10px;padding:14px;margin-bottom:14px;font-size:.88rem;color:#10b981}
+.files-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:24px 0 10px}
+.files-h h3{margin:0}
+.files-row{display:grid;grid-template-columns:1fr 220px;gap:10px;align-items:end;margin-bottom:10px}
+.files-row select{width:100%;background:var(--elev);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font:14px var(--font);cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%238a98a8' d='M6 8L0 0h12z'/></svg>");background-repeat:no-repeat;background-position:right 14px center}
+.files-drop{border:1.5px dashed var(--border);border-radius:12px;padding:22px 18px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;display:block}
+.files-drop:hover,.files-drop.dragover{border-color:var(--accent);background:rgba(74,163,145,.06)}
+.files-drop input[type="file"]{display:none}
+.files-drop-ic{display:inline-flex;width:36px;height:36px;align-items:center;justify-content:center;border-radius:50%;background:rgba(74,163,145,.15);color:var(--accent);margin-bottom:8px}
+.files-drop-title{font-weight:600;font-size:.92rem;margin-bottom:4px}
+.files-drop-sub{color:var(--muted);font-size:.78rem}
+.files-preview{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.files-preview:empty{display:none}
+.files-pv-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--elev);border:1px solid var(--border);border-radius:10px;font-size:.85rem}
+.files-pv-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.files-pv-meta{color:var(--muted);font-size:.74rem;font-family:var(--font-data);flex-shrink:0}
+.files-pv-rm{background:transparent;border:none;color:var(--muted);cursor:pointer;padding:4px 8px;border-radius:6px;font-size:1rem;line-height:1}
+.files-pv-rm:hover{color:var(--danger);background:rgba(239,68,68,.08)}
+.files-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.files-list:empty{display:none}
+.files-list-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--elev);border:1px solid var(--border);border-radius:10px;font-size:.85rem;text-decoration:none;color:var(--text);transition:border-color .15s}
+.files-list-item:hover{border-color:var(--accent)}
+.files-tag{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;background:rgba(74,163,145,.18);color:var(--accent);border-radius:5px;padding:3px 7px;flex-shrink:0}
+@media(max-width:600px){.files-row{grid-template-columns:1fr}}
 @media(max-width:600px){
 .row{grid-template-columns:1fr;gap:4px}
 .row .test-name{padding:6px 0 2px;border-bottom:none}
@@ -105,6 +128,39 @@ header{flex-wrap:wrap;gap:12px}
 <div data-i18n="col_norm">Норма</div>
 </div>
 <div id="testsList"></div>
+
+<div class="files-h">
+<h3 data-i18n="files_h">Файлы результатов</h3>
+<span class="files-drop-sub" data-i18n="files_hint">PDF, JPG, PNG, DICOM · до 10 МБ</span>
+</div>
+<div class="files-row">
+<div>
+<label data-i18n="files_drop">Перетащите файлы или нажмите чтобы выбрать</label>
+<label class="files-drop" id="filesDrop">
+<input type="file" id="filesInput" multiple accept=".pdf,.jpg,.jpeg,.png,.dcm,image/*">
+<span class="files-drop-ic"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+<div class="files-drop-title" data-i18n="files_pick">Выбрать файлы</div>
+<div class="files-drop-sub" data-i18n="files_drop_sub">или перетащите сюда</div>
+</label>
+</div>
+<div>
+<label data-i18n="files_type_l">Тип результата</label>
+<select id="filesType">
+<option value="lab" data-i18n="rt_lab">Лабораторный анализ</option>
+<option value="ecg" data-i18n="rt_ecg">ЭКГ</option>
+<option value="xray" data-i18n="rt_xray">Рентген</option>
+<option value="us" data-i18n="rt_us">УЗИ</option>
+<option value="mri" data-i18n="rt_mri">МРТ</option>
+<option value="ct" data-i18n="rt_ct">КТ</option>
+<option value="endo" data-i18n="rt_endo">Эндоскопия (ФГДС)</option>
+<option value="other" data-i18n="rt_other">Другое</option>
+</select>
+</div>
+</div>
+<div class="files-preview" id="filesPreview"></div>
+<h3 data-i18n="files_uploaded" style="margin-top:18px" id="filesUploadedH" hidden>Уже загружено</h3>
+<div class="files-list" id="filesList"></div>
+
 <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px">
 <button class="btn btn-ghost" type="button" id="cancelBtn" data-i18n="btn_back">Назад</button>
 <button class="btn btn-primary" type="submit" id="submitBtn" data-i18n="btn_send">Отправить результаты</button>
@@ -124,9 +180,9 @@ var API_BASE = (location.host === "localhost:8080" || location.host === "127.0.0
 function $(id){return document.getElementById(id)}
 
 var TR = {
-  ru:{brand_sub:"Лаборатория",title:"Портал лаборатории",search_help:"Введите код направления или отсканируйте QR-код",ph_token:"3f8d9c12-...",btn_load:"Загрузить",order_title:"Направление",lbl_patient:"Пациент",lbl_age:"Возраст",lbl_ward:"Палата",lbl_doctor:"Врач",tests_h:"Назначенные анализы",col_test:"Показатель",col_value:"Значение",col_unit:"Ед.",col_norm:"Норма",btn_back:"Назад",btn_send:"Отправить результаты",status_pending:"Ожидание",status_received:"Получено",err_not_found:"Направление не найдено",err_load:"Не удалось загрузить",err_send:"Не удалось отправить",err_value:"Заполните хотя бы одно значение",ok_sent:"Результаты отправлены врачу",info_received:"Результаты уже получены и отправлены врачу.",ph_value:"118",ph_unit:"г/л",ph_norm:"120-160"},
-  tj:{brand_sub:"Лаборатория",title:"Портали лаборатория",search_help:"Рамзи равонкуниро ворид кунед ё QR-кодро скан кунед",ph_token:"3f8d9c12-...",btn_load:"Боргирӣ",order_title:"Равонкунӣ",lbl_patient:"Бемор",lbl_age:"Синну сол",lbl_ward:"Палата",lbl_doctor:"Духтур",tests_h:"Таҳлилҳои таъиншуда",col_test:"Нишондод",col_value:"Қимат",col_unit:"Воҳид",col_norm:"Меъёр",btn_back:"Бозгашт",btn_send:"Натиҷаҳоро фиристед",status_pending:"Дар интизор",status_received:"Қабул шуд",err_not_found:"Равонкунӣ ёфт нашуд",err_load:"Боргирӣ ноком",err_send:"Фиристодан ноком",err_value:"Камаш як қимат ворид кунед",ok_sent:"Натиҷаҳо ба духтур фиристода шуданд",info_received:"Натиҷаҳо аллакай қабул ва фиристода шудаанд.",ph_value:"118",ph_unit:"г/л",ph_norm:"120-160"},
-  en:{brand_sub:"Lab",title:"Laboratory Portal",search_help:"Enter the referral code or scan the QR",ph_token:"3f8d9c12-...",btn_load:"Load",order_title:"Referral",lbl_patient:"Patient",lbl_age:"Age",lbl_ward:"Ward",lbl_doctor:"Doctor",tests_h:"Ordered tests",col_test:"Test",col_value:"Value",col_unit:"Unit",col_norm:"Range",btn_back:"Back",btn_send:"Send results",status_pending:"Pending",status_received:"Received",err_not_found:"Referral not found",err_load:"Failed to load",err_send:"Failed to send",err_value:"Fill at least one value",ok_sent:"Results sent to doctor",info_received:"Results have already been submitted.",ph_value:"118",ph_unit:"g/L",ph_norm:"120-160"}
+  ru:{brand_sub:"Лаборатория",title:"Портал лаборатории",search_help:"Введите код направления или отсканируйте QR-код",ph_token:"3f8d9c12-...",btn_load:"Загрузить",order_title:"Направление",lbl_patient:"Пациент",lbl_age:"Возраст",lbl_ward:"Палата",lbl_doctor:"Врач",tests_h:"Назначенные анализы",col_test:"Показатель",col_value:"Значение",col_unit:"Ед.",col_norm:"Норма",btn_back:"Назад",btn_send:"Отправить результаты",status_pending:"Ожидание",status_received:"Получено",err_not_found:"Направление не найдено",err_load:"Не удалось загрузить",err_send:"Не удалось отправить",err_value:"Заполните хотя бы одно значение или загрузите файл",ok_sent:"Результаты отправлены врачу",info_received:"Результаты уже получены и отправлены врачу.",ph_value:"118",ph_unit:"г/л",ph_norm:"120-160",files_h:"Файлы результатов",files_hint:"PDF, JPG, PNG, DICOM · до 10 МБ",files_drop:"Перетащите файлы или нажмите чтобы выбрать",files_pick:"Выбрать файлы",files_drop_sub:"или перетащите сюда",files_type_l:"Тип результата",files_uploaded:"Уже загружено",files_uploading:"Загрузка…",files_too_large:"Файл «{name}» больше 10 МБ",files_bad_type:"Файл «{name}»: неподдерживаемый формат",files_one_uploaded:"Файл загружен",files_n_uploaded:"Загружено: {n}",files_upload_err:"Не удалось загрузить «{name}»",rt_lab:"Лабораторный анализ",rt_ecg:"ЭКГ",rt_xray:"Рентген",rt_us:"УЗИ",rt_mri:"МРТ",rt_ct:"КТ",rt_endo:"Эндоскопия (ФГДС)",rt_other:"Другое"},
+  tj:{brand_sub:"Лаборатория",title:"Портали лаборатория",search_help:"Рамзи равонкуниро ворид кунед ё QR-кодро скан кунед",ph_token:"3f8d9c12-...",btn_load:"Боргирӣ",order_title:"Равонкунӣ",lbl_patient:"Бемор",lbl_age:"Синну сол",lbl_ward:"Палата",lbl_doctor:"Духтур",tests_h:"Таҳлилҳои таъиншуда",col_test:"Нишондод",col_value:"Қимат",col_unit:"Воҳид",col_norm:"Меъёр",btn_back:"Бозгашт",btn_send:"Натиҷаҳоро фиристед",status_pending:"Дар интизор",status_received:"Қабул шуд",err_not_found:"Равонкунӣ ёфт нашуд",err_load:"Боргирӣ ноком",err_send:"Фиристодан ноком",err_value:"Камаш як қимат ё файл боргирӣ кунед",ok_sent:"Натиҷаҳо ба духтур фиристода шуданд",info_received:"Натиҷаҳо аллакай қабул ва фиристода шудаанд.",ph_value:"118",ph_unit:"г/л",ph_norm:"120-160",files_h:"Файлҳои натиҷа",files_hint:"PDF, JPG, PNG, DICOM · то 10 МБ",files_drop:"Файлҳоро кашола кунед ё барои интихоб пахш намоед",files_pick:"Интихоби файл",files_drop_sub:"ё ин ҷо кашола кунед",files_type_l:"Намуди натиҷа",files_uploaded:"Аллакай боргирӣ шуда",files_uploading:"Боргирӣ…",files_too_large:"Файли «{name}» аз 10 МБ зиёд аст",files_bad_type:"Файли «{name}»: формат дастгирӣ намешавад",files_one_uploaded:"Файл боргирӣ шуд",files_n_uploaded:"Боргирӣ шуданд: {n}",files_upload_err:"Боргирии «{name}» ноком",rt_lab:"Таҳлили лабораторӣ",rt_ecg:"ЭКГ",rt_xray:"Рентген",rt_us:"УЗИ",rt_mri:"МРТ",rt_ct:"КТ",rt_endo:"Эндоскопия (ФГДС)",rt_other:"Дигар"},
+  en:{brand_sub:"Lab",title:"Laboratory Portal",search_help:"Enter the referral code or scan the QR",ph_token:"3f8d9c12-...",btn_load:"Load",order_title:"Referral",lbl_patient:"Patient",lbl_age:"Age",lbl_ward:"Ward",lbl_doctor:"Doctor",tests_h:"Ordered tests",col_test:"Test",col_value:"Value",col_unit:"Unit",col_norm:"Range",btn_back:"Back",btn_send:"Send results",status_pending:"Pending",status_received:"Received",err_not_found:"Referral not found",err_load:"Failed to load",err_send:"Failed to send",err_value:"Fill at least one value or upload a file",ok_sent:"Results sent to doctor",info_received:"Results have already been submitted.",ph_value:"118",ph_unit:"g/L",ph_norm:"120-160",files_h:"Result files",files_hint:"PDF, JPG, PNG, DICOM · up to 10 MB",files_drop:"Drop files here or click to select",files_pick:"Choose files",files_drop_sub:"or drop them here",files_type_l:"Result type",files_uploaded:"Already uploaded",files_uploading:"Uploading…",files_too_large:'"{name}" exceeds 10 MB',files_bad_type:'"{name}": unsupported format',files_one_uploaded:"File uploaded",files_n_uploaded:"{n} files uploaded",files_upload_err:'Failed to upload "{name}"',rt_lab:"Lab test",rt_ecg:"ECG",rt_xray:"X-ray",rt_us:"Ultrasound",rt_mri:"MRI",rt_ct:"CT",rt_endo:"Endoscopy (EGD)",rt_other:"Other"}
 };
 
 var lang = "ru";
@@ -144,6 +200,10 @@ function applyLang(){
   document.querySelectorAll(".unit-input").forEach(function(el){ el.placeholder = t("ph_unit"); });
   document.querySelectorAll(".norm-input").forEach(function(el){ el.placeholder = t("ph_norm"); });
   if (currentOrder) updateStatusPill();
+  // Re-render the option labels
+  document.querySelectorAll('#filesType option[data-i18n]').forEach(function(o){ o.textContent = t(o.getAttribute('data-i18n')); });
+  // Re-render uploaded list type tags
+  document.querySelectorAll('.files-tag[data-rt]').forEach(function(el){ el.textContent = t('rt_' + el.dataset.rt); });
 }
 
 function buildLangBtns(){
@@ -233,6 +293,8 @@ function renderOrder(o){
   }
   $("orderSec").hidden = false;
   $("searchSec").hidden = true;
+  pendingFiles = []; renderPreview();
+  fetchUploaded();
 }
 
 function loadByToken(token){
@@ -276,32 +338,145 @@ $("cancelBtn").onclick = function(){
   currentOrder = null;
 };
 
+// ----- File upload state -----
+var MAX_BYTES = 10 * 1024 * 1024;
+var ALLOWED_EXT = /\.(pdf|jpe?g|png|dcm)$/i;
+var pendingFiles = []; // [File...]
+
+function fmtSize(n){
+  if (n < 1024) return n + " B";
+  if (n < 1024*1024) return (n/1024).toFixed(1) + " KB";
+  return (n/(1024*1024)).toFixed(1) + " MB";
+}
+
+function renderPreview(){
+  var box = $("filesPreview"); box.innerHTML = "";
+  pendingFiles.forEach(function(f, i){
+    var row = document.createElement("div");
+    row.className = "files-pv-item";
+    row.innerHTML = '<div class="files-pv-name"></div><div class="files-pv-meta"></div><button type="button" class="files-pv-rm" aria-label="Remove">×</button>';
+    row.querySelector(".files-pv-name").textContent = f.name;
+    row.querySelector(".files-pv-meta").textContent = fmtSize(f.size);
+    row.querySelector(".files-pv-rm").onclick = function(){ pendingFiles.splice(i, 1); renderPreview(); };
+    box.appendChild(row);
+  });
+}
+
+function addFiles(list){
+  Array.prototype.forEach.call(list, function(f){
+    if (!ALLOWED_EXT.test(f.name)) { toast(t("files_bad_type").replace("{name}", f.name), "err"); return; }
+    if (f.size > MAX_BYTES) { toast(t("files_too_large").replace("{name}", f.name), "err"); return; }
+    pendingFiles.push(f);
+  });
+  renderPreview();
+}
+
+function renderUploaded(files){
+  var list = $("filesList"); list.innerHTML = "";
+  $("filesUploadedH").hidden = !files || !files.length;
+  if (!files || !files.length) return;
+  files.forEach(function(f){
+    var a = document.createElement("a");
+    a.className = "files-list-item";
+    a.href = API_BASE + "/api/lab-orders/by-token/" + encodeURIComponent(currentOrder.qr_token) + "/files"; // tech can't download (no auth) — link is informational
+    a.innerHTML = '<span class="files-tag" data-rt=""></span><span class="files-pv-name"></span><span class="files-pv-meta"></span>';
+    a.querySelector(".files-tag").dataset.rt = f.result_type;
+    a.querySelector(".files-tag").textContent = t("rt_" + f.result_type);
+    a.querySelector(".files-pv-name").textContent = f.filename;
+    a.querySelector(".files-pv-meta").textContent = fmtSize(f.size_bytes);
+    a.removeAttribute("href"); // lab tech doesn't need to download here
+    a.style.cursor = "default";
+    list.appendChild(a);
+  });
+}
+
+function fetchUploaded(){
+  if (!currentOrder) return Promise.resolve([]);
+  return fetch(API_BASE + "/api/lab-orders/by-token/" + encodeURIComponent(currentOrder.qr_token) + "/files")
+    .then(function(r){ return r.ok ? r.json() : []; })
+    .then(function(files){ renderUploaded(files); return files; })
+    .catch(function(){ renderUploaded([]); return []; });
+}
+
+// File picker + drag-drop
+$("filesInput").addEventListener("change", function(e){
+  addFiles(e.target.files);
+  e.target.value = ""; // allow re-selecting same file
+});
+var dropZone = $("filesDrop");
+["dragenter","dragover"].forEach(function(ev){
+  dropZone.addEventListener(ev, function(e){ e.preventDefault(); e.stopPropagation(); dropZone.classList.add("dragover"); });
+});
+["dragleave","drop"].forEach(function(ev){
+  dropZone.addEventListener(ev, function(e){ e.preventDefault(); e.stopPropagation(); dropZone.classList.remove("dragover"); });
+});
+dropZone.addEventListener("drop", function(e){
+  if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files);
+});
+
+function uploadOne(file){
+  var fd = new FormData();
+  fd.append("result_type", $("filesType").value || "other");
+  fd.append("file", file);
+  return fetch(API_BASE + "/api/lab-orders/by-token/" + encodeURIComponent(currentOrder.qr_token) + "/files", {
+    method: "POST",
+    body: fd
+  }).then(function(r){
+    if (!r.ok) throw new Error("upload failed");
+    return r.json();
+  });
+}
+
 $("resultsForm").onsubmit = function(e){
   e.preventDefault();
   if (!currentOrder) return;
   var results = collectResults();
-  if (!Object.keys(results).length) { toast(t("err_value"), "err"); return; }
+  var hasFiles = pendingFiles.length > 0;
+  if (!Object.keys(results).length && !hasFiles) { toast(t("err_value"), "err"); return; }
+
   var btn = $("submitBtn");
   btn.disabled = true;
-  fetch(API_BASE + "/api/lab-orders/" + currentOrder.id + "/results", {
-    method: "PUT",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ results: results })
-  }).then(function(r){
-    if (!r.ok) {
-      return r.json().catch(function(){ return {}; }).then(function(d){
-        toast((d && typeof d.detail === "string") ? d.detail : t("err_send"), "err");
+
+  var jobs = [];
+  if (Object.keys(results).length) {
+    jobs.push(fetch(API_BASE + "/api/lab-orders/" + currentOrder.id + "/results", {
+      method: "PUT",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ results: results })
+    }).then(function(r){
+      if (!r.ok) return r.json().catch(function(){return{};}).then(function(d){
+        throw new Error((d && typeof d.detail === "string") ? d.detail : t("err_send"));
       });
-    }
-    return r.json().then(function(updated){
-      currentOrder = Object.assign({}, currentOrder, updated, { patient_name: currentOrder.patient_name, doctor_name: currentOrder.doctor_name, patient_age: currentOrder.patient_age, patient_ward: currentOrder.patient_ward });
-      updateStatusPill();
-      $("receivedBanner").textContent = t("info_received");
-      $("receivedBanner").hidden = false;
-      toast(t("ok_sent"), "ok");
-    });
-  }).catch(function(){
-    toast(t("err_send"), "err");
+      return r.json().then(function(updated){
+        currentOrder = Object.assign({}, currentOrder, updated, {
+          patient_name: currentOrder.patient_name, doctor_name: currentOrder.doctor_name,
+          patient_age: currentOrder.patient_age, patient_ward: currentOrder.patient_ward
+        });
+      });
+    }));
+  }
+
+  if (hasFiles) {
+    var queued = pendingFiles.slice();
+    var uploaded = 0, failed = 0;
+    jobs.push(Promise.all(queued.map(function(f){
+      return uploadOne(f).then(function(){ uploaded++; }).catch(function(){
+        failed++; toast(t("files_upload_err").replace("{name}", f.name), "err");
+      });
+    })).then(function(){
+      pendingFiles = []; renderPreview();
+      return fetchUploaded();
+    }));
+  }
+
+  Promise.all(jobs).then(function(){
+    updateStatusPill();
+    $("receivedBanner").textContent = t("info_received");
+    $("receivedBanner").hidden = false;
+    var n = (Object.keys(results).length ? 1 : 0) + 0;
+    toast(t("ok_sent"), "ok");
+  }).catch(function(err){
+    toast((err && err.message) || t("err_send"), "err");
   }).finally(function(){
     btn.disabled = false;
   });
