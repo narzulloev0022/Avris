@@ -40,6 +40,10 @@ def init_db():
                 conn.execute(text("ALTER TABLE patients ADD COLUMN department VARCHAR"))
             if "status" not in existing:
                 conn.execute(text("ALTER TABLE patients ADD COLUMN status VARCHAR"))
+            if "patient_type" not in existing:
+                # Backfill existing rows as outpatient (safe default — no ward
+                # required, no ICU/round side-effects).
+                conn.execute(text("ALTER TABLE patients ADD COLUMN patient_type VARCHAR NOT NULL DEFAULT 'outpatient'"))
     # Lightweight in-place migrations for sqlite (idempotent)
     if DATABASE_URL.startswith("sqlite"):
         from sqlalchemy import text, inspect
