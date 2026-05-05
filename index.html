@@ -1196,12 +1196,12 @@ body[data-theme="light"] input:-webkit-autofill,body[data-theme="light"] input:-
 <div class="main">
 <section class="screen active" id="dashboard">
 <!-- Time Saved Banner -->
-<div class="time-saved-banner">
+<div class="time-saved-banner" id="timeSavedBanner" hidden>
 <div class="tsb-left">
 <svg aria-hidden="true" class="tsb-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
 <div class="tsb-text">
 <div class="tsb-label" data-i18n="tsb_label">Время сэкономлено сегодня</div>
-<div class="tsb-value"><span class="tsb-num">1.4</span> <span data-i18n="tsb_unit">часа</span></div>
+<div class="tsb-value"><span class="tsb-num" id="tsbNum">0</span> <span data-i18n="tsb_unit">часа</span></div>
 </div>
 </div>
 <div class="tsb-badge">Clinical AI</div>
@@ -1243,19 +1243,19 @@ body[data-theme="light"] input:-webkit-autofill,body[data-theme="light"] input:-
 <div class="stat-row">
 <div class="stat-card stat-soap">
 <div class="stat-icon"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></div>
-<div class="stat-v">18</div>
+<div class="stat-v" id="statSoap">0</div>
 <div class="stat-l" data-i18n="m_soap_n">SOAP-записи</div>
 <div class="stat-s" data-i18n="m_24h">за 24ч</div>
 </div>
 <div class="stat-card stat-sess">
 <div class="stat-icon"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></div>
-<div class="stat-v">12</div>
+<div class="stat-v" id="statSess">0</div>
 <div class="stat-l" data-i18n="m_sess">Сессии</div>
 <div class="stat-s" data-i18n="m_sess_d">~4:12 мин/сессия</div>
 </div>
 <div class="stat-card stat-acc">
 <div class="stat-icon"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
-<div class="stat-v">92%</div>
+<div class="stat-v" id="statAcc">—</div>
 <div class="stat-l" data-i18n="m_acc">Точность AI</div>
 <div class="stat-s" data-i18n="m_rec">распознавание</div>
 </div>
@@ -1793,7 +1793,7 @@ var ps=$("patSearch"),dfl=$("diagFilter"),wfl=$("wardFilter");
 ps.oninput=function(){clearTimeout(searchTm);searchTm=setTimeout(applyFilters,200)};dfl.onchange=applyFilters;wfl.onchange=applyFilters;$("resetF").onclick=function(){ps.value="";dfl.value="all";wfl.value="all";applyFilters()};
 function buildPatList(){var pl=$("patList");pl.innerHTML="";patients.forEach(function(p){var el=document.createElement("div");el.className="p-item";el.dataset.pid=p.id;var rc=p.score<40?"danger":p.score<70?"warn":"safe";var st=p.score<40?t("st_crit"):p.score<70?t("st_watch"):t("st_stab");var diagArr=(lang==="en"&&p.diag_en)?p.diag_en:p.diag;el.innerHTML='<div class="avatar">'+esc(p.ini)+'</div><div class="p-info"><div class="p-name">'+esc(p.name)+'</div><div class="p-det">'+diagArr.map(esc).join(" · ")+'</div></div><div class="score-pill '+rc+'">'+p.score+" "+esc(st)+'</div><button class="btn primary sm p-action">'+t("nav_consult")+' →</button>';el.querySelector(".p-action").onclick=function(e){e.stopPropagation();$("consultPat").value=p.id;updatePatCtx();goTo("consultation")};el.onclick=function(){openModal(p.id)};pl.appendChild(el)})}
 function applyFilters(){var pl=$("patList");if(!pl)return;var q=ps?ps.value.trim().toLowerCase():"",dv=dfl?dfl.value:"all",wv=wfl?wfl.value:"all",cnt=0;patients.forEach(function(p){var nd=pl.querySelector('[data-pid="'+p.id+'"]');if(!nd)return;var mq=p.name.toLowerCase().indexOf(q)>=0||p.diag.some(function(d){return d.toLowerCase().indexOf(q)>=0});var md=dv==="all"||p.diag.some(function(d){return d.indexOf(dv)>=0});var mw=wv==="all"||p.ward===wv;var vis=mq&&md&&mw;nd.classList.toggle("fh",!vis);if(vis)cnt++});$("filterSum").textContent=cnt+" "+t("f_pat");$("patBadge").textContent=cnt;$("patEmpty").style.display=cnt===0?"block":"none"}
-function updateDash(){var crit=patients.filter(function(p){return p.score<40}).length;$("heroPC").textContent=patients.length;$("heroCC").textContent=crit;var soapCount=histData.filter(function(h){return h.type==="soap"}).length;var hsoap=$("heroSOAP");if(hsoap)hsoap.textContent=String(soapCount);var hacc=$("heroAcc");if(hacc)hacc.textContent=window.DEMO_MODE?"92%":(soapCount>0?"92%":"—");var avg=patients.length?Math.round(patients.reduce(function(a,p){return a+p.score},0)/patients.length):0;$("heroAS").textContent=avg;var sorted=patients.slice().sort(function(a,b){return b.score-a.score});if(sorted.length){$("bestSP").textContent=sorted[0].name+" ("+sorted[0].score+")";$("watchSP").textContent=sorted[sorted.length-1].name+" ("+sorted[sorted.length-1].score+")"}else{$("bestSP").textContent="—";$("watchSP").textContent="—"}var at=$("avrisTrend");at.innerHTML="";if(!patients.length){at.innerHTML='<div class="empty-state empty-state-sm"><div class="empty-state-t">'+esc(t("empty_score"))+'</div></div>';return}var sortedTrend=patients.slice().sort(function(a,b){return a.score-b.score});sortedTrend.forEach(function(p){var row=document.createElement("div");row.className="score-h-row";var c=p.score<40?"var(--danger)":p.score<70?"var(--warn)":"var(--ok)";row.innerHTML='<span class="score-h-name">'+esc(p.name.split(" ")[0])+'</span><div class="score-h-track"><div class="score-h-fill" style="width:'+p.score+'%;background:'+c+'"></div></div><span class="score-h-val" style="color:'+c+'">'+p.score+'</span>';at.appendChild(row)})}
+function updateDash(){var crit=patients.filter(function(p){return p.score<40}).length;$("heroPC").textContent=patients.length;$("heroCC").textContent=crit;var soapCount=histData.filter(function(h){return h.type==="soap"}).length;var sessCount=histData.length;var accStr=window.DEMO_MODE?"92%":(soapCount>0?"92%":"—");var hsoap=$("heroSOAP");if(hsoap)hsoap.textContent=String(soapCount);var hacc=$("heroAcc");if(hacc)hacc.textContent=accStr;var sst=$("statSoap");if(sst)sst.textContent=window.DEMO_MODE?"18":String(soapCount);var sse=$("statSess");if(sse)sse.textContent=window.DEMO_MODE?"12":String(sessCount);var sac=$("statAcc");if(sac)sac.textContent=accStr;var tsb=$("timeSavedBanner"),tsbN=$("tsbNum");if(tsb&&tsbN){if(window.DEMO_MODE){tsb.hidden=false;tsbN.textContent="1.4"}else if(soapCount>0){tsb.hidden=false;tsbN.textContent=(soapCount*0.08).toFixed(1)}else{tsb.hidden=true}}var avg=patients.length?Math.round(patients.reduce(function(a,p){return a+p.score},0)/patients.length):0;$("heroAS").textContent=avg;var sorted=patients.slice().sort(function(a,b){return b.score-a.score});if(sorted.length){$("bestSP").textContent=sorted[0].name+" ("+sorted[0].score+")";$("watchSP").textContent=sorted[sorted.length-1].name+" ("+sorted[sorted.length-1].score+")"}else{$("bestSP").textContent="—";$("watchSP").textContent="—"}var at=$("avrisTrend");at.innerHTML="";if(!patients.length){at.innerHTML='<div class="empty-state empty-state-sm"><div class="empty-state-t">'+esc(t("empty_score"))+'</div></div>';return}var sortedTrend=patients.slice().sort(function(a,b){return a.score-b.score});sortedTrend.forEach(function(p){var row=document.createElement("div");row.className="score-h-row";var c=p.score<40?"var(--danger)":p.score<70?"var(--warn)":"var(--ok)";row.innerHTML='<span class="score-h-name">'+esc(p.name.split(" ")[0])+'</span><div class="score-h-track"><div class="score-h-fill" style="width:'+p.score+'%;background:'+c+'"></div></div><span class="score-h-val" style="color:'+c+'">'+p.score+'</span>';at.appendChild(row)})}
 function initWave(){var w=$("waveform");for(var i=0;i<16;i++){var s=document.createElement("span");s.style.height=(4+Math.random()*28)+"px";s.style.animationDelay=(i*.06)+"s";w.appendChild(s)}}
 var DOT_PHRASES={
 ru:[{k:"..норма",v:"в пределах нормы"},{k:"..жалоб",v:"жалоб не предъявляет"},{k:"..давление",v:"АД 120/80 мм рт.ст."},{k:"..пульс",v:"ЧСС 72 уд/мин, ритмичный"},{k:"..дыхание",v:"дыхание везикулярное, хрипов нет"},{k:"..живот",v:"живот мягкий, безболезненный"},{k:"..отёков",v:"отёков нет"},{k:"..сознание",v:"сознание ясное, ориентирован"},{k:"..выписка",v:"выписан в удовлетворительном состоянии"},{k:"..рекомендую",v:"рекомендовано: режим, диета, контроль АД"},{k:"..анализ",v:"ОАК, ОАМ, биохимия крови"},{k:"..контроль",v:"контроль АД ежедневно"},{k:"..следующий",v:"следующая явка через 2 недели"},{k:"..госпитализация",v:"показана плановая госпитализация"},{k:"..без",v:"без динамики"}],
