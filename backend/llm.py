@@ -35,6 +35,16 @@ class SoapResponse(BaseModel):
     objective: str
     assessment: str
     plan: str
+    # Optional auto-extracted patient + classification — only filled when
+    # the prompt finds them in the transcript. Frontend treats every
+    # field as a hint and lets the doctor confirm before saving.
+    patient_full_name: Optional[str] = None
+    patient_age: Optional[int] = None
+    patient_gender: Optional[str] = None
+    patient_diagnoses: Optional[list[str]] = None
+    patient_allergies: Optional[list[str]] = None
+    department: Optional[str] = None  # therapy|cardiology|surgery|neurology|pulmonology|icu|post_icu|other
+    severity: Optional[str] = None    # stable|watch|serious|critical
 
 
 class LabsRequest(BaseModel):
@@ -90,25 +100,51 @@ async def generate_soap(req: SoapRequest, current_user: User = Depends(get_curre
         raise HTTPException(status_code=400, detail="Пустой транскрипт")
     lang_label = LANG_LABEL.get(req.language, "русский")
     system_prompt = (
-        "Ты медицинский AI-ассистент. На основе транскрипта приёма сгенерируй SOAP-документацию. "
-        f"Язык ответа: {lang_label}. "
-        "S — жалобы пациента (subjective). "
-        "O — объективные данные осмотра (objective). "
-        "A — оценка/диагноз (assessment). "
-        "P — план лечения (plan). "
-        'Верни строго валидный JSON: {"subjective":"...","objective":"...","assessment":"...","plan":"..."}. '
-        "Без префиксов и дополнительного текста — только JSON-объект."
+        "Ты медицинский AI-ассистент. На основе транскрипта приёма сгенерируй SOAP-документацию "
+        "и одновременно извлеки данные пациента и классифицируй случай. "
+        f"Язык всех текстовых полей: {lang_label}. "
+        "Поля JSON: "
+        "subjective — жалобы пациента; "
+        "objective — данные осмотра; "
+        "assessment — оценка/диагноз; "
+        "plan — план лечения. "
+        "Дополнительно (заполняй только если явно сказано в транскрипте, иначе оставляй null или пропускай): "
+        'patient_full_name (string), patient_age (number), patient_gender ("М" или "Ж"), '
+        "patient_diagnoses (array of strings), patient_allergies (array of strings), "
+        "department — одно из: therapy / cardiology / surgery / neurology / pulmonology / icu / post_icu / other. "
+        "severity — одно из: stable / watch / serious / critical. "
+        "Если в Assessment/Plan есть слова: реанимация, ОРИТ, интенсивная терапия, ИВЛ, "
+        'критическое состояние — ставь department="icu" и severity="critical". '
+        'Если "послеоперационная палата" / "наблюдение после операции" — department="post_icu". '
+        "Верни ровно один JSON-объект, без префиксов и markdown-обёрток."
     )
     user_msg = f"Транскрипт приёма:\n\n{req.transcript}"
     if req.patient_context:
         user_msg += "\n\nКонтекст пациента: " + json.dumps(req.patient_context, ensure_ascii=False)
-    text = await _claude_call(system_prompt, user_msg, max_tokens=1024)
+    text = await _claude_call(system_prompt, user_msg, max_tokens=1500)
     parsed = _extract_json(text)
+    def _list(v):
+        if v is None: return None
+        if isinstance(v, list): return [str(x) for x in v if x]
+        if isinstance(v, str) and v.strip(): return [s.strip() for s in v.split(",") if s.strip()]
+        return None
+    age_raw = parsed.get("patient_age")
+    try:
+        age = int(age_raw) if age_raw not in (None, "") else None
+    except (TypeError, ValueError):
+        age = None
     return SoapResponse(
         subjective=str(parsed.get("subjective", "")),
         objective=str(parsed.get("objective", "")),
         assessment=str(parsed.get("assessment", "")),
         plan=str(parsed.get("plan", "")),
+        patient_full_name=(parsed.get("patient_full_name") or None),
+        patient_age=age,
+        patient_gender=(parsed.get("patient_gender") or None),
+        patient_diagnoses=_list(parsed.get("patient_diagnoses")),
+        patient_allergies=_list(parsed.get("patient_allergies")),
+        department=(parsed.get("department") or None),
+        severity=(parsed.get("severity") or None),
     )
 
 
