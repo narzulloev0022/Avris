@@ -322,12 +322,18 @@ function collectResults(){
   return out;
 }
 
+function extractToken(input){
+  var s = (input || "").trim();
+  // Full URL with ?token= (current QR format)
+  var m = s.match(/[?&]token=([^&#]+)/);
+  if (m) return decodeURIComponent(m[1]);
+  // Legacy avris://lab/<token>
+  m = s.match(/avris:\/\/lab\/([^\/?#]+)/i);
+  if (m) return m[1];
+  return s;
+}
 $("loadBtn").onclick = function(){
-  var token = $("tokenInput").value.trim();
-  // Accept full URL too: avris://lab/<token> or http://.../?token=...
-  var m = token.match(/avris:\/\/lab\/([^\/?#]+)/i);
-  if (m) token = m[1];
-  loadByToken(token);
+  loadByToken(extractToken($("tokenInput").value));
 };
 $("tokenInput").addEventListener("keydown", function(e){ if (e.key === "Enter") $("loadBtn").click(); });
 
