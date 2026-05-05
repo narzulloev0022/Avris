@@ -27,6 +27,8 @@ class PatientBase(BaseModel):
     initials: Optional[str] = None
     ward: Optional[str] = None
     ward_en: Optional[str] = None
+    department: Optional[str] = None
+    status: Optional[str] = None
     allergies: List[str] = []
     allergies_en: List[str] = []
     diagnoses: List[str] = []
@@ -61,6 +63,8 @@ class PatientUpdate(BaseModel):
     initials: Optional[str] = None
     ward: Optional[str] = None
     ward_en: Optional[str] = None
+    department: Optional[str] = None
+    status: Optional[str] = None
     allergies: Optional[List[str]] = None
     allergies_en: Optional[List[str]] = None
     diagnoses: Optional[List[str]] = None
