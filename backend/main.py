@@ -17,6 +17,7 @@ from patients import router as patients_router
 from lab_orders import router as lab_orders_router
 from night_rounds import router as night_rounds_router
 from admin import router as admin_router
+from notifications import router as notifications_router
 
 load_dotenv()
 
@@ -54,6 +55,7 @@ app.include_router(patients_router)
 app.include_router(lab_orders_router)
 app.include_router(night_rounds_router)
 app.include_router(admin_router)
+app.include_router(notifications_router)
 
 
 @app.get("/api/health")
