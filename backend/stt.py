@@ -14,8 +14,14 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_TRANSCRIBE_URL = "https://api.openai.com/v1/audio/transcriptions"
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "whisper-1")
 
-# Whisper uses ISO-639-1: ru, en. Tajik is "tg" (ISO) but Avris uses "tj" internally.
-LANG_TO_WHISPER = {"ru": "ru", "en": "en", "tj": "tg"}
+# Whisper auto-detects per phrase when `language` is omitted. The prompt biases
+# the model toward the expected medical RU/TJ code-switched register without
+# locking transcription into a single language.
+WHISPER_PROMPT = (
+    "Medical appointment between doctor and patient. "
+    "Languages: Russian and Tajik mixed conversation. "
+    "Medical terminology."
+)
 
 router = APIRouter(prefix="/api/stt", tags=["stt"])
 
@@ -23,7 +29,7 @@ router = APIRouter(prefix="/api/stt", tags=["stt"])
 @router.post("/transcribe")
 async def transcribe(
     file: UploadFile = File(...),
-    language: str = Form("ru"),
+    language: str = Form("ru"),  # accepted for backwards-compat but ignored — Whisper auto-detects
     current_user: User = Depends(get_current_user),
 ):
     if not OPENAI_API_KEY:
@@ -33,11 +39,10 @@ async def transcribe(
     if not audio:
         raise HTTPException(status_code=400, detail="Пустой аудио файл")
 
-    whisper_lang = LANG_TO_WHISPER.get(language, language)
     files = {"file": (file.filename or "audio.webm", audio, file.content_type or "audio/webm")}
     data = {
         "model": WHISPER_MODEL,
-        "language": whisper_lang,
+        "prompt": WHISPER_PROMPT,
         "response_format": "verbose_json",
     }
     headers = {"Authorization": f"Bearer {OPENAI_API_KEY}"}
