@@ -34,6 +34,12 @@ class User(Base):
     is_admin = Column(Boolean, nullable=False, default=False)
     is_approved = Column(Boolean, nullable=False, default=False)
     rejection_reason = Column(String, nullable=True)
+    # SOAP accuracy stats — incremented when a consultation is saved.
+    # accurate = doctor saved Claude's SOAP without edits (high alignment),
+    # edited  = doctor changed at least one S/O/A/P field before saving.
+    # Dashboard shows accurate / (accurate + edited) * 100 as "AI accuracy".
+    soap_accurate_count = Column(Integer, nullable=False, default=0)
+    soap_edited_count = Column(Integer, nullable=False, default=0)
 
     patients = relationship("Patient", back_populates="doctor", cascade="all, delete-orphan")
     consultations = relationship("Consultation", back_populates="doctor", cascade="all, delete-orphan")
