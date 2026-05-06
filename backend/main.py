@@ -18,6 +18,8 @@ from lab_orders import router as lab_orders_router
 from night_rounds import router as night_rounds_router
 from admin import router as admin_router
 from notifications import router as notifications_router
+from icd10 import router as icd10_router
+from drugs import router as drugs_router
 
 load_dotenv()
 
@@ -56,6 +58,8 @@ app.include_router(lab_orders_router)
 app.include_router(night_rounds_router)
 app.include_router(admin_router)
 app.include_router(notifications_router)
+app.include_router(icd10_router)
+app.include_router(drugs_router)
 
 
 @app.get("/api/health")
