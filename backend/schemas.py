@@ -44,6 +44,8 @@ class UserResponse(BaseModel):
     is_approved: bool = False
     rejection_reason: Optional[str] = None
     created_at: datetime
+    soap_accurate_count: int = 0
+    soap_edited_count: int = 0
 
 
 class Token(BaseModel):

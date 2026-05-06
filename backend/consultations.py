@@ -23,6 +23,11 @@ class ConsultationCreate(BaseModel):
     soap_p: Optional[str] = None
     language: str = "ru"
     duration_seconds: Optional[int] = None
+    # Accuracy tracking. Set by the frontend at save time:
+    #   None  → SOAP wasn't AI-generated (manual entry) — don't count
+    #   False → AI-generated, doctor saved without edits → accurate
+    #   True  → AI-generated, doctor edited at least one field → edited
+    soap_was_edited: Optional[bool] = None
 
 
 class ConsultationResponse(BaseModel):
@@ -47,8 +52,16 @@ def create_consultation(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    c = Consultation(doctor_id=current_user.id, **payload.model_dump())
+    data = payload.model_dump()
+    was_edited = data.pop("soap_was_edited", None)
+    c = Consultation(doctor_id=current_user.id, **data)
     db.add(c)
+    # Bump accuracy counters only when the frontend explicitly tagged this save.
+    # None means the SOAP was hand-typed without Claude — irrelevant to accuracy.
+    if was_edited is True:
+        current_user.soap_edited_count = (current_user.soap_edited_count or 0) + 1
+    elif was_edited is False:
+        current_user.soap_accurate_count = (current_user.soap_accurate_count or 0) + 1
     db.commit()
     db.refresh(c)
     return c
