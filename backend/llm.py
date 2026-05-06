@@ -3,13 +3,14 @@ import json
 import re
 import logging
 from typing import Optional, Any
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 import httpx
 from dotenv import load_dotenv
 
 from auth import get_current_user
 from models import User
+from rate_limit import limiter
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -114,7 +115,8 @@ def _extract_json(text: str) -> dict:
 
 
 @router.post("/generate-soap", response_model=SoapResponse)
-async def generate_soap(req: SoapRequest, current_user: User = Depends(get_current_user)):
+@limiter.limit("60/minute")
+async def generate_soap(request: Request, req: SoapRequest, current_user: User = Depends(get_current_user)):
     if not (req.transcript or "").strip():
         raise HTTPException(status_code=400, detail="Пустой транскрипт")
     lang_label = LANG_LABEL.get(req.language, "русский")
@@ -244,7 +246,8 @@ async def generate_soap(req: SoapRequest, current_user: User = Depends(get_curre
 
 
 @router.post("/analyze-labs", response_model=LabsResponse)
-async def analyze_labs(req: LabsRequest, current_user: User = Depends(get_current_user)):
+@limiter.limit("60/minute")
+async def analyze_labs(request: Request, req: LabsRequest, current_user: User = Depends(get_current_user)):
     if not req.results:
         raise HTTPException(status_code=400, detail="Пустые результаты")
     system_prompt = (

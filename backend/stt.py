@@ -1,11 +1,12 @@
 import os
 import logging
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, Request
 import httpx
 from dotenv import load_dotenv
 
 from auth import get_current_user
 from models import User
+from rate_limit import limiter
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -19,11 +20,18 @@ WHISPER_MODEL = os.getenv("WHISPER_MODEL", "whisper-1")
 # which handles RU/EN well; TJ falls back to Cyrillic via Russian.
 WHISPER_PROMPT = "Medical appointment between doctor and patient."
 
+# Hard cap on per-request audio size. OpenAI's own limit is 25 MB; we mirror
+# that here so a runaway client (or a malicious one) can't push gigabyte
+# uploads through our backend before OpenAI rejects them.
+MAX_AUDIO_BYTES = 25 * 1024 * 1024
+
 router = APIRouter(prefix="/api/stt", tags=["stt"])
 
 
 @router.post("/transcribe")
+@limiter.limit("30/minute")
 async def transcribe(
+    request: Request,
     file: UploadFile = File(...),
     language: str = Form("ru"),  # accepted for API compat; not forwarded — Whisper auto-detects
     current_user: User = Depends(get_current_user),
@@ -34,6 +42,11 @@ async def transcribe(
     audio = await file.read()
     if not audio:
         raise HTTPException(status_code=400, detail="Пустой аудио файл")
+    if len(audio) > MAX_AUDIO_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Аудио файл слишком большой (максимум {MAX_AUDIO_BYTES // (1024*1024)} МБ)",
+        )
 
     files = {"file": (file.filename or "audio.webm", audio, file.content_type or "audio/webm")}
     data = {

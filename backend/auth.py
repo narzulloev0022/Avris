@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 
 import httpx
 import base64
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -24,6 +24,7 @@ from schemas import (
     UpdateProfileRequest, MessageResponse,
 )
 from email_service import send_password_reset_code, send_verification_code
+from rate_limit import limiter
 
 load_dotenv()
 
@@ -53,11 +54,15 @@ _oauth_states: set[str] = set()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 
-# In-memory stores
-_reset_codes: dict[str, tuple[str, datetime]] = {}
-_verify_codes: dict[str, tuple[str, datetime]] = {}
+# In-memory OTP stores. Each value is (code, expires_at, attempts) — the
+# attempts counter increments on every wrong code. After MAX_OTP_ATTEMPTS
+# the entry is invalidated and the user must request a new code. This is
+# the single mitigation against brute-forcing 6-digit codes.
+_reset_codes: dict[str, tuple[str, datetime, int]] = {}
+_verify_codes: dict[str, tuple[str, datetime, int]] = {}
 _resend_cooldowns: dict[str, datetime] = {}
 RESEND_COOLDOWN_SECONDS = 60
+MAX_OTP_ATTEMPTS = 5
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -115,13 +120,14 @@ def _generate_code() -> str:
 
 def _set_verify_code(email: str) -> str:
     code = _generate_code()
-    _verify_codes[email] = (code, datetime.utcnow() + timedelta(minutes=15))
+    _verify_codes[email] = (code, datetime.utcnow() + timedelta(minutes=15), 0)
     _resend_cooldowns[email] = datetime.utcnow() + timedelta(seconds=RESEND_COOLDOWN_SECONDS)
     return code
 
 
 @router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
-def register(payload: UserCreate, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def register(request: Request, payload: UserCreate, db: Session = Depends(get_db)):
     email = payload.email.lower()
     existing = db.query(User).filter(User.email == email).first()
     if existing:
@@ -162,16 +168,22 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/verify-email", response_model=Token)
-def verify_email(payload: VerifyEmailRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def verify_email(request: Request, payload: VerifyEmailRequest, db: Session = Depends(get_db)):
     email = payload.email.lower()
     entry = _verify_codes.get(email)
     if not entry:
         raise HTTPException(status_code=400, detail="Код не найден или устарел")
-    code, expires_at = entry
+    code, expires_at, attempts = entry
     if datetime.utcnow() > expires_at:
         _verify_codes.pop(email, None)
         raise HTTPException(status_code=400, detail="Код истёк, запросите новый")
     if not secrets.compare_digest(code, payload.code.strip()):
+        attempts += 1
+        if attempts >= MAX_OTP_ATTEMPTS:
+            _verify_codes.pop(email, None)
+            raise HTTPException(status_code=429, detail="Код аннулирован. Запросите новый.")
+        _verify_codes[email] = (code, expires_at, attempts)
         raise HTTPException(status_code=400, detail="Неверный код")
     user = db.query(User).filter(User.email == email).first()
     if not user:
@@ -197,7 +209,8 @@ def verify_email(payload: VerifyEmailRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/resend-code", response_model=MessageResponse)
-def resend_code(payload: ResendCodeRequest, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def resend_code(request: Request, payload: ResendCodeRequest, db: Session = Depends(get_db)):
     email = payload.email.lower()
     user = db.query(User).filter(User.email == email).first()
     if not user:
@@ -217,7 +230,8 @@ def resend_code(payload: ResendCodeRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
-def login(payload: UserLogin, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def login(request: Request, payload: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload.email.lower()).first()
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(
@@ -239,29 +253,36 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
 
 
 @router.post("/forgot-password", response_model=MessageResponse)
-def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def forgot_password(request: Request, payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
     email = payload.email.lower()
     user = db.query(User).filter(User.email == email).first()
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь с таким email не найден")
     code = f"{secrets.randbelow(1_000_000):06d}"
     expires_at = datetime.utcnow() + timedelta(minutes=RESET_CODE_TTL_MINUTES)
-    _reset_codes[email] = (code, expires_at)
+    _reset_codes[email] = (code, expires_at, 0)
     send_password_reset_code(email, code, user.full_name)
     return MessageResponse(message="Код отправлен на email")
 
 
 @router.post("/reset-password", response_model=MessageResponse)
-def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def reset_password(request: Request, payload: ResetPasswordRequest, db: Session = Depends(get_db)):
     email = payload.email.lower()
     entry = _reset_codes.get(email)
     if not entry:
         raise HTTPException(status_code=400, detail="Код не найден или устарел")
-    code, expires_at = entry
+    code, expires_at, attempts = entry
     if datetime.utcnow() > expires_at:
         _reset_codes.pop(email, None)
         raise HTTPException(status_code=400, detail="Код истёк, запросите новый")
     if not secrets.compare_digest(code, payload.code):
+        attempts += 1
+        if attempts >= MAX_OTP_ATTEMPTS:
+            _reset_codes.pop(email, None)
+            raise HTTPException(status_code=429, detail="Код аннулирован. Запросите новый.")
+        _reset_codes[email] = (code, expires_at, attempts)
         raise HTTPException(status_code=400, detail="Неверный код")
     user = db.query(User).filter(User.email == email).first()
     if not user:

@@ -217,15 +217,23 @@ def get_by_token(qr_token: str, db: Session = Depends(get_db)):
     return _build_public(db, o)
 
 
-@router.put("/{oid}/results", response_model=LabOrderResponse)
-async def upload_results(
-    oid: int,
+@router.put("/by-token/{qr_token}/results", response_model=LabOrderResponse)
+async def upload_results_by_token(
+    qr_token: str,
     payload: LabOrderResultsRequest,
     db: Session = Depends(get_db),
 ):
-    o = db.query(LabOrder).filter(LabOrder.id == oid).first()
+    """Lab tech submits results from the lab portal. Auth = knowledge of the
+    QR token. We refuse to overwrite an already-received order so a stale
+    re-submit can't replace what the doctor has already reviewed."""
+    o = db.query(LabOrder).filter(LabOrder.qr_token == qr_token).first()
     if not o:
         raise HTTPException(status_code=404, detail="Направление не найдено")
+    if o.status == "received":
+        raise HTTPException(
+            status_code=409,
+            detail="Результаты уже получены — повторная отправка запрещена",
+        )
     o.results = payload.results
     o.status = "received"
     o.received_at = datetime.utcnow()

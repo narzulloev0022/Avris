@@ -19,9 +19,11 @@ class ResetRequest(BaseModel):
 
 
 def _admin_key() -> str | None:
-    """Prefer a dedicated reset key so we don't have to expose SECRET_KEY,
-    but accept SECRET_KEY if no ADMIN_RESET_KEY is set."""
-    return os.getenv("ADMIN_RESET_KEY") or os.getenv("SECRET_KEY")
+    """Require a dedicated ADMIN_RESET_KEY env var. No fallback — sharing
+    SECRET_KEY between JWT signing and the DB-wipe endpoint meant a single
+    leaked secret could nuke production. If ADMIN_RESET_KEY is unset, the
+    endpoints below 503-out and stay disabled."""
+    return os.getenv("ADMIN_RESET_KEY")
 
 
 @router.post("/reset-db")
@@ -38,7 +40,7 @@ def reset_db(
     if not expected:
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
-            "Reset endpoint disabled — neither ADMIN_RESET_KEY nor SECRET_KEY set",
+            "Reset endpoint disabled — set ADMIN_RESET_KEY env var to enable",
         )
     if not secrets.compare_digest(x_admin_reset_key or "", expected):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Invalid reset key")
@@ -77,7 +79,7 @@ def cleanup_non_admins(
     if not expected:
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
-            "Cleanup endpoint disabled — neither ADMIN_RESET_KEY nor SECRET_KEY set",
+            "Cleanup endpoint disabled — set ADMIN_RESET_KEY env var to enable",
         )
     if not secrets.compare_digest(x_admin_reset_key or "", expected):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Invalid reset key")
@@ -160,7 +162,7 @@ def cleanup_medical_data(
     if not expected:
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
-            "Cleanup endpoint disabled — neither ADMIN_RESET_KEY nor SECRET_KEY set",
+            "Cleanup endpoint disabled — set ADMIN_RESET_KEY env var to enable",
         )
     if not secrets.compare_digest(x_admin_reset_key or "", expected):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Invalid reset key")
