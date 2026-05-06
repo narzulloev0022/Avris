@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_TRANSCRIBE_URL = "https://api.openai.com/v1/audio/transcriptions"
-WHISPER_MODEL = os.getenv("WHISPER_MODEL", "whisper-1")
+WHISPER_MODEL = os.getenv("WHISPER_MODEL", "gpt-4o-transcribe")
 
 # Whisper auto-detects per phrase when `language` is omitted. The prompt biases
 # the model toward the expected medical RU/TJ code-switched register without
@@ -43,7 +43,8 @@ async def transcribe(
     data = {
         "model": WHISPER_MODEL,
         "prompt": WHISPER_PROMPT,
-        "response_format": "verbose_json",
+        # gpt-4o-transcribe only supports "json" or "text" (no verbose_json).
+        "response_format": "json",
     }
     headers = {"Authorization": f"Bearer {OPENAI_API_KEY}"}
 
