@@ -20,6 +20,7 @@ from admin import router as admin_router
 from notifications import router as notifications_router
 from icd10 import router as icd10_router
 from drugs import router as drugs_router
+from stats import router as stats_router
 
 load_dotenv()
 
@@ -60,6 +61,7 @@ app.include_router(admin_router)
 app.include_router(notifications_router)
 app.include_router(icd10_router)
 app.include_router(drugs_router)
+app.include_router(stats_router)
 
 
 @app.get("/api/health")

@@ -1268,7 +1268,7 @@ body[data-theme="light"] input:-webkit-autofill,body[data-theme="light"] input:-
 <div class="cmd-s" data-i18n="hero_pat">пациентов</div>
 </div>
 <div class="cmd-div"></div>
-<div class="cmd-stat cmd-danger">
+<div class="cmd-stat cmd-danger" id="heroCritCard">
 <div class="cmd-v" id="heroCC">1</div>
 <div class="cmd-l" data-i18n="hero_crit">Критических</div>
 <div class="cmd-s" data-i18n="hero_att">требуют внимания</div>
@@ -1910,7 +1910,103 @@ var ps=$("patSearch"),dfl=$("diagFilter"),wfl=$("wardFilter");
 ps.oninput=function(){clearTimeout(searchTm);searchTm=setTimeout(applyFilters,200)};dfl.onchange=applyFilters;wfl.onchange=applyFilters;$("resetF").onclick=function(){ps.value="";dfl.value="all";wfl.value="all";applyFilters()};
 function buildPatList(){var pl=$("patList");pl.innerHTML="";patients.forEach(function(p){var el=document.createElement("div");el.className="p-item";el.dataset.pid=p.id;var si=scoreInfo(p.score);var diagArr=(lang==="en"&&p.diag_en)?p.diag_en:p.diag;var pillTxt=(p.score==null)?esc(si.label):(p.score+" "+esc(si.label));el.innerHTML='<div class="avatar">'+esc(p.ini)+'</div><div class="p-info"><div class="p-name">'+esc(p.name)+'</div><div class="p-det">'+diagArr.map(esc).join(" · ")+'</div></div><div class="score-pill '+si.cls+'">'+pillTxt+'</div><button class="btn primary sm p-action">'+t("nav_consult")+' →</button>';el.querySelector(".p-action").onclick=function(e){e.stopPropagation();$("consultPat").value=p.id;updatePatCtx();goTo("consultation")};el.onclick=function(){openModal(p.id)};pl.appendChild(el)})}
 function applyFilters(){var pl=$("patList");if(!pl)return;var q=ps?ps.value.trim().toLowerCase():"",dv=dfl?dfl.value:"all",wv=wfl?wfl.value:"all",cnt=0;patients.forEach(function(p){var nd=pl.querySelector('[data-pid="'+p.id+'"]');if(!nd)return;var mq=p.name.toLowerCase().indexOf(q)>=0||p.diag.some(function(d){return d.toLowerCase().indexOf(q)>=0});var md=dv==="all"||p.diag.some(function(d){return d.indexOf(dv)>=0});var mw=wv==="all"||p.ward===wv;var vis=mq&&md&&mw;nd.classList.toggle("fh",!vis);if(vis)cnt++});$("filterSum").textContent=cnt+" "+t("f_pat");$("patBadge").textContent=cnt;$("patEmpty").style.display=cnt===0?"block":"none"}
-function updateDash(){var crit=patients.filter(function(p){return p.score!=null&&p.score<40}).length;$("heroPC").textContent=patients.length;$("heroCC").textContent=crit;var soapCount=histData.filter(function(h){return h.type==="soap"}).length;var sessCount=histData.length;var accStr;if(currentUser){var ac=currentUser.soap_accurate_count||0;var ed=currentUser.soap_edited_count||0;var total=ac+ed;accStr=total>0?Math.round(ac/total*100)+"%":"—"}else if(window.DEMO_MODE){accStr="92%"}else{accStr="—"}var hsoap=$("heroSOAP");if(hsoap)hsoap.textContent=String(soapCount);var hacc=$("heroAcc");if(hacc)hacc.textContent=accStr;var sst=$("statSoap");if(sst)sst.textContent=window.DEMO_MODE?"18":String(soapCount);var sse=$("statSess");if(sse)sse.textContent=window.DEMO_MODE?"12":String(sessCount);var sac=$("statAcc");if(sac)sac.textContent=accStr;var tsb=$("timeSavedBanner"),tsbN=$("tsbNum");if(tsb&&tsbN){if(window.DEMO_MODE){tsb.hidden=false;tsbN.textContent="1.4"}else if(soapCount>0){tsb.hidden=false;tsbN.textContent=(soapCount*0.08).toFixed(1)}else{tsb.hidden=true}}var scored=patients.filter(function(p){return p.score!=null});var avg=scored.length?Math.round(scored.reduce(function(a,p){return a+p.score},0)/scored.length):0;$("heroAS").textContent=scored.length?avg:"—";var sorted=scored.slice().sort(function(a,b){return b.score-a.score});if(sorted.length){$("bestSP").textContent=sorted[0].name+" ("+sorted[0].score+")";$("watchSP").textContent=sorted[sorted.length-1].name+" ("+sorted[sorted.length-1].score+")"}else{$("bestSP").textContent="—";$("watchSP").textContent="—"}var at=$("avrisTrend");at.innerHTML="";if(!patients.length){at.innerHTML='<div class="empty-state empty-state-sm"><div class="empty-state-t">'+esc(t("empty_score"))+'</div></div>';return}var sortedTrend=scored.slice().sort(function(a,b){return a.score-b.score});sortedTrend.forEach(function(p){var row=document.createElement("div");row.className="score-h-row";var c=scoreInfo(p.score).hex;row.innerHTML='<span class="score-h-name">'+esc(p.name.split(" ")[0])+'</span><div class="score-h-track"><div class="score-h-fill" style="width:'+p.score+'%;background:'+c+'"></div></div><span class="score-h-val" style="color:'+c+'">'+p.score+'</span>';at.appendChild(row)})}
+/* Last fetched server stats — used for SOAP-24h, time-saved, accuracy
+   counters that the client can't compute alone. updateDash() paints what
+   it has locally first, then refreshDashFromServer() overlays authoritative
+   numbers when the request comes back. */
+var _serverStats=null;
+function _renderTimeSaved(savedMin){
+  var tsb=$("timeSavedBanner"),tsbN=$("tsbNum");
+  if(!tsb||!tsbN)return;
+  if(savedMin>0){tsb.hidden=false;tsbN.textContent=(savedMin/60).toFixed(1)}
+  else{tsb.hidden=true}
+}
+function _renderCriticalCard(critN){
+  var card=$("heroCritCard");
+  if(card)card.style.display=critN>0?"":"none";
+  $("heroCC").textContent=critN;
+}
+function _renderActivityFromServer(items){
+  var at=$("activityTimeline");if(!at)return;
+  at.innerHTML="";
+  if(!items||!items.length){at.innerHTML='<div class="empty-state empty-state-sm"><div class="empty-state-t">'+esc(t("empty_activity"))+'</div></div>';return}
+  items.forEach(function(it,i){
+    var typeLbl=(it.type==="soap")?"SOAP":(it.type==="lab")?t("ai_sec_tests").split(" ")[0]:t("act_round");
+    if(it.type==="patient")typeLbl=t("pat_new").replace("+","").trim();
+    if(it.type==="lab")typeLbl=t("lab_received");
+    var d=new Date(it.timestamp);
+    var timeTxt=d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"});
+    var line=i<items.length-1?'<div class="tl-line"></div>':"";
+    var el=document.createElement("div");
+    el.className="tl-item";
+    el.innerHTML='<div class="tl-dot-w"><div class="tl-dot"></div>'+line+'</div><div class="tl-body"><h4>'+esc(typeLbl)+'</h4><p>'+esc(it.patient||"—")+'</p><time>'+esc(timeTxt)+'</time></div>';
+    at.appendChild(el);
+  });
+}
+function refreshDashFromServer(){
+  if(window.DEMO_MODE)return;
+  apiFetch("/api/stats/dashboard").then(function(r){
+    if(!r.ok)return null;return r.json();
+  }).then(function(s){
+    if(!s)return;
+    _serverStats=s;
+    // Patient counters — server is authoritative (handles deletes/soft-deletes).
+    $("heroPC").textContent=s.active_patients;
+    _renderCriticalCard(s.critical_patients||0);
+    $("heroAS").textContent=(s.avg_score!=null)?s.avg_score:"—";
+    // SOAP-24h + sessions
+    var hsoap=$("heroSOAP");if(hsoap)hsoap.textContent=String(s.consultations_24h||0);
+    var sst=$("statSoap");if(sst)sst.textContent=String(s.consultations_24h||0);
+    var sse=$("statSess");if(sse)sse.textContent=String(s.consultations_today||0);
+    // AI accuracy
+    var accStr=(s.accuracy_pct!=null)?(s.accuracy_pct+"%"):"—";
+    var hacc=$("heroAcc");if(hacc)hacc.textContent=accStr;
+    var sac=$("statAcc");if(sac)sac.textContent=accStr;
+    // Time saved
+    _renderTimeSaved(s.time_saved_minutes||0);
+    // Activity timeline
+    _renderActivityFromServer(s.recent_activity||[]);
+    // Sync currentUser counts so optimistic local bumps stay aligned
+    if(currentUser){currentUser.soap_accurate_count=s.soap_accurate;currentUser.soap_edited_count=s.soap_edited}
+  }).catch(function(){});
+}
+/* Synchronous local paint — works in DEMO and as instant first paint in
+   real mode before refreshDashFromServer() arrives with authoritative data. */
+function updateDash(){
+  var crit=patients.filter(function(p){return p.score!=null&&p.score<40}).length;
+  $("heroPC").textContent=patients.length;
+  _renderCriticalCard(crit);
+  var scored=patients.filter(function(p){return p.score!=null});
+  var avg=scored.length?Math.round(scored.reduce(function(a,p){return a+p.score},0)/scored.length):null;
+  $("heroAS").textContent=(avg!=null)?avg:"—";
+  // Local AI accuracy from currentUser counters (optimistic paint)
+  var accStr;
+  if(currentUser){var ac=currentUser.soap_accurate_count||0;var ed=currentUser.soap_edited_count||0;var total=ac+ed;accStr=total>0?Math.round(ac/total*100)+"%":"—"}
+  else if(window.DEMO_MODE){accStr="92%"}
+  else{accStr="—"}
+  // Local SOAP/sessions from histData (will be overwritten by refresh in real mode)
+  var soapCount=histData.filter(function(h){return h.type==="soap"}).length;
+  var sessCount=histData.length;
+  var hsoap=$("heroSOAP");if(hsoap)hsoap.textContent=window.DEMO_MODE?"18":(_serverStats?_serverStats.consultations_24h:soapCount);
+  var hacc=$("heroAcc");if(hacc)hacc.textContent=accStr;
+  var sst=$("statSoap");if(sst)sst.textContent=window.DEMO_MODE?"18":(_serverStats?_serverStats.consultations_24h:soapCount);
+  var sse=$("statSess");if(sse)sse.textContent=window.DEMO_MODE?"12":(_serverStats?_serverStats.consultations_today:sessCount);
+  var sac=$("statAcc");if(sac)sac.textContent=accStr;
+  // Time saved banner — DEMO uses stable "1.4 ч"; real mode prefers server total
+  if(window.DEMO_MODE){var tsb=$("timeSavedBanner"),tsbN=$("tsbNum");if(tsb&&tsbN){tsb.hidden=false;tsbN.textContent="1.4"}}
+  else if(_serverStats){_renderTimeSaved(_serverStats.time_saved_minutes||0)}
+  else{_renderTimeSaved(0)}
+  // Best/worst patient on the right rail
+  var sorted=scored.slice().sort(function(a,b){return b.score-a.score});
+  if(sorted.length){$("bestSP").textContent=sorted[0].name+" ("+sorted[0].score+")";$("watchSP").textContent=sorted[sorted.length-1].name+" ("+sorted[sorted.length-1].score+")"}
+  else{$("bestSP").textContent="—";$("watchSP").textContent="—"}
+  // Avris Score bars — only scored patients, critical-first ordering
+  var at=$("avrisTrend");at.innerHTML="";
+  if(!scored.length){at.innerHTML='<div class="empty-state empty-state-sm"><div class="empty-state-t">'+esc(t("empty_score"))+'</div></div>'}
+  else{var sortedTrend=scored.slice().sort(function(a,b){return a.score-b.score});sortedTrend.forEach(function(p){var row=document.createElement("div");row.className="score-h-row";var c=scoreInfo(p.score).hex;row.innerHTML='<span class="score-h-name">'+esc(p.name.split(" ")[0])+'</span><div class="score-h-track"><div class="score-h-fill" style="width:'+p.score+'%;background:'+c+'"></div></div><span class="score-h-val" style="color:'+c+'">'+p.score+'</span>';at.appendChild(row)})}
+  // Kick off async server refresh — overlays authoritative numbers + activity feed
+  refreshDashFromServer();
+}
 function initWave(){var w=$("waveform");for(var i=0;i<16;i++){var s=document.createElement("span");s.style.height=(4+Math.random()*28)+"px";s.style.animationDelay=(i*.06)+"s";w.appendChild(s)}}
 var DOT_PHRASES={
 ru:[{k:"..норма",v:"в пределах нормы"},{k:"..жалоб",v:"жалоб не предъявляет"},{k:"..давление",v:"АД 120/80 мм рт.ст."},{k:"..пульс",v:"ЧСС 72 уд/мин, ритмичный"},{k:"..дыхание",v:"дыхание везикулярное, хрипов нет"},{k:"..живот",v:"живот мягкий, безболезненный"},{k:"..отёков",v:"отёков нет"},{k:"..сознание",v:"сознание ясное, ориентирован"},{k:"..выписка",v:"выписан в удовлетворительном состоянии"},{k:"..рекомендую",v:"рекомендовано: режим, диета, контроль АД"},{k:"..анализ",v:"ОАК, ОАМ, биохимия крови"},{k:"..контроль",v:"контроль АД ежедневно"},{k:"..следующий",v:"следующая явка через 2 недели"},{k:"..госпитализация",v:"показана плановая госпитализация"},{k:"..без",v:"без динамики"}],
