@@ -106,7 +106,7 @@ router = APIRouter(prefix="/api/stt", tags=["stt"])
 @router.post("/transcribe")
 async def transcribe(
     file: UploadFile = File(...),
-    language: str = Form("ru"),  # accepted for backwards-compat but ignored — Whisper auto-detects
+    language: str = Form("ru"),  # form value is ignored; we always pin Whisper to "ru"
     current_user: User = Depends(get_current_user),
 ):
     if not OPENAI_API_KEY:
@@ -119,6 +119,12 @@ async def transcribe(
     files = {"file": (file.filename or "audio.webm", audio, file.content_type or "audio/webm")}
     data = {
         "model": WHISPER_MODEL,
+        # Pin to Russian — auto-detect collapsed to Persian/Farsi (Arabic
+        # script) on long Tajik audio and Kazakh (ә/ң/ө/ү letters) on short
+        # snippets. RU forces Cyrillic output, the prompt then biases the
+        # model toward Tajik medical vocabulary which shares ~95% of the
+        # alphabet with Russian (ҳ ҷ ӣ ӯ қ ғ are TJ-only Cyrillic letters).
+        "language": "ru",
         "prompt": WHISPER_PROMPT,
         # gpt-4o-transcribe only supports "json" or "text" (no verbose_json).
         "response_format": "json",
