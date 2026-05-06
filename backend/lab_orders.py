@@ -28,6 +28,10 @@ class LabOrderCreate(BaseModel):
     tests: List[str] = []
 
 
+class LabOrderTestsUpdate(BaseModel):
+    tests: List[str]
+
+
 class LabOrderResultsRequest(BaseModel):
     results: dict[str, Any]
     patient_context: Optional[dict[str, Any]] = None
@@ -162,6 +166,26 @@ def get_order(
     current_user: User = Depends(get_current_user),
 ):
     return _owned_order(db, oid, current_user)
+
+
+@router.put("/{oid}/tests", response_model=LabOrderResponse)
+def update_order_tests(
+    oid: int,
+    payload: LabOrderTestsUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Replace the tests list on a pending order. Used when the doctor finalizes
+    the test selection in the Lab Connect modal — the order is auto-created on
+    open with the default checkboxes, then synced with the full selection on
+    Print so the lab portal sees every requested test."""
+    o = _owned_order(db, oid, current_user)
+    if o.status != "pending":
+        raise HTTPException(status_code=409, detail="Направление уже обработано — изменение списка анализов невозможно")
+    o.tests = list(payload.tests or [])
+    db.commit()
+    db.refresh(o)
+    return o
 
 
 @router.get("/{oid}/pdf")

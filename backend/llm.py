@@ -45,6 +45,7 @@ class SoapResponse(BaseModel):
     patient_allergies: Optional[list[str]] = None
     department: Optional[str] = None  # therapy|cardiology|surgery|neurology|pulmonology|icu|post_icu|other
     severity: Optional[str] = None    # stable|watch|serious|critical
+    avris_score: Optional[int] = None  # 0-100, derived from Claude's clinical assessment
 
 
 class LabsRequest(BaseModel):
@@ -113,8 +114,13 @@ async def generate_soap(req: SoapRequest, current_user: User = Depends(get_curre
         "patient_diagnoses (array of strings), patient_allergies (array of strings), "
         "department — одно из: therapy / cardiology / surgery / neurology / pulmonology / icu / post_icu / other. "
         "severity — одно из: stable / watch / serious / critical. "
+        "avris_score — целое число от 0 до 100, отражающее общее клиническое состояние пациента: "
+        "0–39 = критическое (нестабильные витальные, угроза жизни, ОРИТ); "
+        "40–59 = тяжёлое (значимые отклонения, требует пристального наблюдения); "
+        "60–79 = среднее / под наблюдением (стабилизирующиеся, лечение в процессе); "
+        "80–100 = стабильное (без острых проблем, плановое наблюдение). "
         "Если в Assessment/Plan есть слова: реанимация, ОРИТ, интенсивная терапия, ИВЛ, "
-        'критическое состояние — ставь department="icu" и severity="critical". '
+        'критическое состояние — ставь department="icu", severity="critical", avris_score 0-39. '
         'Если "послеоперационная палата" / "наблюдение после операции" — department="post_icu". '
         "Верни ровно один JSON-объект, без префиксов и markdown-обёрток."
     )
@@ -133,6 +139,13 @@ async def generate_soap(req: SoapRequest, current_user: User = Depends(get_curre
         age = int(age_raw) if age_raw not in (None, "") else None
     except (TypeError, ValueError):
         age = None
+    score_raw = parsed.get("avris_score")
+    try:
+        score = int(score_raw) if score_raw not in (None, "") else None
+        if score is not None:
+            score = max(0, min(100, score))  # clamp to 0..100
+    except (TypeError, ValueError):
+        score = None
     return SoapResponse(
         subjective=str(parsed.get("subjective", "")),
         objective=str(parsed.get("objective", "")),
@@ -145,6 +158,7 @@ async def generate_soap(req: SoapRequest, current_user: User = Depends(get_curre
         patient_allergies=_list(parsed.get("patient_allergies")),
         department=(parsed.get("department") or None),
         severity=(parsed.get("severity") or None),
+        avris_score=score,
     )
 
 
