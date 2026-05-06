@@ -7,6 +7,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+
+load_dotenv()
+
+# Refuse to boot in production with a default/missing SECRET_KEY — the
+# default value is public knowledge from the source tree, so any deploy
+# that forgets to set it would let anyone forge admin JWTs.
+_secret = os.getenv("SECRET_KEY", "dev-secret-change-me")
+if _secret == "dev-secret-change-me" and os.getenv("RAILWAY_ENVIRONMENT"):
+    raise RuntimeError(
+        "SECRET_KEY env var must be set in production. "
+        "Refusing to boot with the public default."
+    )
 
 from database import init_db
 from auth import router as auth_router
@@ -21,8 +35,7 @@ from notifications import router as notifications_router
 from icd10 import router as icd10_router
 from drugs import router as drugs_router
 from stats import router as stats_router
-
-load_dotenv()
+from rate_limit import limiter
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:8080")
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -42,9 +55,20 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Rate limiting — slowapi reads the limiter off app.state on each request and
+# turns RateLimitExceeded into a 429 with a Retry-After header.
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Origin allow-list. In dev (Railway env unset) we add localhost; prod is
+# strictly theavris.ai. Override with FRONTEND_URL if a different host is needed.
+_allowed = ["https://theavris.ai", "http://localhost:8000", "http://localhost:8080"]
+_extra = os.getenv("FRONTEND_URL")
+if _extra and _extra not in _allowed:
+    _allowed.append(_extra)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_allowed,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -1,9 +1,10 @@
 """ICD-10 autosuggest endpoint. No auth — frontend hits this on every keystroke."""
 from typing import Optional
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 from pydantic import BaseModel
 
 from icd10_data import ICD10_CODES
+from rate_limit import limiter
 
 router = APIRouter(prefix="/api/icd10", tags=["icd10"])
 
@@ -54,7 +55,9 @@ def _search(query: str, limit: int) -> list[Icd10Hit]:
 
 
 @router.get("/search", response_model=list[Icd10Hit])
+@limiter.limit("300/minute")
 def search_icd10(
+    request: Request,
     q: str = Query("", description="Code prefix or name substring (RU or EN)"),
     limit: int = Query(10, ge=1, le=50),
     lang: Optional[str] = Query(None, description="ru | en — kept for API forward-compat; backend already returns both names"),
@@ -63,7 +66,8 @@ def search_icd10(
 
 
 @router.get("/{code}", response_model=Icd10Hit)
-def get_icd10(code: str):
+@limiter.limit("300/minute")
+def get_icd10(request: Request, code: str):
     """Lookup a single code. Returns 404 if unknown."""
     code_uc = code.upper()
     for c, name_ru, name_en in ICD10_CODES:

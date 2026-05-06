@@ -445,7 +445,7 @@ $("resultsForm").onsubmit = function(e){
 
   var jobs = [];
   if (Object.keys(results).length) {
-    jobs.push(fetch(API_BASE + "/api/lab-orders/" + currentOrder.id + "/results", {
+    jobs.push(fetch(API_BASE + "/api/lab-orders/by-token/" + encodeURIComponent(currentOrder.qr_token) + "/results", {
       method: "PUT",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({ results: results })

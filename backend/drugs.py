@@ -1,8 +1,9 @@
 """Drug autosuggest endpoint. No auth — frontend hits this on every keystroke."""
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 from pydantic import BaseModel
 
 from drugs_data import DRUGS
+from rate_limit import limiter
 
 router = APIRouter(prefix="/api/drugs", tags=["drugs"])
 
@@ -50,7 +51,9 @@ def _search(query: str, limit: int) -> list[DrugHit]:
 
 
 @router.get("/search", response_model=list[DrugHit])
+@limiter.limit("300/minute")
 def search_drugs(
+    request: Request,
     q: str = Query("", description="Drug name prefix or substring (RU or EN)"),
     limit: int = Query(10, ge=1, le=50),
 ):
