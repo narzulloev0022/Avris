@@ -111,6 +111,24 @@ def serve_lab():
     return {"message": "Lab portal not found"}
 
 
+STYLES_CSS = PROJECT_ROOT / "styles.css"
+APP_JS = PROJECT_ROOT / "app.js"
+
+
+@app.get("/styles.css")
+def serve_styles():
+    if STYLES_CSS.exists():
+        return FileResponse(STYLES_CSS, media_type="text/css")
+    return {"message": "styles.css not found"}
+
+
+@app.get("/app.js")
+def serve_app_js():
+    if APP_JS.exists():
+        return FileResponse(APP_JS, media_type="application/javascript")
+    return {"message": "app.js not found"}
+
+
 # Mount any sibling static assets (favicons, future bundled JS) if present
 if (PROJECT_ROOT / "assets").exists():
     app.mount("/assets", StaticFiles(directory=PROJECT_ROOT / "assets"), name="assets")
