@@ -1119,3 +1119,22 @@ body[data-theme="light"] input:-webkit-autofill,body[data-theme="light"] input:-
 body[data-theme="light"] .fab-exam{box-shadow:0 4px 16px rgba(74,163,145,.3)}
 .lang-cycle{min-height:32px;padding:4px 12px;border:1px solid var(--border-hover);background:transparent;color:var(--text-primary);border-radius:var(--radius-input);cursor:pointer;font-size:.78rem;font-weight:700;letter-spacing:.03em;transition:var(--transition);font-family:var(--font)}
 .lang-cycle:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* ===== V2.1 — moderate AvrisAI brand gradient (DARK theme only; light untouched) ===== */
+body[data-theme="dark"] #dashboard{background:linear-gradient(135deg,#080e18 0%,#0d1f1a 50%,#080e18 100%)}
+body[data-theme="dark"] .dash-stat:not(.danger){background:linear-gradient(135deg,#111e2e 0%,#0f2a22 100%);border-left:3px solid var(--accent)}
+body[data-theme="dark"] .dash-stat .ds-v{font-size:2.5rem;font-weight:700}
+body[data-theme="dark"] .dash-stat:not(.danger) .ds-v{color:var(--accent)}
+body[data-theme="dark"] .dash-stat .ds-l{color:var(--text-subtle)}
+/* Patient rows -> bordered cards (dark) */
+body[data-theme="dark"] .p-list{gap:8px}
+body[data-theme="dark"] .p-item{background:#111e2e;border:1px solid rgba(74,163,145,.15);border-radius:var(--radius-md)}
+body[data-theme="dark"] .p-item:hover{background:#111e2e;border-color:rgba(74,163,145,.4);box-shadow:0 0 0 1px rgba(74,163,145,.2)}
+body[data-theme="dark"] .p-action{opacity:1;transform:none}
+/* Topbar accent underline (dark) */
+body[data-theme="dark"] .topbar{border-bottom:1px solid rgba(74,163,145,.2)}
+/* Topbar greeting (theme-neutral) */
+.top-greeting{font-size:13px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:680px){.top-greeting{display:none}}
+/* FAB brand gradient (dark only; light keeps current) */
+body[data-theme="dark"] .fab-exam{background:linear-gradient(135deg,#3d8a79,#4AA391);box-shadow:0 4px 16px rgba(74,163,145,.35)}
+body[data-theme="dark"] .fab-exam:hover{background:linear-gradient(135deg,#3d8a79,#4AA391);transform:scale(1.05)}
