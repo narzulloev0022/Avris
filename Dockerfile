@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir -r ./backend/requirements.txt
 # App source — keep the same layout as the repo so PROJECT_ROOT
 # (= parent of backend/) still resolves index.html and assets/.
 COPY backend/ ./backend/
-COPY index.html lab.html ./
+COPY index.html lab.html styles.css app.js ./
 COPY assets/ ./assets/
 
 WORKDIR /app/backend
