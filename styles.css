@@ -1138,3 +1138,24 @@ body[data-theme="dark"] .topbar{border-bottom:1px solid rgba(74,163,145,.2)}
 /* FAB brand gradient (dark only; light keeps current) */
 body[data-theme="dark"] .fab-exam{background:linear-gradient(135deg,#3d8a79,#4AA391);box-shadow:0 4px 16px rgba(74,163,145,.35)}
 body[data-theme="dark"] .fab-exam:hover{background:linear-gradient(135deg,#3d8a79,#4AA391);transform:scale(1.05)}
+/* ===== iOS 26 Liquid Glass (V2) — styles.css only, no markup/logic changes ===== */
+.liquid-glass{background:rgba(255,255,255,0.08);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,0.12);box-shadow:0 8px 32px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.15),inset 0 -1px 0 rgba(0,0,0,0.1)}
+body[data-theme="light"] .liquid-glass{background:rgba(255,255,255,0.6);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,0.8);box-shadow:0 8px 32px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.9)}
+/* 1. Topbar */
+body[data-theme="dark"] .topbar{background:rgba(8,14,24,0.6);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid rgba(255,255,255,0.12);box-shadow:0 8px 32px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.15)}
+body[data-theme="light"] .topbar{background:rgba(255,255,255,0.6);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid rgba(255,255,255,0.8);box-shadow:0 8px 32px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.9)}
+/* 2. Sidebar */
+body[data-theme="dark"] .sidebar{background:rgba(8,14,24,0.7);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-right:1px solid rgba(255,255,255,0.08)}
+body[data-theme="light"] .sidebar{background:rgba(255,255,255,0.7);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-right:1px solid rgba(0,0,0,0.06)}
+/* 3. KPI cards */
+body[data-theme="dark"] .dash-stat:not(.danger){background:rgba(74,163,145,0.08);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,0.12);border-left:3px solid rgba(74,163,145,0.6);box-shadow:0 8px 32px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.15)}
+body[data-theme="light"] .dash-stat:not(.danger){background:rgba(255,255,255,0.6);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,0.8);border-left:3px solid rgba(74,163,145,0.6);box-shadow:0 8px 32px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.9)}
+.dash-stat:not(.danger) .ds-v{color:#4AA391;font-size:2.5rem;font-weight:700}
+/* 4. Patient rows (dark glass) */
+body[data-theme="dark"] .p-item{background:rgba(17,30,46,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(74,163,145,0.15);transition:all 0.2s ease}
+body[data-theme="dark"] .p-item:hover{border-color:rgba(74,163,145,0.4);box-shadow:0 0 20px rgba(74,163,145,0.15)}
+/* 5. FAB */
+body[data-theme] .fab-exam{background:linear-gradient(135deg,rgba(61,138,121,0.9),rgba(74,163,145,0.9));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.2);box-shadow:0 8px 32px rgba(74,163,145,0.4),inset 0 1px 0 rgba(255,255,255,0.2);transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1)}
+body[data-theme] .fab-exam:hover{transform:scale(1.05);box-shadow:0 12px 40px rgba(74,163,145,0.5)}
+/* 6. Modals / overlays (dark) */
+body[data-theme="dark"] .modal,body[data-theme="dark"] .confirm-ov{background:rgba(8,14,24,0.85);backdrop-filter:blur(30px) saturate(200%);-webkit-backdrop-filter:blur(30px) saturate(200%);border:1px solid rgba(255,255,255,0.1)}
