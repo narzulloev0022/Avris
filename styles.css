@@ -1393,3 +1393,25 @@ body[data-theme="light"] #settings .set-nav-item{background:rgba(255,255,255,0.7
 body[data-theme="light"] #settings .set-nav-item.active{background:rgba(74,163,145,0.12);border-color:rgba(74,163,145,0.3);color:var(--accent)}
 body[data-theme="light"] #settings .set-profile-card{background:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.85);box-shadow:0 8px 24px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.95)}
 body[data-theme="light"] #settings .btn:hover{background:rgba(74,163,145,0.18)}
+/* ============================================================
+   RECORDING SCREEN — radical declutter (one screen, one action).
+   Progressive disclosure driven by classes on #examRecBlock:
+   .rec-active (recording), .has-transcript (text present), .saved.
+   ============================================================ */
+#examRecBlock .card-h{display:none!important}       /* title + template dropdown (beats inline style) */
+#examRecBlock .rec-footer{display:none}             /* Whisper badge (STT lang moved to Settings) */
+#examRecBlock .transcript-hdr label,#examRecBlock #evLinkIc,#examRecBlock #transcriptMeta{display:none}
+#examRecBlock .transcript-hdr{display:none}
+#examRecBlock.has-transcript .transcript-hdr{display:flex;justify-content:flex-end}
+#examRecBlock #clearRec{display:none}
+#examRecBlock.has-transcript #clearRec{display:inline-flex}
+#examRecBlock .transcript{display:none}
+#examRecBlock.rec-active .transcript,#examRecBlock.has-transcript .transcript{display:block}
+/* Save appears with a transcript; consent/memo/PDF only after a save */
+#examRecBlock .consult-actions{display:none}
+#examRecBlock.has-transcript .consult-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+#examRecBlock .consult-actions #stopRec{flex:1 1 100%}
+#examRecBlock.has-transcript .consult-actions #consentBtn,#examRecBlock.has-transcript .consult-actions #patientMemoBtn,#examRecBlock.has-transcript .consult-actions #exportPdfBtn{display:none}
+#examRecBlock.saved .consult-actions #consentBtn,#examRecBlock.saved .consult-actions #patientMemoBtn,#examRecBlock.saved .consult-actions #exportPdfBtn{display:inline-flex;flex:1 1 auto}
+/* Big single record button */
+#examRecBlock .rec-bar{height:60px;padding:0 28px}
