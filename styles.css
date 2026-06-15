@@ -1140,8 +1140,8 @@ body[data-theme="light"] .fab-exam{box-shadow:0 4px 16px rgba(149,174,248,.3)}
 .lang-cycle{min-height:32px;padding:4px 12px;border:1px solid var(--border-hover);background:transparent;color:var(--text-primary);border-radius:var(--radius-input);cursor:pointer;font-size:.78rem;font-weight:700;letter-spacing:.03em;transition:var(--transition);font-family:var(--font)}
 .lang-cycle:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
 /* ===== V2.1 — moderate AvrisAI brand gradient (DARK theme only; light untouched) ===== */
-body[data-theme="dark"] #dashboard{background:linear-gradient(135deg,#080e18 0%,#0d1f1a 50%,#080e18 100%)}
-body[data-theme="dark"] .dash-stat:not(.danger){background:linear-gradient(135deg,#111e2e 0%,#0f2a22 100%);border-left:3px solid var(--accent)}
+body[data-theme="dark"] #dashboard{background:linear-gradient(135deg,#080e18 0%,#0c1228 50%,#080e18 100%)}
+body[data-theme="dark"] .dash-stat:not(.danger){background:linear-gradient(135deg,#111e2e 0%,#0e1730 100%);border-left:3px solid var(--accent)}
 body[data-theme="dark"] .dash-stat .ds-v{font-size:2.5rem;font-weight:700}
 body[data-theme="dark"] .dash-stat:not(.danger) .ds-v{color:var(--accent)}
 body[data-theme="dark"] .dash-stat .ds-l{color:var(--text-subtle)}
@@ -1537,3 +1537,37 @@ body[data-theme="light"] .hist-pill{background:rgba(0,0,0,0.04);border-color:rgb
 .hist-entry:hover{background:rgba(255,255,255,0.10);border-color:rgba(149,174,248,0.3);transform:translateY(-1px)}
 body[data-theme="light"] .hist-entry{background:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.9);box-shadow:0 2px 8px rgba(0,0,0,0.05)}
 .hist-toolbar{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+/* ============================================================
+   LOGIN SCREEN — Hyperion blue liquid glass
+   ============================================================ */
+body[data-theme="dark"] .login-screen{background:linear-gradient(135deg,#04060f 0%,#080d1e 25%,#0c1228 50%,#080d1e 75%,#04060f 100%)}
+body[data-theme="light"] .login-screen{background:linear-gradient(135deg,#eef0ff 0%,#e8ecff 40%,#eef0ff 100%)}
+.login-form-wrap{max-width:420px;width:90%;padding:40px;border-radius:28px;background:rgba(149,174,248,0.06);backdrop-filter:blur(40px) saturate(200%);-webkit-backdrop-filter:blur(40px) saturate(200%);border:1px solid rgba(149,174,248,0.12);box-shadow:0 24px 64px rgba(4,6,15,0.6),0 0 0 1px rgba(149,174,248,0.05),inset 0 1px 0 rgba(197,208,251,0.15),inset 0 -1px 0 rgba(4,6,15,0.2)}
+.login-tagline{color:rgba(149,174,248,0.5);font-size:.85rem;letter-spacing:.02em}
+.login-divider{background:rgba(149,174,248,0.1)}
+.oauth-btn{background:rgba(255,255,255,0.06);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(149,174,248,0.15);border-radius:14px;padding:14px 20px;color:#fff;font-weight:500;font-size:.95rem;transition:all .2s ease}
+.oauth-btn:hover{background:rgba(149,174,248,0.1);border-color:rgba(149,174,248,0.3);box-shadow:0 4px 20px rgba(149,174,248,0.15);transform:translateY(-1px)}
+.oauth-soon-badge{background:rgba(149,174,248,0.15);border:1px solid rgba(149,174,248,0.25);color:#95AEF8;border-radius:50px;font-size:.7rem;padding:2px 8px}
+.login-or{color:rgba(149,174,248,0.3)}
+.login-or::before,.login-or::after{background:rgba(149,174,248,0.1)}
+.login-field input{background:rgba(149,174,248,0.04);border:1px solid rgba(149,174,248,0.12);border-radius:12px;color:#fff;padding:14px 16px;font-size:.95rem}
+.login-field input::placeholder{color:rgba(149,174,248,0.3)}
+.login-field input:focus{border-color:rgba(149,174,248,0.4);box-shadow:0 0 0 3px rgba(149,174,248,0.1);background:rgba(149,174,248,0.07)}
+.login-submit{background:linear-gradient(135deg,rgba(110,134,224,0.9),rgba(149,174,248,0.95));border:1px solid rgba(197,208,251,0.2);border-radius:14px;height:auto;padding:15px;font-weight:600;font-size:1rem;letter-spacing:.02em;color:#fff;box-shadow:0 8px 32px rgba(149,174,248,0.3),inset 0 1px 0 rgba(255,255,255,0.25);transition:all .2s ease}
+.login-submit:hover{transform:translateY(-1px);box-shadow:0 12px 40px rgba(149,174,248,0.4);background:linear-gradient(135deg,rgba(110,134,224,0.95),rgba(149,174,248,1))}
+.login-links a{color:rgba(149,174,248,0.6)}
+.login-links a:hover{color:#95AEF8}
+.login-forgot{color:rgba(149,174,248,0.6)}
+.login-forgot:hover{color:#95AEF8}
+.login-footer-text{color:rgba(149,174,248,0.25);font-size:.75rem}
+.login-lang button{color:rgba(149,174,248,0.4);background:transparent}
+.login-lang button.active{background:rgba(149,174,248,0.15);border:1px solid rgba(149,174,248,0.3);color:#95AEF8;border-radius:8px}
+.login-theme-toggle{width:40px;height:40px;padding:0;border-radius:50%;background:rgba(149,174,248,0.08);border:1px solid rgba(149,174,248,0.12);color:rgba(149,174,248,0.6)}
+/* light theme */
+body[data-theme="light"] .login-form-wrap{background:rgba(255,255,255,0.75);border:1px solid rgba(110,134,224,0.15);box-shadow:0 16px 48px rgba(70,89,181,0.1),inset 0 1px 0 rgba(255,255,255,0.95)}
+body[data-theme="light"] .login-field input{background:rgba(255,255,255,0.8);border-color:rgba(110,134,224,0.2);color:#1a1a2e}
+body[data-theme="light"] .login-field input::placeholder{color:rgba(110,134,224,0.4)}
+body[data-theme="light"] .oauth-btn{background:rgba(255,255,255,0.8);border-color:rgba(110,134,224,0.15);color:#1a1a2e}
+body[data-theme="light"] .login-tagline{color:rgba(70,89,181,0.6)}
+body[data-theme="light"] .login-footer-text{color:rgba(70,89,181,0.4)}
+body[data-theme="light"] .login-links a{color:rgba(70,89,181,0.7)}
