@@ -10,6 +10,12 @@
 --success:#10b981;--success-bg:rgba(16,185,129,0.1);
 --info:#2563eb;--info-bg:rgba(37,99,235,0.1);
 --radius-md:12px;--radius-input:8px;--radius-pill:20px;
+--glass-bg:rgba(255,255,255,0.06);--glass-bg-medium:rgba(255,255,255,0.10);--glass-bg-strong:rgba(255,255,255,0.15);
+--glass-border:rgba(255,255,255,0.10);--glass-border-accent:rgba(74,163,145,0.25);
+--glass-blur:blur(24px) saturate(180%);--glass-blur-strong:blur(40px) saturate(200%);
+--glass-shadow:0 8px 32px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.12);
+--glass-shadow-accent:0 8px 32px rgba(74,163,145,0.25),inset 0 1px 0 rgba(255,255,255,0.15);
+--glass-radius:20px;--glass-radius-sm:14px;--glass-radius-lg:28px;
 --shadow:0 0 0 1px rgba(0,0,0,0.5),0 8px 32px rgba(0,0,0,0.4);
 --shadow-glow:0 0 20px rgba(74,163,145,0.3);
 --transition:150ms cubic-bezier(0.4,0,0.2,1);
@@ -1273,7 +1279,7 @@ body[data-theme="dark"] #consultation .pat-ctx{background:rgba(74,163,145,0.08);
 body[data-theme="dark"] #consultation .consult-left{background:rgba(8,14,24,0.6);border:1px solid rgba(255,255,255,0.08);box-shadow:0 16px 48px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.12),inset 0 -1px 0 rgba(0,0,0,0.2)}
 body[data-theme="dark"] #consultation .consult-right{background:rgba(11,20,35,0.7);border:1px solid rgba(255,255,255,0.08);box-shadow:0 16px 48px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.08)}
 body[data-theme="dark"] #consultation .rec-wave-wrap{background:rgba(74,163,145,0.05);border:1px solid rgba(74,163,145,0.1)}
-body[data-theme="dark"] #consultation .timer{background:linear-gradient(135deg,#ffffff,#4AA391)}
+body[data-theme="dark"] #consultation .timer{background-image:linear-gradient(135deg,#ffffff,#4AA391)}
 body[data-theme="dark"] #consultation .soap-c:not(:last-child){border-bottom-color:rgba(255,255,255,0.06)}
 body[data-theme="dark"] #consultation .exam-subtab{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:var(--text-secondary)}
 body[data-theme="dark"] #consultation .ai-recs{background:rgba(74,163,145,0.06);border:1px solid rgba(74,163,145,0.15)}
@@ -1281,7 +1287,7 @@ body[data-theme="dark"] #consultation .ai-recs{background:rgba(74,163,145,0.06);
 body[data-theme="light"] #consultation{background:linear-gradient(135deg,#f0f9f7 0%,#e8f5f2 50%,#f0f9f7 100%);min-height:100vh}
 body[data-theme="light"] #consultation .pat-ctx,body[data-theme="light"] #consultation .consult-left,body[data-theme="light"] #consultation .consult-right{background:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.9);box-shadow:0 8px 32px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.95)}
 body[data-theme="light"] #consultation .rec-wave-wrap{background:rgba(74,163,145,0.06);border:1px solid rgba(74,163,145,0.15)}
-body[data-theme="light"] #consultation .timer{background:linear-gradient(135deg,#1a202c,#4AA391)}
+body[data-theme="light"] #consultation .timer{background-image:linear-gradient(135deg,#1a202c,#4AA391)}
 body[data-theme="light"] #consultation .soap-c:not(:last-child){border-bottom-color:rgba(0,0,0,0.07)}
 body[data-theme="light"] #consultation .exam-subtab{background:rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.08);color:var(--text-secondary)}
 body[data-theme="light"] #consultation .exam-subtab.active{background:rgba(74,163,145,0.18);border:1px solid rgba(74,163,145,0.4)}
@@ -1296,3 +1302,79 @@ body[data-theme="light"] #consultation .ai-recs{background:rgba(255,255,255,0.6)
 #consultation .exam-block{display:none}
 #consultation .exam-block.est-active{display:block}
 }
+/* ============================================================
+   GLOBAL LIQUID GLASS — iOS-style re-skin, all screens/components.
+   Structural rules unscoped; tinted glass scoped per theme so the
+   light theme is protected (dark colours under [data-theme="dark"]).
+   ============================================================ */
+/* ---- Global app background ---- */
+body[data-theme="dark"],body[data-theme="dark"] #appShell{background:linear-gradient(135deg,#060d18 0%,#0a1f1a 30%,#0d2a20 60%,#080e18 100%);min-height:100vh}
+body[data-theme="light"],body[data-theme="light"] #appShell{background:linear-gradient(135deg,#e8f5f2 0%,#f0f9f7 40%,#e8f5f2 100%);min-height:100vh}
+.content-area{background:transparent}
+
+/* ---- Sidebar ---- */
+.sidebar{backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong)}
+body[data-theme="dark"] .sidebar{background:rgba(6,13,24,0.75);border-right:1px solid var(--glass-border);box-shadow:4px 0 24px rgba(0,0,0,0.3)}
+body[data-theme="light"] .sidebar{background:rgba(255,255,255,0.75);border-right:1px solid rgba(0,0,0,0.06)}
+.nav-link{border:1px solid transparent;transition:all .2s ease}
+.nav-link:hover{background:var(--glass-bg-medium);border:1px solid var(--glass-border-accent);border-radius:var(--glass-radius-sm)}
+.nav-link.active{background:rgba(74,163,145,0.15);border:1px solid rgba(74,163,145,0.3);border-radius:var(--glass-radius-sm);color:var(--accent)}
+
+/* ---- Topbar ---- */
+.topbar{backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur)}
+body[data-theme="dark"] .topbar{background:rgba(6,13,24,0.6);border-bottom:1px solid var(--glass-border);box-shadow:0 4px 24px rgba(0,0,0,0.2),inset 0 -1px 0 rgba(255,255,255,0.05)}
+body[data-theme="light"] .topbar{background:rgba(255,255,255,0.75);border-bottom:1px solid rgba(0,0,0,0.06)}
+
+/* ---- Cards (.card, .pm-card, .stat-card) ---- */
+.card,.pm-card,.stat-card{backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border-radius:var(--glass-radius);transition:all .3s ease}
+body[data-theme="dark"] .card,body[data-theme="dark"] .pm-card{background:var(--glass-bg);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow)}
+body[data-theme="light"] .card,body[data-theme="light"] .pm-card,body[data-theme="light"] .stat-card{background:rgba(255,255,255,0.65);border:1px solid rgba(255,255,255,0.85);box-shadow:0 8px 32px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.95)}
+.card:hover{background:var(--glass-bg-medium);border-color:var(--glass-border-accent);box-shadow:var(--glass-shadow-accent);transform:translateY(-2px)}
+body[data-theme="dark"] .stat-card{background:rgba(74,163,145,0.08);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow)}
+
+/* ---- Dashboard KPI numbers — gradient text ---- */
+body[data-theme="dark"] .dash-stat:not(.danger) .ds-v{background:linear-gradient(135deg,#ffffff,#4AA391);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+body[data-theme="light"] .dash-stat:not(.danger) .ds-v{background:linear-gradient(135deg,#1a202c,#4AA391);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+
+/* ---- Buttons ---- */
+.btn.primary{background:linear-gradient(135deg,rgba(74,163,145,0.85),rgba(61,138,121,0.9));border:1px solid rgba(255,255,255,0.2);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:12px;box-shadow:0 4px 16px rgba(74,163,145,0.3),inset 0 1px 0 rgba(255,255,255,0.25);color:#fff}
+.btn.primary:hover{background:linear-gradient(135deg,rgba(90,184,161,0.95),rgba(74,163,145,1));box-shadow:0 6px 20px rgba(74,163,145,0.45),inset 0 1px 0 rgba(255,255,255,0.3)}
+.btn.ghost{background:var(--glass-bg);border:1px solid var(--glass-border);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:12px;color:var(--accent)}
+.btn.ghost:hover{background:var(--glass-bg-medium);border-color:var(--glass-border-accent);box-shadow:none}
+body[data-theme="light"] .btn.ghost{background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.08)}
+
+/* ---- Inputs ---- */
+input,select,textarea{border-radius:var(--glass-radius-sm);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+body[data-theme="dark"] input,body[data-theme="dark"] select,body[data-theme="dark"] textarea{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)}
+body[data-theme="light"] input,body[data-theme="light"] select,body[data-theme="light"] textarea{background:rgba(255,255,255,0.6);border:1px solid rgba(0,0,0,0.08)}
+input:focus,select:focus,textarea:focus{border-color:rgba(74,163,145,0.5);box-shadow:0 0 0 3px rgba(74,163,145,0.12);background:rgba(74,163,145,0.05)}
+/* keep SOAP textareas flush inside their glass block */
+#consultation .soap-c textarea{background:transparent;border:none;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;border-radius:0}
+
+/* ---- Modals ---- */
+.modal-c,.lab-modal-card,.nr-modal-card,.memo-d,.confirm-d,.vc-card{backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border-radius:var(--glass-radius-lg)}
+body[data-theme="dark"] .modal-c,body[data-theme="dark"] .lab-modal-card,body[data-theme="dark"] .nr-modal-card,body[data-theme="dark"] .memo-d,body[data-theme="dark"] .confirm-d,body[data-theme="dark"] .vc-card{background:rgba(8,14,24,0.85);border:1px solid var(--glass-border);box-shadow:0 24px 64px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.1)}
+body[data-theme="light"] .modal-c,body[data-theme="light"] .lab-modal-card,body[data-theme="light"] .nr-modal-card,body[data-theme="light"] .memo-d,body[data-theme="light"] .confirm-d,body[data-theme="light"] .vc-card{background:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.9);box-shadow:0 24px 64px rgba(0,0,0,0.15)}
+
+/* ---- Badges & score-pills ---- */
+.badge,.score-pill{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:50px;border:1px solid transparent}
+.badge.safe{background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.3);color:var(--success)}
+.badge.warn{background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.3);color:var(--warning)}
+.badge.danger{background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.3);color:var(--danger)}
+.badge.info{background:rgba(37,99,235,0.15);border-color:rgba(37,99,235,0.3);color:var(--info)}
+
+/* ---- Bottom nav (≤768 only, display:none above) ---- */
+.bottom-nav{backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong)}
+body[data-theme="dark"] .bottom-nav{background:rgba(6,13,24,0.8);border-top:1px solid var(--glass-border);box-shadow:0 -4px 24px rgba(0,0,0,0.3)}
+body[data-theme="light"] .bottom-nav{background:rgba(255,255,255,0.75);border-top:1px solid rgba(0,0,0,0.06)}
+
+/* ---- FAB buttons (.fab / #nrFab / .fab-exam) ---- */
+.fab,.fab-exam{backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.25);background:linear-gradient(135deg,rgba(61,138,121,0.9),rgba(74,163,145,0.95));box-shadow:0 8px 32px rgba(74,163,145,0.4),inset 0 1px 0 rgba(255,255,255,0.3);transition:transform .3s cubic-bezier(0.34,1.56,0.64,1),box-shadow .3s ease}
+.fab:hover,.fab-exam:hover{transform:scale(1.08);box-shadow:0 12px 40px rgba(74,163,145,0.55)}
+
+/* ---- ICU cards (.icu-c) ---- */
+.icu-c{backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border-radius:var(--glass-radius)}
+body[data-theme="dark"] .icu-c{background:rgba(8,14,24,0.7);border:1px solid var(--glass-border)}
+body[data-theme="dark"] .icu-c.critical{background:rgba(8,14,24,0.7);border-color:rgba(239,68,68,0.4);box-shadow:0 0 20px rgba(239,68,68,0.15),inset 0 1px 0 rgba(255,255,255,0.08)}
+body[data-theme="light"] .icu-c{background:rgba(255,255,255,0.65);border:1px solid rgba(255,255,255,0.85)}
+body[data-theme="light"] .icu-c.critical{background:rgba(255,255,255,0.7);border-color:rgba(239,68,68,0.4);box-shadow:0 0 20px rgba(239,68,68,0.12)}
