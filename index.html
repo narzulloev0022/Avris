@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=26">
+<link rel="stylesheet" href="styles.css?v=27">
 </head>
 <body data-theme="light">
 <div class="login-screen" id="loginScreen">
@@ -185,8 +185,12 @@
 <button class="consult-tab" data-ct="cTabHist" data-i18n="ct_history" role="tab" aria-selected="false">История</button>
 </div>
 <div class="consult-pane active" id="cTabExam">
-<div class="consult-split">
-<div class="consult-left">
+<div class="exam-subtabs" role="tablist">
+<button class="exam-subtab active" data-est="examRecBlock" type="button" role="tab" aria-selected="true" data-i18n="exam_tab_rec">Запись</button>
+<button class="exam-subtab" data-est="examDocBlock" type="button" role="tab" aria-selected="false" data-i18n="exam_tab_doc">Документ</button>
+</div>
+<div class="consult-flow">
+<div class="consult-left exam-block est-active" id="examRecBlock">
 <div class="card-h" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><h3 data-i18n="cons_rec">Запись осмотра</h3><select id="consultTpl" class="consult-tpl-sel" aria-label="Template"><option value="" data-i18n-o="tpl_choose">Шаблон осмотра…</option><option value="primary" data-i18n-o="tpl_primary">Первичный</option><option value="follow" data-i18n-o="tpl_follow">Повторный</option><option value="discharge" data-i18n-o="tpl_discharge">Выписка</option><option value="screening" data-i18n-o="tpl_screening">Профосмотр</option></select></div>
 <div class="rec-wave-wrap">
 <div class="wave" id="waveform"></div>
@@ -217,29 +221,29 @@
 <button class="btn primary" id="stopRec" data-i18n="btn_save">Сохранить</button>
 </div>
 </div>
-<div class="consult-right">
-<div class="card-h"><h3 data-i18n="soap_title">SOAP-документация</h3><button class="ai-badge ai-badge-btn" id="soapGenBtn" type="button" aria-label="Regenerate SOAP"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M12 0l2.5 9.5L24 12l-9.5 2.5L12 24l-2.5-9.5L0 12l9.5-2.5L12 0z"/></svg><span data-i18n="btn_regen_soap">Перегенерировать SOAP</span></button></div>
+<div class="consult-right exam-block" id="examDocBlock">
+<div class="card-h soap-card-h"><div class="soap-h-l"><h3 data-i18n="soap_title">SOAP-документация</h3><span class="soap-status" id="soapStatus" data-state="draft" data-i18n="soap_st_draft">Черновик</span></div><button class="ai-badge ai-badge-btn" id="soapGenBtn" type="button" aria-label="Regenerate SOAP"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M12 0l2.5 9.5L24 12l-9.5 2.5L12 24l-2.5-9.5L0 12l9.5-2.5L12 0z"/></svg><span data-i18n="btn_regen_soap">Перегенерировать SOAP</span></button></div>
 <div class="soap-g">
 <div class="soap-c soap-s">
-<div class="soap-hdr"><div class="soap-hdr-l"><h5>S — Subjective</h5><span class="soap-sub" data-i18n="soap_s_sub">Жалобы</span></div><span class="soap-ai-tag">AI</span></div>
+<div class="soap-hdr"><h5 class="soap-lbl"><span class="soap-letter">S</span><span class="soap-word" data-i18n="soap_s_lbl">Субъективно</span></h5></div>
 <textarea id="soapS" data-phk="ph_complaints" placeholder="Жалобы пациента"></textarea>
 </div>
 <div class="soap-c soap-o">
-<div class="soap-hdr"><div class="soap-hdr-l"><h5>O — Objective</h5><span class="soap-sub" data-i18n="soap_o_sub">Объективно</span></div><span class="soap-ai-tag">AI</span></div>
+<div class="soap-hdr"><h5 class="soap-lbl"><span class="soap-letter">O</span><span class="soap-word" data-i18n="soap_o_lbl">Объективно</span></h5></div>
 <textarea id="soapO" data-phk="ph_exam" placeholder="Данные осмотра"></textarea>
 </div>
 <div class="soap-c soap-a">
-<div class="soap-hdr"><div class="soap-hdr-l"><h5>A — Assessment</h5><span class="soap-sub" data-i18n="soap_a_sub">Оценка</span></div><div style="display:flex;gap:6px;align-items:center"><button class="soap-ai-tag soap-ai-btn" id="ddxBtn" type="button" data-i18n="ddx_btn" title="Дифф. диагноз">Дифф. диагноз</button><span class="soap-ai-tag">AI</span></div></div>
+<div class="soap-hdr"><h5 class="soap-lbl"><span class="soap-letter">A</span><span class="soap-word" data-i18n="soap_a_lbl">Оценка</span></h5><button class="soap-ddx-btn" id="ddxBtn" type="button" data-i18n="ddx_btn" title="Дифф. диагноз">Дифф. диагноз</button></div>
 <textarea id="soapA" data-phk="ph_diag" placeholder="Диагноз"></textarea>
 <div class="ddx-panel" id="ddxPanel" hidden></div>
 </div>
 <div class="soap-c soap-p">
-<div class="soap-hdr"><div class="soap-hdr-l"><h5>P — Plan</h5><span class="soap-sub" data-i18n="soap_p_sub">План</span></div><span class="soap-ai-tag">AI</span></div>
+<div class="soap-hdr"><h5 class="soap-lbl"><span class="soap-letter">P</span><span class="soap-word" data-i18n="soap_p_lbl">План</span></h5></div>
 <textarea id="soapP" data-phk="ph_plan" placeholder="План лечения"></textarea>
 </div>
 </div>
 <div id="aiRecsPanel" class="ai-recs" hidden>
-<div class="ai-recs-hdr" id="aiRecsHdr" role="button" aria-expanded="true" tabindex="0">
+<div class="ai-recs-hdr" id="aiRecsHdr" role="button" aria-expanded="false" tabindex="0">
 <div class="ai-recs-hdr-l"><span class="ai-recs-ic"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2a3 3 0 00-3 3v0a3 3 0 00-3 3v3a3 3 0 002 2.83V14a3 3 0 003 3v0a3 3 0 003 3h0a3 3 0 003-3v0a3 3 0 003-3v-.17A3 3 0 0021 11V8a3 3 0 00-3-3v0a3 3 0 00-3-3h0a3 3 0 00-3 3 3 3 0 00-3-3z"/><path d="M9 8v10M15 8v10"/></svg></span><div><div class="ai-recs-title" data-i18n="ai_recs_title">AI Рекомендации</div><div class="ai-recs-sub">Claude Sonnet</div></div></div>
 <div class="ai-recs-hdr-r"><button class="btn ghost sm" id="aiRecsAcceptAll" type="button" data-i18n="ai_accept_all">Принять все</button><span class="ai-recs-chev"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div>
 </div>
@@ -556,6 +560,6 @@
 <button class="more-item" data-screen="history" type="button"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span data-i18n="nav_history">История</span></button>
 <button class="more-item" data-screen="settings" type="button"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span data-i18n="nav_settings">Настройки</span></button>
 </div>
-<script src="app.js?v=26"></script>
+<script src="app.js?v=27"></script>
 </body>
 </html>
