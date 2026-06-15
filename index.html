@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=32">
+<link rel="stylesheet" href="styles.css?v=33">
 </head>
 <body data-theme="light">
 <div class="login-screen" id="loginScreen">
@@ -184,13 +184,14 @@
 <button class="consult-tab" data-ct="cTabLabs" role="tab" aria-selected="false"><span data-i18n="ct_labs">Анализы</span><span class="consult-tab-badge" id="labsBadge">1</span></button>
 <button class="consult-tab" data-ct="cTabHist" data-i18n="ct_history" role="tab" aria-selected="false">История</button>
 </div>
-<div class="consult-pane active" id="cTabExam">
+<div class="consult-pane active exam-state-idle" id="cTabExam">
 <div class="exam-subtabs" role="tablist">
 <button class="exam-subtab active" data-est="examRecBlock" type="button" role="tab" aria-selected="true" data-i18n="exam_tab_rec">Запись</button>
 <button class="exam-subtab" data-est="examDocBlock" type="button" role="tab" aria-selected="false" data-i18n="exam_tab_doc">Документ</button>
 </div>
 <div class="consult-flow">
 <div class="consult-left exam-block est-active" id="examRecBlock">
+<div class="exam-rec-top"><span class="exam-rec-badge" data-i18n="exam_rec_badge">● ЗАПИСЬ</span><span class="exam-rec-name" id="examRecName"></span></div>
 <div class="card-h" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><h3 data-i18n="cons_rec">Запись осмотра</h3><select id="consultTpl" class="consult-tpl-sel" aria-label="Template"><option value="" data-i18n-o="tpl_choose">Шаблон осмотра…</option><option value="primary" data-i18n-o="tpl_primary">Первичный</option><option value="follow" data-i18n-o="tpl_follow">Повторный</option><option value="discharge" data-i18n-o="tpl_discharge">Выписка</option><option value="screening" data-i18n-o="tpl_screening">Профосмотр</option></select></div>
 <div class="rec-wave-wrap">
 <div class="wave" id="waveform"></div>
@@ -201,8 +202,11 @@
 </div>
 <button class="rec-bar" id="micBtn">
 <span class="rec-bar-dot"></span>
+<svg class="exam-mic-ic" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+<svg class="exam-stop-ic" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
 <span id="recBarLabel" data-i18n="rec_start">НАЧАТЬ ЗАПИСЬ</span>
 </button>
+<div class="exam-idle-hint" data-i18n="exam_idle_hint">Нажмите чтобы начать запись</div>
 <div class="rec-footer">
 <span class="rec-badge" id="recBadge">Whisper AI · Распознавание</span>
 </div>
@@ -559,6 +563,6 @@
 <button class="more-item" data-screen="history" type="button"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span data-i18n="nav_history">История</span></button>
 <button class="more-item" data-screen="settings" type="button"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span data-i18n="nav_settings">Настройки</span></button>
 </div>
-<script src="app.js?v=32"></script>
+<script src="app.js?v=33"></script>
 </body>
 </html>
