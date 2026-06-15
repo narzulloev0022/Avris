@@ -1381,10 +1381,12 @@ body[data-theme="light"] .icu-c.critical{background:rgba(255,255,255,0.7);border
 /* ============================================================
    SETTINGS (#settings) — Liquid Glass tab pills, profile card, buttons
    ============================================================ */
-#settings .set-nav{border-bottom:none;gap:8px;flex-wrap:wrap}
-#settings .set-nav-item{border:1px solid var(--glass-border);border-radius:14px;padding:10px 16px;background:var(--glass-bg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:all .2s ease}
+#settings .set-nav{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:24px;border-bottom:none}
+#settings .set-nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;min-width:unset;padding:10px 8px;border-radius:14px;font-size:.7rem;text-align:center;line-height:1.15;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:all .2s ease}
+#settings .set-nav-item:last-child{grid-column:1}
+#settings .set-nav-ic{width:20px;height:20px;flex-shrink:0}
 #settings .set-nav-item:hover{background:var(--glass-bg-medium);border-color:var(--glass-border-accent);color:var(--text-primary)}
-#settings .set-nav-item.active{background:rgba(74,163,145,0.15);border:1px solid rgba(74,163,145,0.35);border-radius:14px;color:var(--accent);box-shadow:0 4px 16px rgba(74,163,145,0.2),inset 0 1px 0 rgba(255,255,255,0.15)}
+#settings .set-nav-item.active{background:rgba(74,163,145,0.15);border:1px solid rgba(74,163,145,0.3);border-radius:14px;color:var(--accent);box-shadow:0 2px 8px rgba(74,163,145,0.15)}
 #settings .set-profile-card{background:var(--glass-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.1);border-radius:20px;box-shadow:0 8px 24px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.12)}
 #settings .btn{background:rgba(74,163,145,0.12);border:1px solid rgba(74,163,145,0.25);border-radius:12px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--accent);transition:all .2s ease}
 #settings .btn:hover{background:rgba(74,163,145,0.2);border-color:rgba(74,163,145,0.4);box-shadow:0 4px 16px rgba(74,163,145,0.2)}
