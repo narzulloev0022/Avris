@@ -1417,3 +1417,44 @@ body[data-theme="light"] #settings .btn:hover{background:rgba(74,163,145,0.18)}
 #examRecBlock.saved .consult-actions #consentBtn,#examRecBlock.saved .consult-actions #patientMemoBtn,#examRecBlock.saved .consult-actions #exportPdfBtn{display:inline-flex;flex:1 1 auto}
 /* Big single record button */
 #examRecBlock .rec-bar{height:60px;padding:0 28px}
+/* ============================================================
+   INVISIBLE UI — exam screen 3 states (#cTabExam.exam-state-*)
+   idle: big mic only · recording: fullscreen overlay · done: SOAP layout
+   ============================================================ */
+/* shared new elements (hidden by default; shown per state) */
+.exam-rec-top{display:none}
+.exam-rec-badge{color:var(--danger);font-size:.8rem;font-weight:600;letter-spacing:.1em;animation:blink 1.2s ease infinite}
+.exam-rec-name{color:var(--text-secondary);font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:50%}
+.exam-idle-hint{display:none;color:var(--text-muted);font-size:.9rem;margin-top:20px;text-align:center}
+#micBtn .exam-mic-ic,#micBtn .exam-stop-ic{display:none}
+@keyframes recPulseBtn{0%,100%{box-shadow:0 8px 32px rgba(239,68,68,0.4),0 0 0 0 rgba(239,68,68,0.3)}50%{box-shadow:0 8px 48px rgba(239,68,68,0.6),0 0 0 12px rgba(239,68,68,0)}}
+@keyframes examFade{from{opacity:0}to{opacity:1}}
+
+/* ---------- STATE: IDLE ---------- */
+#cTabExam.exam-state-idle .exam-subtabs,#cTabExam.exam-state-idle #examDocBlock{display:none}
+#cTabExam.exam-state-idle .consult-flow{display:block;height:auto;padding:20px}
+#cTabExam.exam-state-idle #examRecBlock{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:58vh;gap:0;animation:examFade .4s ease}
+#cTabExam.exam-state-idle .rec-wave-wrap,#cTabExam.exam-state-idle .rec-timer-row,#cTabExam.exam-state-idle .transcript-hdr,#cTabExam.exam-state-idle .transcript,#cTabExam.exam-state-idle .consult-actions,#cTabExam.exam-state-idle .exam-rec-top{display:none}
+#cTabExam.exam-state-idle .exam-idle-hint{display:block}
+#cTabExam.exam-state-idle #micBtn{width:120px;height:120px;min-width:0;padding:0;border-radius:50%;background:linear-gradient(135deg,rgba(74,163,145,0.9),rgba(61,138,121,0.95));border:1px solid rgba(255,255,255,0.25);box-shadow:0 0 0 16px rgba(74,163,145,0.08),0 0 0 32px rgba(74,163,145,0.04),0 16px 48px rgba(74,163,145,0.4),inset 0 1px 0 rgba(255,255,255,0.3);animation:none;transition:all .3s cubic-bezier(0.34,1.56,0.64,1);margin:0}
+#cTabExam.exam-state-idle #micBtn:hover{transform:scale(1.08);box-shadow:0 0 0 20px rgba(74,163,145,0.1),0 0 0 40px rgba(74,163,145,0.05),0 20px 60px rgba(74,163,145,0.5)}
+#cTabExam.exam-state-idle #micBtn .exam-mic-ic{display:block;width:48px;height:48px;color:#fff}
+#cTabExam.exam-state-idle #micBtn .rec-bar-dot,#cTabExam.exam-state-idle #micBtn #recBarLabel,#cTabExam.exam-state-idle #micBtn .exam-stop-ic{display:none}
+
+/* ---------- STATE: RECORDING (fullscreen overlay) ---------- */
+#cTabExam.exam-state-recording .exam-subtabs,#cTabExam.exam-state-recording #examDocBlock{display:none}
+#cTabExam.exam-state-recording #examRecBlock{position:fixed;inset:0;z-index:1100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:36px;padding:24px;background:rgba(6,13,24,0.97);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);border:none;border-radius:0;box-shadow:none;animation:examFade .4s ease}
+#cTabExam.exam-state-recording .card-h,#cTabExam.exam-state-recording .transcript,#cTabExam.exam-state-recording .transcript-hdr,#cTabExam.exam-state-recording .consult-actions,#cTabExam.exam-state-recording .exam-idle-hint,#cTabExam.exam-state-recording .rec-status-lbl,#cTabExam.exam-state-recording .rec-footer{display:none}
+#cTabExam.exam-state-recording .exam-rec-top{display:flex;position:absolute;top:24px;left:0;right:0;align-items:center;justify-content:space-between;padding:0 24px}
+#cTabExam.exam-state-recording .rec-wave-wrap{width:100%;max-width:640px;height:80px;background:transparent;border:none;backdrop-filter:none;margin:0;padding:0}
+#cTabExam.exam-state-recording .rec-wave-wrap .wave{width:100%;height:80px}
+#cTabExam.exam-state-recording .rec-timer-row{margin:0;justify-content:center}
+#cTabExam.exam-state-recording #recTimer{font-size:4rem;font-weight:800;color:#fff;letter-spacing:.05em;font-family:Inter,system-ui,sans-serif;background:none}
+#cTabExam.exam-state-recording #micBtn{width:80px;height:80px;min-width:0;padding:0;border-radius:50%;background:linear-gradient(135deg,rgba(239,68,68,0.9),rgba(220,38,38,0.95));border:1px solid rgba(255,255,255,0.2);box-shadow:0 8px 32px rgba(239,68,68,0.5),inset 0 1px 0 rgba(255,255,255,0.2);animation:recPulseBtn 2s ease-in-out infinite;margin:0}
+#cTabExam.exam-state-recording #micBtn::after{display:none}
+#cTabExam.exam-state-recording #micBtn .exam-stop-ic{display:block;width:28px;height:28px;color:#fff}
+#cTabExam.exam-state-recording #micBtn .rec-bar-dot,#cTabExam.exam-state-recording #micBtn #recBarLabel,#cTabExam.exam-state-recording #micBtn .exam-mic-ic{display:none}
+
+/* ---------- STATE: DONE (keeps standard 2-col / subtab layout) ---------- */
+#cTabExam.exam-state-done #examRecBlock{animation:examFade .5s ease}
+#cTabExam.exam-state-done .exam-rec-top,#cTabExam.exam-state-done .exam-idle-hint{display:none}
