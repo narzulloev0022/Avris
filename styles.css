@@ -1225,3 +1225,74 @@ body[data-theme] .dash-stat .ds-v{font-size:1.8rem}
 #appShell.hidden ~ .bottom-nav,#appShell.hidden ~ .more-sheet{display:none!important}
 body[data-theme="light"] .bottom-nav{background:rgba(255,255,255,0.85);border-top:1px solid rgba(0,0,0,0.08)}
 body[data-theme="light"] .more-sheet{background:rgba(255,255,255,0.95);border-color:rgba(0,0,0,0.08)}
+/* ============================================================
+   LIQUID GLASS — exam screen (#consultation / #cTabExam).
+   Structural rules unscoped; tinted glass scoped per theme so
+   light theme stays protected (dark-scope rule).
+   ============================================================ */
+/* Layout: two columns on desktop, full-height scrollable glass panels */
+#consultation .consult-flow{flex-direction:row;gap:20px;padding:20px;height:calc(100vh - var(--topbar) - 96px)}
+#consultation .consult-left,#consultation .consult-right{flex:1 1 50%;width:auto;min-width:0;overflow-y:auto;border-radius:24px;backdrop-filter:blur(24px) saturate(190%);-webkit-backdrop-filter:blur(24px) saturate(190%)}
+#consultation .pat-ctx{border-radius:20px;backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%)}
+/* SOAP — unified, transparent rows + dividers */
+#consultation .soap-g{background:transparent;border:none;border-radius:0;overflow:visible}
+#consultation .soap-c{border-left:none;background:transparent;padding:16px 2px}
+#consultation .soap-c+.soap-c{border-top:none}
+#consultation .soap-c:not(:last-child){border-bottom:1px solid rgba(255,255,255,0.06)}
+#consultation .soap-c:focus-within{background:transparent;box-shadow:none}
+#consultation .soap-lbl{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#4AA391;gap:6px}
+#consultation .soap-letter,#consultation .soap-word{font-size:.7rem;font-weight:700;letter-spacing:.12em;color:#4AA391}
+/* Waveform — glass */
+#consultation .rec-wave-wrap{border-radius:16px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+/* Timer — gradient text (Inter) */
+#consultation .timer{font-family:Inter,system-ui,sans-serif;font-size:3rem;font-weight:800;letter-spacing:.1em;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+/* Record button — glossy liquid-glass pill */
+#consultation .rec-bar{height:auto;padding:16px 32px;border-radius:50px;border:1px solid rgba(255,255,255,0.25);font-size:1rem;font-weight:600;letter-spacing:.05em;background:linear-gradient(135deg,rgba(74,163,145,0.9),rgba(61,138,121,0.95));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(74,163,145,0.4),inset 0 1px 0 rgba(255,255,255,0.3),inset 0 -1px 0 rgba(0,0,0,0.2)}
+#consultation .rec-bar:hover:not(.rec){background:linear-gradient(135deg,rgba(90,184,161,0.95),rgba(74,163,145,1));box-shadow:0 10px 36px rgba(74,163,145,0.5),inset 0 1px 0 rgba(255,255,255,0.35)}
+#consultation .rec-bar.rec{background:linear-gradient(135deg,rgba(239,68,68,0.85),rgba(220,38,38,0.9));border-color:rgba(255,255,255,0.25);box-shadow:0 8px 32px rgba(239,68,68,0.5),inset 0 1px 0 rgba(255,255,255,0.2);animation:recPulse 1.5s ease-in-out infinite}
+#consultation .rec-bar.rec::after{display:none}
+@keyframes recPulse{0%,100%{box-shadow:0 8px 32px rgba(239,68,68,0.4)}50%{box-shadow:0 8px 48px rgba(239,68,68,0.7),0 0 0 8px rgba(239,68,68,0.15)}}
+/* Document status — glyph + colour, no pill */
+#consultation .soap-status{background:transparent;padding:0;letter-spacing:.04em}
+#consultation .soap-status::before{content:"\25CF";width:auto;height:auto;background:none;border-radius:0;font-size:.78rem;line-height:1}
+#consultation .soap-status[data-state="gen"]::before{content:"\25CC"}
+#consultation .soap-status[data-state="ready"]::before{content:"\2713"}
+#consultation .soap-status[data-state="draft"]{color:rgba(148,163,184,0.7)}
+#consultation .soap-status[data-state="gen"]{color:#f59e0b}
+#consultation .soap-status[data-state="ready"]{color:#10b981}
+/* Exam sub-tabs — glass pills (mobile) */
+#consultation .exam-subtab{border-radius:50px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#consultation .exam-subtab.active{background:rgba(74,163,145,0.2);border:1px solid rgba(74,163,145,0.4);color:var(--text-primary)}
+/* AI recs — glass accordion w/ max-height animation (collapsed default) */
+#consultation .ai-recs{border-radius:16px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#consultation .ai-recs-body{display:flex;overflow:hidden;max-height:2400px;transition:max-height .35s ease,padding .35s ease}
+#consultation .ai-recs.collapsed .ai-recs-body{max-height:0;padding-top:0;padding-bottom:0}
+/* ---- DARK theme tints ---- */
+body[data-theme="dark"] #consultation{background:linear-gradient(135deg,#080e18 0%,#0a1f1a 40%,#0d2d24 70%,#080e18 100%);min-height:100vh}
+body[data-theme="dark"] #consultation .pat-ctx{background:rgba(74,163,145,0.08);border:1px solid rgba(74,163,145,0.2);box-shadow:0 8px 32px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.1)}
+body[data-theme="dark"] #consultation .consult-left{background:rgba(8,14,24,0.6);border:1px solid rgba(255,255,255,0.08);box-shadow:0 16px 48px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.12),inset 0 -1px 0 rgba(0,0,0,0.2)}
+body[data-theme="dark"] #consultation .consult-right{background:rgba(11,20,35,0.7);border:1px solid rgba(255,255,255,0.08);box-shadow:0 16px 48px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.08)}
+body[data-theme="dark"] #consultation .rec-wave-wrap{background:rgba(74,163,145,0.05);border:1px solid rgba(74,163,145,0.1)}
+body[data-theme="dark"] #consultation .timer{background:linear-gradient(135deg,#ffffff,#4AA391)}
+body[data-theme="dark"] #consultation .soap-c:not(:last-child){border-bottom-color:rgba(255,255,255,0.06)}
+body[data-theme="dark"] #consultation .exam-subtab{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:var(--text-secondary)}
+body[data-theme="dark"] #consultation .ai-recs{background:rgba(74,163,145,0.06);border:1px solid rgba(74,163,145,0.15)}
+/* ---- LIGHT theme glass ---- */
+body[data-theme="light"] #consultation{background:linear-gradient(135deg,#f0f9f7 0%,#e8f5f2 50%,#f0f9f7 100%);min-height:100vh}
+body[data-theme="light"] #consultation .pat-ctx,body[data-theme="light"] #consultation .consult-left,body[data-theme="light"] #consultation .consult-right{background:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.9);box-shadow:0 8px 32px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.95)}
+body[data-theme="light"] #consultation .rec-wave-wrap{background:rgba(74,163,145,0.06);border:1px solid rgba(74,163,145,0.15)}
+body[data-theme="light"] #consultation .timer{background:linear-gradient(135deg,#1a202c,#4AA391)}
+body[data-theme="light"] #consultation .soap-c:not(:last-child){border-bottom-color:rgba(0,0,0,0.07)}
+body[data-theme="light"] #consultation .exam-subtab{background:rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.08);color:var(--text-secondary)}
+body[data-theme="light"] #consultation .exam-subtab.active{background:rgba(74,163,145,0.18);border:1px solid rgba(74,163,145,0.4)}
+body[data-theme="light"] #consultation .ai-recs{background:rgba(255,255,255,0.6);border:1px solid rgba(74,163,145,0.2)}
+/* ---- Mobile (≤768): stacked + tabs ---- */
+@media(max-width:768px){
+#consultation .consult-flow{flex-direction:column;height:auto;padding:12px;gap:12px}
+#consultation .consult-left,#consultation .consult-right{flex:none;width:100%;overflow-y:visible}
+#consultation .timer{font-size:2.4rem}
+#consultation .rec-bar{padding:14px 24px}
+#consultation .exam-subtabs{display:flex}
+#consultation .exam-block{display:none}
+#consultation .exam-block.est-active{display:block}
+}
