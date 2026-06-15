@@ -1251,7 +1251,7 @@ body[data-theme="light"] .more-sheet{background:rgba(255,255,255,0.95);border-co
 /* Waveform — glass */
 #consultation .rec-wave-wrap{border-radius:16px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 /* Timer — gradient text (Inter) */
-#consultation .timer{font-family:Inter,system-ui,sans-serif;font-size:3rem;font-weight:800;letter-spacing:.1em;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+#consultation .timer{font-family:Inter,system-ui,sans-serif;font-size:3rem;font-weight:800;letter-spacing:.1em;background:none;color:#fff}
 /* Record button — glossy liquid-glass pill */
 #consultation .rec-bar{height:auto;padding:16px 32px;border-radius:50px;border:1px solid rgba(255,255,255,0.25);font-size:1rem;font-weight:600;letter-spacing:.05em;background:linear-gradient(135deg,rgba(74,163,145,0.9),rgba(61,138,121,0.95));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(74,163,145,0.4),inset 0 1px 0 rgba(255,255,255,0.3),inset 0 -1px 0 rgba(0,0,0,0.2)}
 #consultation .rec-bar:hover:not(.rec){background:linear-gradient(135deg,rgba(90,184,161,0.95),rgba(74,163,145,1));box-shadow:0 10px 36px rgba(74,163,145,0.5),inset 0 1px 0 rgba(255,255,255,0.35)}
@@ -1279,7 +1279,7 @@ body[data-theme="dark"] #consultation .pat-ctx{background:rgba(74,163,145,0.08);
 body[data-theme="dark"] #consultation .consult-left{background:rgba(8,14,24,0.6);border:1px solid rgba(255,255,255,0.08);box-shadow:0 16px 48px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.12),inset 0 -1px 0 rgba(0,0,0,0.2)}
 body[data-theme="dark"] #consultation .consult-right{background:rgba(11,20,35,0.7);border:1px solid rgba(255,255,255,0.08);box-shadow:0 16px 48px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.08)}
 body[data-theme="dark"] #consultation .rec-wave-wrap{background:rgba(74,163,145,0.05);border:1px solid rgba(74,163,145,0.1)}
-body[data-theme="dark"] #consultation .timer{background-image:linear-gradient(135deg,#ffffff,#4AA391)}
+body[data-theme="dark"] #consultation .timer{color:#fff}
 body[data-theme="dark"] #consultation .soap-c:not(:last-child){border-bottom-color:rgba(255,255,255,0.06)}
 body[data-theme="dark"] #consultation .exam-subtab{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:var(--text-secondary)}
 body[data-theme="dark"] #consultation .ai-recs{background:rgba(74,163,145,0.06);border:1px solid rgba(74,163,145,0.15)}
@@ -1287,7 +1287,7 @@ body[data-theme="dark"] #consultation .ai-recs{background:rgba(74,163,145,0.06);
 body[data-theme="light"] #consultation{background:linear-gradient(135deg,#f0f9f7 0%,#e8f5f2 50%,#f0f9f7 100%);min-height:100vh}
 body[data-theme="light"] #consultation .pat-ctx,body[data-theme="light"] #consultation .consult-left,body[data-theme="light"] #consultation .consult-right{background:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.9);box-shadow:0 8px 32px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.95)}
 body[data-theme="light"] #consultation .rec-wave-wrap{background:rgba(74,163,145,0.06);border:1px solid rgba(74,163,145,0.15)}
-body[data-theme="light"] #consultation .timer{background-image:linear-gradient(135deg,#1a202c,#4AA391)}
+body[data-theme="light"] #consultation .timer{color:var(--accent)}
 body[data-theme="light"] #consultation .soap-c:not(:last-child){border-bottom-color:rgba(0,0,0,0.07)}
 body[data-theme="light"] #consultation .exam-subtab{background:rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.08);color:var(--text-secondary)}
 body[data-theme="light"] #consultation .exam-subtab.active{background:rgba(74,163,145,0.18);border:1px solid rgba(74,163,145,0.4)}
@@ -1333,8 +1333,8 @@ body[data-theme="light"] .card,body[data-theme="light"] .pm-card,body[data-theme
 body[data-theme="dark"] .stat-card{background:rgba(74,163,145,0.08);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow)}
 
 /* ---- Dashboard KPI numbers — gradient text ---- */
-body[data-theme="dark"] .dash-stat:not(.danger) .ds-v{background:linear-gradient(135deg,#ffffff,#4AA391);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
-body[data-theme="light"] .dash-stat:not(.danger) .ds-v{background:linear-gradient(135deg,#1a202c,#4AA391);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+body[data-theme="dark"] .dash-stat:not(.danger) .ds-v{color:var(--accent)}
+body[data-theme="light"] .dash-stat:not(.danger) .ds-v{color:var(--accent)}
 
 /* ---- Buttons ---- */
 .btn.primary{background:linear-gradient(135deg,rgba(74,163,145,0.85),rgba(61,138,121,0.9));border:1px solid rgba(255,255,255,0.2);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:12px;box-shadow:0 4px 16px rgba(74,163,145,0.3),inset 0 1px 0 rgba(255,255,255,0.25);color:#fff}
@@ -1378,3 +1378,18 @@ body[data-theme="dark"] .icu-c{background:rgba(8,14,24,0.7);border:1px solid var
 body[data-theme="dark"] .icu-c.critical{background:rgba(8,14,24,0.7);border-color:rgba(239,68,68,0.4);box-shadow:0 0 20px rgba(239,68,68,0.15),inset 0 1px 0 rgba(255,255,255,0.08)}
 body[data-theme="light"] .icu-c{background:rgba(255,255,255,0.65);border:1px solid rgba(255,255,255,0.85)}
 body[data-theme="light"] .icu-c.critical{background:rgba(255,255,255,0.7);border-color:rgba(239,68,68,0.4);box-shadow:0 0 20px rgba(239,68,68,0.12)}
+/* ============================================================
+   SETTINGS (#settings) — Liquid Glass tab pills, profile card, buttons
+   ============================================================ */
+#settings .set-nav{border-bottom:none;gap:8px;flex-wrap:wrap}
+#settings .set-nav-item{border:1px solid var(--glass-border);border-radius:14px;padding:10px 16px;background:var(--glass-bg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:all .2s ease}
+#settings .set-nav-item:hover{background:var(--glass-bg-medium);border-color:var(--glass-border-accent);color:var(--text-primary)}
+#settings .set-nav-item.active{background:rgba(74,163,145,0.15);border:1px solid rgba(74,163,145,0.35);border-radius:14px;color:var(--accent);box-shadow:0 4px 16px rgba(74,163,145,0.2),inset 0 1px 0 rgba(255,255,255,0.15)}
+#settings .set-profile-card{background:var(--glass-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.1);border-radius:20px;box-shadow:0 8px 24px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.12)}
+#settings .btn{background:rgba(74,163,145,0.12);border:1px solid rgba(74,163,145,0.25);border-radius:12px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--accent);transition:all .2s ease}
+#settings .btn:hover{background:rgba(74,163,145,0.2);border-color:rgba(74,163,145,0.4);box-shadow:0 4px 16px rgba(74,163,145,0.2)}
+/* light theme settings */
+body[data-theme="light"] #settings .set-nav-item{background:rgba(255,255,255,0.7);border:1px solid rgba(0,0,0,0.06)}
+body[data-theme="light"] #settings .set-nav-item.active{background:rgba(74,163,145,0.12);border-color:rgba(74,163,145,0.3);color:var(--accent)}
+body[data-theme="light"] #settings .set-profile-card{background:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.85);box-shadow:0 8px 24px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.95)}
+body[data-theme="light"] #settings .btn:hover{background:rgba(74,163,145,0.18)}
