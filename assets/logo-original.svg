@@ -18,29 +18,29 @@ viewBox="0 0 21000 29700"
    ]]>
   </style>
   <linearGradient id="id0" gradientUnits="userSpaceOnUse" x1="12824.8" y1="16663.02" x2="6027.5" y2="18279.66">
-   <stop offset="0" style="stop-opacity:1; stop-color:#2AC8BB"/>
-   <stop offset="0.4" style="stop-opacity:1; stop-color:#50D5C3"/>
-   <stop offset="0.478431" style="stop-opacity:1; stop-color:#77E2CC"/>
-   <stop offset="1" style="stop-opacity:1; stop-color:#04646D"/>
+   <stop offset="0" style="stop-opacity:1; stop-color:#95AEF8"/>
+   <stop offset="0.4" style="stop-opacity:1; stop-color:#6E86E0"/>
+   <stop offset="0.478431" style="stop-opacity:1; stop-color:#C5D0FB"/>
+   <stop offset="1" style="stop-opacity:1; stop-color:#4659B5"/>
   </linearGradient>
   <linearGradient id="id1" gradientUnits="userSpaceOnUse" x1="10805.47" y1="9231" x2="18427.05" y2="17974.52">
-   <stop offset="0" style="stop-opacity:1; stop-color:#2AC8BB"/>
-   <stop offset="1" style="stop-opacity:1; stop-color:#04646D"/>
+   <stop offset="0" style="stop-opacity:1; stop-color:#95AEF8"/>
+   <stop offset="1" style="stop-opacity:1; stop-color:#4659B5"/>
   </linearGradient>
   <linearGradient id="id2" gradientUnits="userSpaceOnUse" xlink:href="#id1" x1="11438.25" y1="15069.71" x2="7740.25" y2="19909">
   </linearGradient>
   <linearGradient id="id3" gradientUnits="userSpaceOnUse" x1="12973.62" y1="10322.74" x2="7532.21" y2="11815.01">
-   <stop offset="0" style="stop-opacity:1; stop-color:#2AC8BB"/>
-   <stop offset="0.305882" style="stop-opacity:1; stop-color:#50D5C3"/>
-   <stop offset="0.470588" style="stop-opacity:1; stop-color:#77E2CC"/>
-   <stop offset="1" style="stop-opacity:1; stop-color:#04646D"/>
+   <stop offset="0" style="stop-opacity:1; stop-color:#95AEF8"/>
+   <stop offset="0.305882" style="stop-opacity:1; stop-color:#6E86E0"/>
+   <stop offset="0.470588" style="stop-opacity:1; stop-color:#C5D0FB"/>
+   <stop offset="1" style="stop-opacity:1; stop-color:#4659B5"/>
   </linearGradient>
   <linearGradient id="id4" gradientUnits="userSpaceOnUse" xlink:href="#id1" x1="7515.6" y1="11046.58" x2="12153.7" y2="11902.96">
   </linearGradient>
   <linearGradient id="id5" gradientUnits="userSpaceOnUse" x1="14222.39" y1="20340.04" x2="13297.2" y2="7723.25">
-   <stop offset="0" style="stop-opacity:1; stop-color:#2AC8BB"/>
-   <stop offset="0.478431" style="stop-opacity:1; stop-color:#77E2CC"/>
-   <stop offset="1" style="stop-opacity:1; stop-color:#04646D"/>
+   <stop offset="0" style="stop-opacity:1; stop-color:#95AEF8"/>
+   <stop offset="0.478431" style="stop-opacity:1; stop-color:#C5D0FB"/>
+   <stop offset="1" style="stop-opacity:1; stop-color:#4659B5"/>
   </linearGradient>
  </defs>
  <g id="Слой_x0020_1">
