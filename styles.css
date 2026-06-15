@@ -1458,3 +1458,86 @@ body[data-theme="light"] #settings .btn:hover{background:rgba(74,163,145,0.18)}
 /* ---------- STATE: DONE (keeps standard 2-col / subtab layout) ---------- */
 #cTabExam.exam-state-done #examRecBlock{animation:examFade .5s ease}
 #cTabExam.exam-state-done .exam-rec-top,#cTabExam.exam-state-done .exam-idle-hint{display:none}
+/* ============================================================
+   REDESIGN V3 — full simplification (dashboard / night round /
+   monitor / history). Glass base inherited; here: structure + pills.
+   ============================================================ */
+/* ---- Generic pills ---- */
+.pill{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:50px;padding:6px 16px;font-size:.8rem;font-weight:600;color:var(--text-secondary);cursor:pointer;font-family:var(--font-ui);transition:all .2s ease;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.pill.active{background:rgba(74,163,145,0.18);border-color:rgba(74,163,145,0.4);color:#4AA391}
+body[data-theme="light"] .pill{background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)}
+body[data-theme="light"] .pill.active{background:rgba(74,163,145,0.12);border-color:rgba(74,163,145,0.3)}
+
+/* ---- Empty states (no card) ---- */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:48px 20px;text-align:center;background:none;border:none;box-shadow:none}
+.empty-state svg{color:var(--text-muted);width:40px;height:40px}
+.empty-state-t{color:var(--text-muted);font-size:.9rem}
+.empty-state-sub{color:var(--text-subtle);font-size:.8rem}
+.empty-state-sm{padding:32px 16px}
+
+/* ---- Dashboard ---- */
+.dash-search{width:100%;margin-bottom:14px}
+.dash-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.p-list{background:rgba(255,255,255,0.06);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,0.09);border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,0.25),inset 0 1px 0 rgba(255,255,255,0.1);overflow:hidden}
+body[data-theme="light"] .p-list{background:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.9);box-shadow:0 4px 16px rgba(0,0,0,0.06)}
+.p-item{cursor:pointer;transition:background .15s ease}
+.p-item:hover{background:rgba(74,163,145,0.08)}
+
+/* ---- Night round: big idle mic ---- */
+#nrVsIdle{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;min-height:54vh}
+#nrVsIdle .nr-voice-mic{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,rgba(74,163,145,0.9),rgba(61,138,121,0.95));border:1px solid rgba(255,255,255,0.25);box-shadow:0 0 0 16px rgba(74,163,145,0.08),0 0 0 32px rgba(74,163,145,0.04),0 16px 48px rgba(74,163,145,0.4),inset 0 1px 0 rgba(255,255,255,0.3);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s cubic-bezier(0.34,1.56,0.64,1)}
+#nrVsIdle .nr-voice-mic:hover{transform:scale(1.08);box-shadow:0 0 0 20px rgba(74,163,145,0.1),0 0 0 40px rgba(74,163,145,0.05),0 20px 60px rgba(74,163,145,0.5)}
+#nrVsIdle .nr-voice-cta{font-size:1rem;font-weight:600;color:var(--text-primary);margin-top:24px;text-align:center}
+#nrVsIdle .nr-voice-sub{color:var(--text-muted);font-size:.85rem;margin-top:8px;text-align:center;max-width:340px}
+
+/* ---- Night round: fullscreen recording overlay ---- */
+.nr-rec-badge{display:none}
+#nrVsRec:not([hidden]){position:fixed;inset:0;z-index:1100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;padding:24px;background:rgba(6,13,24,0.97);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);animation:examFade .4s ease}
+#nrVsRec:not([hidden]) .nr-rec-badge{display:block;position:absolute;top:24px;left:24px;color:var(--danger);font-size:.8rem;font-weight:600;letter-spacing:.1em;animation:blink 1.2s ease infinite}
+.nr-wave-wrap{width:100%;max-width:640px;height:80px;background:transparent;border:none;backdrop-filter:none;padding:0;margin:0}
+.nr-wave-wrap .wave{width:100%;height:80px;justify-content:center}
+.nr-timer{font-family:Inter,system-ui,sans-serif;font-size:4rem;font-weight:800;color:#fff;letter-spacing:.05em}
+#nrVsRec .nr-voice-mic.recording{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,rgba(239,68,68,0.9),rgba(220,38,38,0.95));border:1px solid rgba(255,255,255,0.2);box-shadow:0 8px 32px rgba(239,68,68,0.5),inset 0 1px 0 rgba(255,255,255,0.2);animation:recPulseBtn 2s ease-in-out infinite;color:#fff}
+#nrVsRec .nr-voice-transcript{max-width:640px;max-height:120px;overflow:auto;color:var(--text-secondary);font-size:.85rem;text-align:center;line-height:1.5}
+
+/* ---- Night round: glass ward cards ---- */
+.nr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-top:20px}
+.nr-card{background:rgba(255,255,255,0.06);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,0.09);border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,0.25),inset 0 1px 0 rgba(255,255,255,0.1);padding:16px;cursor:pointer;transition:all .2s ease}
+.nr-card:hover{background:rgba(255,255,255,0.10);border-color:rgba(74,163,145,0.3);transform:translateY(-1px)}
+.nr-card.st-danger{border-color:rgba(239,68,68,0.4)}
+body[data-theme="light"] .nr-card{background:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.9);box-shadow:0 4px 16px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,1)}
+
+/* ---- Monitor: ICU cards (simplified, tap-to-expand) ---- */
+.icu-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.icu-c{padding:0;overflow:hidden;cursor:pointer}
+.icu-c-head{display:flex;align-items:center;gap:12px;padding:16px 18px 12px}
+.icu-c-id{flex:1;min-width:0}
+.icu-c-id strong{display:block;font-size:1rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icu-c-id span{font-size:.76rem;color:var(--text-subtle);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.icu-score{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-data);font-size:1.4rem;font-weight:800;flex-shrink:0;border:2px solid var(--glass-border);color:var(--text-muted)}
+.icu-score.danger{color:#EF4444;border-color:rgba(239,68,68,.55);background:rgba(239,68,68,.12)}
+.icu-score.serious,.icu-score.warn{color:#F59E0B;border-color:rgba(245,158,11,.55);background:rgba(245,158,11,.12)}
+.icu-score.watch{color:#EAB308;border-color:rgba(234,179,8,.55);background:rgba(234,179,8,.12)}
+.icu-score.safe{color:#10B981;border-color:rgba(16,185,129,.55);background:rgba(16,185,129,.12)}
+.icu-score.pending{font-size:1rem}
+.icu-c-key{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 18px 14px}
+.icu-k{text-align:center}
+.icu-kv{font-family:var(--font-data);font-size:1.3rem;font-weight:700;color:var(--text-primary);line-height:1}
+.icu-kv small{font-size:.78rem;font-weight:600}
+.icu-kl{font-size:.66rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
+.icu-k.alert .icu-kv{color:var(--danger)}
+.icu-k.vwarn .icu-kv{color:var(--warning)}
+.icu-c-status{display:flex;align-items:center;gap:10px;padding:0 18px 16px;flex-wrap:wrap}
+.icu-c-more{display:none;padding:0 18px 16px}
+.icu-c.expanded .icu-c-more{display:block;border-top:1px solid var(--glass-border);padding-top:14px}
+.icu-more-notes{font-size:.82rem;color:var(--text-secondary);font-style:italic;margin-top:10px}
+
+/* ---- History: compact glass cards + pills ---- */
+.hist-pills{display:flex;gap:8px;flex-wrap:wrap}
+.hist-pill{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:50px;padding:6px 16px;font-size:.8rem;font-weight:600;color:var(--text-secondary);cursor:pointer;font-family:var(--font-ui);transition:all .2s ease}
+.hist-pill.active{background:rgba(74,163,145,0.18);border-color:rgba(74,163,145,0.4);color:#4AA391}
+body[data-theme="light"] .hist-pill{background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)}
+.hist-entry{background:rgba(255,255,255,0.06);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,0.09);border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,0.2);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s ease}
+.hist-entry:hover{background:rgba(255,255,255,0.10);border-color:rgba(74,163,145,0.3);transform:translateY(-1px)}
+body[data-theme="light"] .hist-entry{background:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.9);box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+.hist-toolbar{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}

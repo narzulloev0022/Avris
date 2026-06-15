@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=33">
+<link rel="stylesheet" href="styles.css?v=34">
 </head>
 <body data-theme="light">
 <div class="login-screen" id="loginScreen">
@@ -144,20 +144,15 @@
 <div class="dash-stat" id="statCritCard"><div class="ds-v" id="statCrit">0</div><div class="ds-l" data-i18n="hero_crit">Критические</div></div>
 <div class="dash-stat"><div class="ds-v" id="statSoap">0</div><div class="ds-l" data-i18n="m_soap_today">SOAP за сегодня</div></div>
 </div>
-<div class="card" style="margin-bottom:16px">
-<div class="filter-bar">
-<div><input id="patSearch" type="search" data-phk="ph_search" placeholder="Поиск по ФИО или диагнозу..."></div>
-<div><select id="diagFilter"><option value="all" data-i18n-o="f_all_d">Все диагнозы</option></select></div>
-<div><select id="wardFilter"><option value="all" data-i18n-o="f_all_w">Все отделения</option></select></div>
-<button class="btn ghost sm" id="resetF" data-i18n="btn_reset">Сбросить</button>
+<input id="patSearch" type="search" class="dash-search" data-phk="ph_search" placeholder="Поиск по ФИО или диагнозу...">
+<div class="dash-pills" id="dashPills" role="tablist">
+<button class="pill active" data-df="all" type="button" role="tab" aria-selected="true" data-i18n="hist_all">Все</button>
+<button class="pill" data-df="critical" type="button" role="tab" aria-selected="false" data-i18n="hero_crit">Критические</button>
+<button class="pill" data-df="warning" type="button" role="tab" aria-selected="false" data-i18n="lbl_watch">Наблюдение</button>
+<button class="pill" data-df="stable" type="button" role="tab" aria-selected="false" data-i18n="icu_stable">Стабильные</button>
 </div>
-<div class="filter-count" id="filterSum">6 пациентов</div>
-</div>
-<div class="card">
-<div class="card-h"><h3 data-i18n="pat_title">Пациенты</h3><div style="display:flex;align-items:center;gap:10px"><span class="badge info" id="patBadge">6</span><button class="btn primary sm" id="newPatBtn" type="button" data-i18n="pat_new">+ Новый пациент</button></div></div>
 <div class="p-list" id="patList"></div>
-<div class="p-empty" id="patEmpty" data-i18n="pat_empty">Пациенты не найдены</div>
-</div>
+<div class="p-empty empty-state empty-state-sm" id="patEmpty"><div class="empty-state-t" data-i18n="pat_empty">Пациенты не найдены</div></div>
 <button class="fab-exam" id="fabNewExam" type="button"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg><span data-i18n="fab_new_exam">Новый осмотр</span></button>
 </section>
 <section class="screen" id="consultation">
@@ -285,10 +280,6 @@
 </div>
 </section>
 <section class="screen" id="nightRound">
-<div class="nr-header">
-<h2 data-i18n="night_title">Ночной обход</h2>
-<span class="badge info" id="nrCount" data-i18n="night_badge">6 палат</span>
-</div>
 <div class="nr-voice-hero" id="nrVoiceHero">
 <div class="nr-voice-state nr-vs-idle" id="nrVsIdle">
 <button class="nr-voice-mic" id="nrVoiceStart" type="button" aria-label="Start round"><svg aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></button>
@@ -296,10 +287,11 @@
 <div class="nr-voice-sub" data-i18n="nr_voice_sub">AI распознает палату и пациента, заполнит карточку автоматически</div>
 </div>
 <div class="nr-voice-state nr-vs-rec" id="nrVsRec" hidden>
+<div class="nr-rec-badge" data-i18n="nr_rec_badge">● ОБХОД</div>
+<div class="rec-wave-wrap nr-wave-wrap"><div class="wave rec" id="nrWave"></div></div>
+<div class="timer nr-timer" id="nrTimer">00:00</div>
 <button class="nr-voice-mic recording" id="nrVoiceStop" type="button" aria-label="Stop round"><span class="nr-mic-pulse"></span><svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg></button>
-<div class="nr-voice-cta" data-i18n="nr_voice_recording">Идёт запись… Назовите палату, пациента, витальные показатели</div>
 <div class="nr-voice-transcript" id="nrVoiceTranscript"></div>
-<button class="btn ghost sm" id="nrVoiceStopBtn" type="button" data-i18n="nr_voice_stop">Остановить</button>
 </div>
 <div class="nr-voice-state nr-vs-review" id="nrVsReview" hidden>
 <div class="nr-review-hdr"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span id="nrReviewSummary" data-i18n="nr_review_default">Распознано 0 пациентов</span></div>
@@ -319,16 +311,11 @@
 <button class="hist-pill active" data-hf="all" data-i18n="hist_all" role="tab" aria-selected="true">Все</button>
 <button class="hist-pill" data-hf="soap" role="tab" aria-selected="false">SOAP</button>
 <button class="hist-pill" data-hf="round" data-i18n="hist_round" role="tab" aria-selected="false">Обход</button>
-<button class="hist-pill" data-hf="export" data-i18n="hist_export" role="tab" aria-selected="false">Экспорт</button>
 </div>
 </div>
 <div id="histList"></div>
 </section>
 <section class="screen" id="monitor">
-<div style="margin-bottom:20px">
-<h2 style="font-weight:800;margin-bottom:3px"><span class="icu-title-full" data-i18n="icu_title">Реанимация и пост-реанимация</span><span class="icu-title-short" data-i18n="icu_title_short">ОРИТ</span></h2>
-<p style="color:var(--text-subtle)" data-i18n="icu_sub">Наблюдение за пациентами в критическом состоянии</p>
-</div>
 <!-- Status Bar -->
 <div class="icu-chips">
 <div class="icu-chip"><span data-i18n="icu_total">Всего</span><strong id="icuTotalCount">—</strong></div>
@@ -563,6 +550,6 @@
 <button class="more-item" data-screen="history" type="button"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span data-i18n="nav_history">История</span></button>
 <button class="more-item" data-screen="settings" type="button"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span data-i18n="nav_settings">Настройки</span></button>
 </div>
-<script src="app.js?v=33"></script>
+<script src="app.js?v=34"></script>
 </body>
 </html>
