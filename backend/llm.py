@@ -97,8 +97,8 @@ async def _claude_call(system_prompt: str, user_msg: str, max_tokens: int = 1024
             logger.error("Anthropic request failed: %s", e)
             raise HTTPException(status_code=502, detail="Claude недоступен")
     if r.status_code != 200:
-        logger.warning("Anthropic %d: %s", r.status_code, r.text[:300])
-        raise HTTPException(status_code=r.status_code, detail=f"Ошибка Claude: {r.text[:200]}")
+        logger.warning("Anthropic %d (тело ответа скрыто — возможны PHI)", r.status_code)
+        raise HTTPException(status_code=r.status_code, detail=f"Ошибка Claude ({r.status_code})")
     j = r.json()
     parts = j.get("content", []) or []
     return "".join(p.get("text", "") for p in parts if p.get("type") == "text").strip()

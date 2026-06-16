@@ -22,6 +22,7 @@ from schemas import (
     VerifyEmailRequest, ResendCodeRequest,
     ForgotPasswordRequest, ResetPasswordRequest,
     UpdateProfileRequest, MessageResponse,
+    RefreshRequest, RefreshResponse,
 )
 from email_service import send_password_reset_code, send_verification_code
 from rate_limit import limiter
@@ -30,7 +31,8 @@ load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change-me")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
+ACCESS_TOKEN_EXPIRE_MINUTES = 60          # short-lived access token (M2)
+REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # refresh token: 7 days
 RESET_CODE_TTL_MINUTES = 15
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:8080")
@@ -79,13 +81,34 @@ def verify_password(password: str, hashed: str) -> bool:
 
 def create_access_token(user_id: int) -> str:
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    payload = {"sub": str(user_id), "exp": expire}
+    payload = {"sub": str(user_id), "exp": expire, "type": "access"}
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def create_refresh_token(user_id: int) -> str:
+    expire = datetime.utcnow() + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+    payload = {"sub": str(user_id), "exp": expire, "type": "refresh"}
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
 def decode_token(token: str) -> Optional[int]:
+    # Accepts access tokens (and legacy tokens without a "type" claim, so JWTs
+    # issued before the access/refresh split keep working until they expire).
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("type") == "refresh":
+            return None  # refresh tokens are not valid for API auth
+        sub = payload.get("sub")
+        return int(sub) if sub is not None else None
+    except (JWTError, ValueError):
+        return None
+
+
+def decode_refresh_token(token: str) -> Optional[int]:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("type") != "refresh":
+            return None
         sub = payload.get("sub")
         return int(sub) if sub is not None else None
     except (JWTError, ValueError):
@@ -205,7 +228,30 @@ def verify_email(request: Request, payload: VerifyEmailRequest, db: Session = De
         except Exception:
             pass
     token = create_access_token(user.id)
-    return Token(access_token=token, user=UserResponse.model_validate(user))
+    refresh = create_refresh_token(user.id)
+    return Token(access_token=token, refresh_token=refresh, user=UserResponse.model_validate(user))
+
+
+@router.post("/refresh", response_model=RefreshResponse)
+@limiter.limit("30/minute")
+def refresh_token(request: Request, payload: RefreshRequest, db: Session = Depends(get_db)):
+    uid = decode_refresh_token(payload.refresh_token)
+    if uid is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Недействительный refresh-токен",
+        )
+    user = db.query(User).filter(User.id == uid).first()
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Пользователь недоступен",
+        )
+    # Rotate both tokens on each refresh.
+    return RefreshResponse(
+        access_token=create_access_token(user.id),
+        refresh_token=create_refresh_token(user.id),
+    )
 
 
 @router.post("/resend-code", response_model=MessageResponse)
@@ -249,7 +295,8 @@ def login(request: Request, payload: UserLogin, db: Session = Depends(get_db)):
             detail="Email не подтверждён",
         )
     token = create_access_token(user.id)
-    return Token(access_token=token, user=UserResponse.model_validate(user))
+    refresh = create_refresh_token(user.id)
+    return Token(access_token=token, refresh_token=refresh, user=UserResponse.model_validate(user))
 
 
 @router.post("/forgot-password", response_model=MessageResponse)

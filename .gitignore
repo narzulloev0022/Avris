@@ -60,3 +60,7 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+.mcp.json
+test-results/
+playwright-report/
+_screenshots/

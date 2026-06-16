@@ -31,17 +31,16 @@ def _render_code_email(code: str, headline: str, body: str, full_name: str = "")
 
 def _send_via_resend(to_email: str, subject: str, html: str, console_label: str, code: str) -> bool:
     if not RESEND_API_KEY or RESEND_API_KEY == "your-resend-key":
-        logger.warning("RESEND_API_KEY not set — %s for %s: %s", console_label, to_email, code)
-        print(f"[email_service] {console_label} for {to_email}: {code}")
-        return True
+        # OTP codes are secrets — never log them. Status only.
+        logger.warning("RESEND_API_KEY not set — %s for %s not delivered", console_label, to_email)
+        return False
     try:
         import resend
         resend.api_key = RESEND_API_KEY
         resend.Emails.send({"from": FROM_EMAIL, "to": to_email, "subject": subject, "html": html})
         return True
     except Exception as e:
-        logger.error("Failed to send email via Resend: %s", e)
-        print(f"[email_service] {console_label} for {to_email}: {code} (Resend failed: {e})")
+        logger.error("Failed to send email via Resend (%s for %s): %s", console_label, to_email, e)
         return False
 
 
