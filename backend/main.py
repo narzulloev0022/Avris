@@ -60,9 +60,9 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Origin allow-list. In dev (Railway env unset) we add localhost; prod is
-# strictly theavris.ai. Override with FRONTEND_URL if a different host is needed.
-_allowed = ["https://theavris.ai", "http://localhost:8000", "http://localhost:8080"]
+# Origin allow-list — prod is strictly theavris.ai. Local dev adds its origin
+# only via the FRONTEND_URL env var (e.g. http://localhost:8080), never in prod.
+_allowed = ["https://theavris.ai"]
 _extra = os.getenv("FRONTEND_URL")
 if _extra and _extra not in _allowed:
     _allowed.append(_extra)
@@ -73,6 +73,31 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Security headers on every response (defence-in-depth for medical data).
+# HTTPS redirect is handled by Cloudflare (301), so no HTTPSRedirectMiddleware
+# here — adding it behind the CF proxy would risk a redirect loop.
+@app.middleware("http")
+async def security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(self), geolocation=()"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' https://api.anthropic.com https://api.openai.com; "
+        "media-src 'self' blob:; "
+        "frame-ancestors 'none';"
+    )
+    return response
 
 app.include_router(auth_router)
 app.include_router(stt_router)

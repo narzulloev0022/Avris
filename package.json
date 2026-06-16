@@ -1,0 +1,23 @@
+{
+  "name": "avris",
+  "version": "1.0.0",
+  "description": "> **Voice-Powered Medical Documentation Platform** > Built by **Hyperion Labs** for clinicians in Central Asia.",
+  "main": "app.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@ssh.github.com:443/narzulloev0022/Avris.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.61.0"
+  }
+}

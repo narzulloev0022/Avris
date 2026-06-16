@@ -1,0 +1,32 @@
+name: Security Check
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python Security Check
+        run: |
+          pip install bandit safety
+          bandit -r backend/ -x backend/.venv -ll
+          safety check -r backend/requirements.txt || true
+
+      - name: Check for secrets in code
+        run: |
+          if grep -rnE "sk-[A-Za-z0-9]{16,}|(api_key|secret|password)\s*=\s*['\"][A-Za-z0-9_\-]{12,}['\"]" \
+            --include="*.py" --include="*.js" \
+            --exclude-dir=".git" --exclude-dir="node_modules" --exclude-dir=".venv" . ; then
+            echo "⚠️ НАЙДЕНЫ СЕКРЕТЫ В КОДЕ!"
+            exit 1
+          else
+            echo "✅ Секретов в коде нет"
+          fi
+
+      - name: npm audit (frontend dev-deps)
+        run: npm audit --audit-level=moderate || true
