@@ -64,8 +64,8 @@ async def transcribe(
             raise HTTPException(status_code=502, detail="Whisper недоступен")
 
     if r.status_code != 200:
-        logger.warning("Whisper returned %d: %s", r.status_code, r.text[:300])
-        raise HTTPException(status_code=r.status_code, detail=f"Ошибка Whisper: {r.text[:200]}")
+        logger.warning("Whisper returned %d (тело ответа скрыто — возможны PHI)", r.status_code)
+        raise HTTPException(status_code=r.status_code, detail=f"Ошибка Whisper ({r.status_code})")
 
     j = r.json()
     return {
