@@ -1,5 +1,6 @@
 from datetime import datetime, date
 from typing import Optional
+from uuid import UUID
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 
@@ -46,6 +47,7 @@ class UserResponse(BaseModel):
     created_at: datetime
     soap_accurate_count: int = 0
     soap_edited_count: int = 0
+    stt_consent: bool = False
 
 
 class Token(BaseModel):
@@ -107,7 +109,26 @@ class UpdateProfileRequest(BaseModel):
     avatar_url: Optional[str] = None
     language_pref: Optional[str] = None
     theme_pref: Optional[str] = None
+    stt_consent: Optional[bool] = None
 
 
 class MessageResponse(BaseModel):
     message: str
+
+
+class TrainingPairCreate(BaseModel):
+    """Continuous Learning Pipeline — payload for POST /api/stt/training-pair."""
+    session_id: UUID
+    raw_transcript: Optional[str] = None
+    corrected_transcript: Optional[str] = None
+    language: Optional[str] = Field(default=None, max_length=10)
+    consent: bool = False
+
+
+class TrainingPairResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    session_id: UUID
+    consent: bool
+    created_at: datetime
