@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=37">
+<link rel="stylesheet" href="styles.css?v=38">
 </head>
 <body data-theme="light">
 <div class="login-screen" id="loginScreen">
@@ -211,6 +211,10 @@
 <button class="btn ghost sm" id="clearRec" data-i18n="btn_clear">Очистить</button>
 </div>
 <div class="transcript" id="transcriptText" data-i18n="tr_ph">Нажмите микрофон для записи...</div>
+<div class="fb-bar" id="fbBar" hidden>
+<button class="fb-submit-btn" id="fbSubmit" type="button" hidden><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg><span data-i18n="fb_submit">Отправить исправления</span></button>
+<div class="fb-count" id="fbCount" hidden></div>
+</div>
 <div class="consult-actions">
 <button class="btn ghost" id="consentBtn" type="button" data-i18n="btn_consent">Согласие пациента</button>
 <button class="btn ghost" id="patientMemoBtn" type="button" data-i18n="btn_patient_memo">Памятка пациенту</button>
@@ -383,6 +387,7 @@
 <div class="set-row"><div class="set-row-info"><div class="set-row-label" data-i18n="set_sound_l">Звуковые сигналы</div><div class="set-row-desc" data-i18n="set_sound_d">Звуковой сигнал при критических показателях</div></div><button class="toggle-sw on"></button></div>
 <div class="set-row"><div class="set-row-info"><div class="set-row-label" data-i18n="set_emailrep_l">Email-отчёты</div><div class="set-row-desc" data-i18n="set_emailrep_d">Ежедневная сводка на почту</div></div><button class="toggle-sw"></button></div>
 <div class="set-row"><div class="set-row-info"><div class="set-row-label" data-i18n="set_dnd_l">Ночной режим</div><div class="set-row-desc" data-i18n="set_dnd_d">Отключить уведомления с 23:00 до 07:00</div></div><button class="toggle-sw"></button></div>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label" data-i18n="stt_consent_l">Улучшить распознавание речи</div><div class="set-row-desc" data-i18n="stt_consent_d">Ваши анонимизированные записи помогут улучшить точность распознавания таджикского и русского медицинского языка. Данные не передаются третьим лицам.</div></div><label class="toggle-switch"><input type="checkbox" id="sttConsentToggle"><span class="toggle-slider"></span></label></div>
 </div>
 <div class="set-pane" id="setLangPane">
 <div class="set-cont-title" data-i18n="lbl_lang">Язык интерфейса</div>
@@ -549,6 +554,6 @@
 <button class="more-item" data-screen="history" type="button"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span data-i18n="nav_history">История</span></button>
 <button class="more-item" data-screen="settings" type="button"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span data-i18n="nav_settings">Настройки</span></button>
 </div>
-<script src="app.js?v=37"></script>
+<script src="app.js?v=38"></script>
 </body>
 </html>

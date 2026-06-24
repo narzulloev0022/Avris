@@ -1571,3 +1571,27 @@ body[data-theme="light"] .oauth-btn{background:rgba(255,255,255,0.8);border-colo
 body[data-theme="light"] .login-tagline{color:rgba(70,89,181,0.6)}
 body[data-theme="light"] .login-footer-text{color:rgba(70,89,181,0.4)}
 body[data-theme="light"] .login-links a{color:rgba(70,89,181,0.7)}
+
+/* ── Continuous Learning Pipeline ─────────────────────────────────────── */
+/* Step 2 — opt-in consent toggle (checkbox switch, matches .set-row layout) */
+.toggle-switch{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}
+.toggle-switch input{position:absolute;opacity:0;width:0;height:0;margin:0}
+.toggle-slider{position:absolute;inset:0;border-radius:12px;background:var(--bg-elevated);border:1px solid var(--border);cursor:pointer;transition:background var(--transition)}
+.toggle-slider::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform var(--transition);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle-switch input:checked + .toggle-slider{background:var(--accent);border-color:var(--accent)}
+.toggle-switch input:checked + .toggle-slider::after{transform:translateX(20px)}
+.toggle-switch input:focus-visible + .toggle-slider{outline:2px solid var(--accent);outline-offset:2px}
+body[data-theme="light"] .toggle-slider{background:#d1d5db;border-color:#d1d5db}
+
+/* Step 3 — transcript feedback UI (Liquid Glass, Hyperion blue #95AEF8) */
+.fb-w{border-radius:3px;padding:0 1px}
+.fb-low{background:rgba(245,158,11,.2);border-bottom:1px solid rgba(245,158,11,.6);cursor:pointer;transition:background .15s}
+.fb-low:hover{background:rgba(245,158,11,.34)}
+.fb-corrected{background:rgba(16,185,129,.18);border-bottom:1px solid rgba(16,185,129,.6);color:var(--success);cursor:pointer}
+.fb-input{font:inherit;color:var(--text-primary);background:rgba(149,174,248,.16);border:1px solid #95AEF8;border-radius:4px;padding:0 5px;min-width:42px;outline:none;box-shadow:0 0 0 3px rgba(149,174,248,.18)}
+.fb-bar{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+.fb-submit-btn{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(149,174,248,.55);background:linear-gradient(135deg,#7b96f2 0%,#95AEF8 100%);color:#fff;font-weight:600;font-size:.82rem;border-radius:var(--radius-input);padding:9px 16px;cursor:pointer;box-shadow:0 4px 14px rgba(149,174,248,.35);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:filter var(--transition),transform var(--transition)}
+.fb-submit-btn:hover{filter:brightness(1.07)}
+.fb-submit-btn:active{transform:translateY(1px)}
+.fb-submit-btn:disabled{opacity:.6;cursor:default}
+.fb-count{font-size:.8rem;color:var(--text-muted);font-family:var(--font-data)}
