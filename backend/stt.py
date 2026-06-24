@@ -3,9 +3,12 @@ import logging
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, Request
 import httpx
 from dotenv import load_dotenv
+from sqlalchemy.orm import Session
 
 from auth import get_current_user
-from models import User
+from database import get_db
+from models import User, TrainingPair
+from schemas import TrainingPairCreate, TrainingPairResponse
 from rate_limit import limiter
 
 load_dotenv()
@@ -73,3 +76,35 @@ async def transcribe(
         "duration": j.get("duration"),
         "language": j.get("language", language),
     }
+
+
+@router.post("/training-pair", response_model=TrainingPairResponse, status_code=201)
+@limiter.limit("60/minute")
+def create_training_pair(
+    request: Request,
+    payload: TrainingPairCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Continuous Learning Pipeline — Data Collector.
+
+    Stores a [raw + corrected transcript] pair for STT fine-tuning. Persisted
+    only when the doctor has explicitly consented (opt-in); without consent the
+    pair is discarded and we return 403. PHI cleaning and S3 audio linkage happen
+    downstream in the nightly training pipeline. See STT/Continuous-Learning-Pipeline.md.
+    """
+    if not payload.consent:
+        raise HTTPException(status_code=403, detail="Сбор данных требует согласия врача (consent)")
+
+    pair = TrainingPair(
+        session_id=payload.session_id,
+        raw_transcript=payload.raw_transcript,
+        corrected_transcript=payload.corrected_transcript,
+        language=payload.language,
+        specialty=current_user.specialty,
+        consent=True,
+    )
+    db.add(pair)
+    db.commit()
+    db.refresh(pair)
+    return pair

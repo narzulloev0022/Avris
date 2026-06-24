@@ -52,6 +52,8 @@ def init_db():
                 conn.execute(text("ALTER TABLE users ADD COLUMN soap_accurate_count INTEGER NOT NULL DEFAULT 0"))
             if "soap_edited_count" not in u_existing:
                 conn.execute(text("ALTER TABLE users ADD COLUMN soap_edited_count INTEGER NOT NULL DEFAULT 0"))
+            if "stt_consent" not in u_existing:
+                conn.execute(text("ALTER TABLE users ADD COLUMN stt_consent BOOLEAN NOT NULL DEFAULT FALSE"))
     # Lightweight in-place migrations for sqlite (idempotent)
     if DATABASE_URL.startswith("sqlite"):
         from sqlalchemy import text, inspect

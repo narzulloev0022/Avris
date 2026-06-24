@@ -1,5 +1,6 @@
+import uuid
 from datetime import datetime, date
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON, Float, Date, LargeBinary
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON, Float, Date, LargeBinary, Uuid
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -40,6 +41,10 @@ class User(Base):
     # Dashboard shows accurate / (accurate + edited) * 100 as "AI accuracy".
     soap_accurate_count = Column(Integer, nullable=False, default=0)
     soap_edited_count = Column(Integer, nullable=False, default=0)
+    # Continuous Learning Pipeline — opt-in (default OFF). When true, the doctor
+    # consents to anonymized [audio + corrected transcript] pairs being collected
+    # for Hyperion STT fine-tuning. See STT/Continuous-Learning-Pipeline.md.
+    stt_consent = Column(Boolean, nullable=False, default=False)
 
     patients = relationship("Patient", back_populates="doctor", cascade="all, delete-orphan")
     consultations = relationship("Consultation", back_populates="doctor", cascade="all, delete-orphan")
@@ -169,3 +174,29 @@ class Notification(Base):
     payload = Column(JSON, nullable=True)
     is_read = Column(Boolean, nullable=False, default=False, index=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+
+
+class TrainingPair(Base):
+    """Continuous Learning Pipeline — Data Collector.
+
+    One [audio + corrected transcript] pair captured from a consultation, used
+    to fine-tune the Hyperion STT model on Tajik/Russian medical speech. Rows
+    are only written with the doctor's explicit consent (opt-in). PHI is stripped
+    before audio is persisted to S3. See STT/Continuous-Learning-Pipeline.md.
+
+    Uuid renders as native UUID on Postgres (prod) and CHAR(32) on SQLite (dev).
+    """
+    __tablename__ = "training_pairs"
+
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    session_id = Column(Uuid(as_uuid=True), nullable=False, index=True)
+    audio_s3_path = Column(Text, nullable=True)
+    raw_transcript = Column(Text, nullable=True)
+    corrected_transcript = Column(Text, nullable=True)
+    language = Column(String(10), nullable=True)
+    specialty = Column(Text, nullable=True)
+    consent = Column(Boolean, nullable=False, default=False)
+    phi_cleaned = Column(Boolean, nullable=False, default=False)
+    quality_score = Column(Float, nullable=True)
+    trained = Column(Boolean, nullable=False, default=False, index=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
