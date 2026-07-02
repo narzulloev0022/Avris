@@ -10,6 +10,7 @@ from fastapi.responses import StreamingResponse, Response
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
+from audit import audit
 from database import get_db
 from models import LabOrder, LabFile, User, Patient
 from auth import get_current_user
@@ -144,6 +145,8 @@ def create_order(
     db.add(o)
     db.commit()
     db.refresh(o)
+    audit(db, action="create", entity="lab_order", user_id=current_user.id,
+          entity_id=o.id, meta={"patient_id": o.patient_id, "tests_count": len(o.tests)})
     return o
 
 
@@ -247,6 +250,8 @@ async def upload_results_by_token(
     o.ai_comment = await _generate_ai_comment(payload.results, payload.patient_context)
     db.commit()
     db.refresh(o)
+    # user_id=None — the lab tech authenticates by QR-token knowledge, not an account
+    audit(db, action="results", entity="lab_order", entity_id=o.id, meta={"via": "qr_token"})
     return o
 
 
@@ -317,6 +322,8 @@ async def upload_file_by_token(
         o.received_at = datetime.utcnow()
     db.commit()
     db.refresh(rec)
+    audit(db, action="upload", entity="lab_order", entity_id=o.id,
+          meta={"via": "qr_token", "result_type": result_type, "size_bytes": rec.size_bytes})
     return rec
 
 

@@ -226,3 +226,19 @@ class AuthCode(Base):
     __table_args__ = (
         UniqueConstraint("purpose", "key", name="uq_auth_codes_purpose_key"),
     )
+
+
+class AuditLog(Base):
+    """Append-only trail of who did what — the regulatory backbone for medical
+    data (who created/changed/read-out which record and when). Rows carry NO
+    PHI: meta holds field names, statuses and routes, never values.
+    user_id is NULL for public token-authenticated actions (lab portal)."""
+    __tablename__ = "audit_log"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=True, index=True)
+    action = Column(String(32), nullable=False)    # create|update|delete|login|approve|reject|results|upload|reset
+    entity = Column(String(32), nullable=False, index=True)  # patient|consultation|lab_order|night_round|user|db
+    entity_id = Column(String(64), nullable=True)
+    meta = Column(JSON, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)

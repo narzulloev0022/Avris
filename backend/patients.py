@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session
 
+from audit import audit
 from database import get_db
 from models import Patient, User
 from auth import get_current_user
@@ -231,6 +232,7 @@ def create_patient(
     db.add(p)
     db.commit()
     db.refresh(p)
+    audit(db, action="create", entity="patient", user_id=current_user.id, entity_id=p.id)
     return p
 
 
@@ -276,6 +278,8 @@ def update_patient(
         setattr(p, k, v)
     db.commit()
     db.refresh(p)
+    audit(db, action="update", entity="patient", user_id=current_user.id,
+          entity_id=p.id, meta={"fields": sorted(updates.keys())})
     return p
 
 
@@ -288,4 +292,5 @@ def delete_patient(
     p = _get_owned_patient(db, pid, current_user)
     p.is_active = False
     db.commit()
+    audit(db, action="delete", entity="patient", user_id=current_user.id, entity_id=p.id)
     return None

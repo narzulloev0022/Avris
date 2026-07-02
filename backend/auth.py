@@ -16,6 +16,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 
+from audit import audit
 from database import get_db
 from models import AuthCode, User
 from schemas import (
@@ -367,6 +368,7 @@ def login(request: Request, payload: UserLogin, db: Session = Depends(get_db)):
         )
     token = create_access_token(user.id)
     refresh = create_refresh_token(user.id)
+    audit(db, action="login", entity="user", user_id=user.id)
     return Token(access_token=token, refresh_token=refresh, user=UserResponse.model_validate(user))
 
 
@@ -394,6 +396,7 @@ def reset_password(request: Request, payload: ResetPasswordRequest, db: Session 
     user.password_hash = hash_password(payload.new_password)
     db.commit()
     _delete_code(db, "reset", email)
+    audit(db, action="password_reset", entity="user", user_id=user.id)
     return MessageResponse(message="Пароль успешно изменён")
 
 
@@ -520,6 +523,7 @@ def admin_approve(user_id: int, current_user: User = Depends(require_admin), db:
     target.is_approved = True
     target.rejection_reason = None
     db.commit()
+    audit(db, action="approve", entity="user", user_id=current_user.id, entity_id=target.id)
     try:
         from email_service import send_doctor_approved
         send_doctor_approved(target.email, target.full_name)
@@ -541,6 +545,7 @@ def admin_reject(user_id: int, payload: _RejectBody, current_user: User = Depend
     target.is_active = False
     target.rejection_reason = payload.reason or ""
     db.commit()
+    audit(db, action="reject", entity="user", user_id=current_user.id, entity_id=target.id)
     try:
         from email_service import send_doctor_rejected
         send_doctor_rejected(target.email, target.full_name, payload.reason or "")

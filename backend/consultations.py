@@ -6,6 +6,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
+from audit import audit
 from database import get_db
 from models import Consultation, Patient, User
 from auth import get_current_user
@@ -64,6 +65,8 @@ def create_consultation(
         current_user.soap_accurate_count = (current_user.soap_accurate_count or 0) + 1
     db.commit()
     db.refresh(c)
+    audit(db, action="create", entity="consultation", user_id=current_user.id,
+          entity_id=c.id, meta={"patient_id": c.patient_id, "language": c.language})
     return c
 
 

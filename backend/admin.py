@@ -7,7 +7,8 @@ from fastapi import APIRouter, Depends, Header, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from database import Base, engine, get_db, init_db
+from audit import audit
+from database import Base, SessionLocal, engine, get_db, init_db
 import models  # noqa: F401 — register tables on Base.metadata
 from models import Consultation, LabOrder, NightRound, Patient, User
 
@@ -56,6 +57,13 @@ def reset_db(
 
     Base.metadata.drop_all(bind=engine)
     init_db()  # recreates schema + runs the lightweight migrations
+
+    # First row of the fresh audit trail records the wipe itself.
+    _db = SessionLocal()
+    try:
+        audit(_db, action="reset", entity="db", meta={"scope": "all", "dropped": len(tables)})
+    finally:
+        _db.close()
 
     return {
         "status": "ok",
@@ -130,6 +138,8 @@ def cleanup_non_admins(
         .delete(synchronize_session=False)
     )
     db.commit()
+    audit(db, action="reset", entity="db", user_id=admin.id,
+          meta={"scope": "non_admins", "users_deleted": users_deleted})
 
     return {
         "status": "ok",
@@ -180,6 +190,8 @@ def cleanup_medical_data(
     cons_deleted = db.query(Consultation).delete(synchronize_session=False)
     pat_deleted = db.query(Patient).delete(synchronize_session=False)
     db.commit()
+    audit(db, action="reset", entity="db",
+          meta={"scope": "medical_data", "patients_deleted": pat_deleted})
 
     return {
         "status": "ok",
