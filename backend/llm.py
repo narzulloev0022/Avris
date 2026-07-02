@@ -9,11 +9,15 @@ import httpx
 from dotenv import load_dotenv
 
 from auth import get_current_user
+from icd10_data import ICD10_CODES
 from models import User
 from rate_limit import limiter
 
 load_dotenv()
 logger = logging.getLogger(__name__)
+
+# Reference set for validating Claude's ICD-10 suggestions (see _validate_icd10).
+_VALID_ICD10 = {c for c, _ru, _en in ICD10_CODES}
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
@@ -102,6 +106,22 @@ async def _claude_call(system_prompt: str, user_msg: str, max_tokens: int = 1024
     j = r.json()
     parts = j.get("content", []) or []
     return "".join(p.get("text", "") for p in parts if p.get("type") == "text").strip()
+
+
+def _validate_icd10(raw) -> Optional[str]:
+    """Claude occasionally invents ICD-10 codes. Keep a code only when it exists
+    in the curated reference (icd10_data). A subcode falls back to its known
+    parent (I11.9 -> I11) so the UI stays consistent with /api/icd10 search;
+    a fully unknown code is dropped — the diagnosis name itself stays."""
+    if not raw:
+        return None
+    code = str(raw).strip().upper()
+    if code in _VALID_ICD10:
+        return code
+    base = code.split(".")[0]
+    if base in _VALID_ICD10:
+        return base
+    return None
 
 
 def _extract_json(text: str) -> dict:
@@ -215,11 +235,10 @@ async def generate_soap(request: Request, req: SoapRequest, current_user: User =
                 except (TypeError, ValueError):
                     prob = 0
                 prob = max(0, min(100, prob))
-                icd = d.get("icd10")
                 diffs.append(DifferentialDiagnosis(
                     name=str(d["name"]).strip(),
                     probability=prob,
-                    icd10=(str(icd).strip() if icd else None),
+                    icd10=_validate_icd10(d.get("icd10")),
                 ))
         ai_rec = AiRecommendations(
             additional_tests=_str_list(raw_rec.get("additional_tests")),

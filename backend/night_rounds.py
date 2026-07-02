@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional, Any
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
@@ -53,14 +53,21 @@ def create_round(
 
 @router.get("/", response_model=List[NightRoundResponse])
 def list_rounds(
+    response: Response,
     patient_id: Optional[int] = None,
+    limit: Optional[int] = Query(None, ge=1, le=500),
+    offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     q = db.query(NightRound).filter(NightRound.doctor_id == current_user.id)
     if patient_id is not None:
         q = q.filter(NightRound.patient_id == patient_id)
-    return q.order_by(NightRound.created_at.desc()).all()
+    response.headers["X-Total-Count"] = str(q.count())
+    q = q.order_by(NightRound.created_at.desc()).offset(offset)
+    if limit is not None:
+        q = q.limit(limit)
+    return q.all()
 
 
 @router.get("/{rid}", response_model=NightRoundResponse)
