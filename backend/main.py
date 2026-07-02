@@ -72,6 +72,7 @@ app.add_middleware(
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Total-Count"],  # pagination total for list endpoints
 )
 
 
@@ -134,6 +135,17 @@ def serve_lab():
     if LAB_HTML.exists():
         return FileResponse(LAB_HTML)
     return {"message": "Lab portal not found"}
+
+
+ADMIN_HTML = PROJECT_ROOT / "admin.html"
+
+
+@app.get("/admin")
+@app.get("/admin.html")
+def serve_admin():
+    if ADMIN_HTML.exists():
+        return FileResponse(ADMIN_HTML)
+    return {"message": "Admin panel not found"}
 
 
 STYLES_CSS = PROJECT_ROOT / "styles.css"

@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional, Any
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session
 
@@ -236,15 +236,22 @@ def create_patient(
 
 @router.get("/", response_model=List[PatientResponse])
 def list_patients(
+    response: Response,
+    limit: Optional[int] = Query(None, ge=1, le=500),
+    offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return (
-        db.query(Patient)
-        .filter(Patient.doctor_id == current_user.id, Patient.is_active.is_(True))
-        .order_by(Patient.id.asc())
-        .all()
+    q = db.query(Patient).filter(
+        Patient.doctor_id == current_user.id, Patient.is_active.is_(True)
     )
+    # No limit → full list (backward-compatible with the current frontend);
+    # total always exposed so the UI can paginate when it's ready.
+    response.headers["X-Total-Count"] = str(q.count())
+    q = q.order_by(Patient.id.asc()).offset(offset)
+    if limit is not None:
+        q = q.limit(limit)
+    return q.all()
 
 
 @router.get("/{pid}", response_model=PatientResponse)

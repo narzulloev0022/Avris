@@ -1,3 +1,4 @@
+import hashlib
 import os
 import secrets
 from datetime import datetime, timedelta
@@ -16,7 +17,7 @@ from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 
 from database import get_db
-from models import User
+from models import AuthCode, User
 from schemas import (
     UserCreate, UserLogin, UserResponse, Token, RegisterResponse,
     VerifyEmailRequest, ResendCodeRequest,
@@ -51,18 +52,16 @@ MAILRU_AUTH_URL = "https://oauth.mail.ru/login"
 MAILRU_TOKEN_URL = "https://oauth.mail.ru/token"
 MAILRU_USERINFO_URL = "https://oauth.mail.ru/userinfo"
 
-_oauth_states: set[str] = set()
+OAUTH_STATE_TTL_MINUTES = 10
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 
-# In-memory OTP stores. Each value is (code, expires_at, attempts) — the
-# attempts counter increments on every wrong code. After MAX_OTP_ATTEMPTS
-# the entry is invalidated and the user must request a new code. This is
-# the single mitigation against brute-forcing 6-digit codes.
-_reset_codes: dict[str, tuple[str, datetime, int]] = {}
-_verify_codes: dict[str, tuple[str, datetime, int]] = {}
-_resend_cooldowns: dict[str, datetime] = {}
+# OTP/state storage lives in the auth_codes table (see models.AuthCode) so it
+# survives restarts and works across multiple instances. The attempts counter
+# increments on every wrong code; after MAX_OTP_ATTEMPTS the row is deleted and
+# the user must request a new code — the single mitigation against
+# brute-forcing 6-digit codes.
 RESEND_COOLDOWN_SECONDS = 60
 MAX_OTP_ATTEMPTS = 5
 
@@ -141,11 +140,94 @@ def _generate_code() -> str:
     return f"{secrets.randbelow(1_000_000):06d}"
 
 
-def _set_verify_code(email: str) -> str:
+def _hash_code(code: str) -> str:
+    return hashlib.sha256(code.encode("utf-8")).hexdigest()
+
+
+def _purge_expired_codes(db: Session) -> None:
+    # Lazy cleanup — called on every store, keeps auth_codes small without a cron.
+    db.query(AuthCode).filter(AuthCode.expires_at < datetime.utcnow()).delete(
+        synchronize_session=False
+    )
+
+
+def _store_code(db: Session, purpose: str, key: str, code: str,
+                ttl_minutes: int, resend_cooldown_seconds: Optional[int] = None) -> None:
+    _purge_expired_codes(db)
+    row = db.query(AuthCode).filter(
+        AuthCode.purpose == purpose, AuthCode.key == key
+    ).first()
+    if not row:
+        row = AuthCode(purpose=purpose, key=key)
+        db.add(row)
+    row.code_hash = _hash_code(code)
+    row.attempts = 0
+    row.expires_at = datetime.utcnow() + timedelta(minutes=ttl_minutes)
+    row.resend_after = (
+        datetime.utcnow() + timedelta(seconds=resend_cooldown_seconds)
+        if resend_cooldown_seconds else None
+    )
+    db.commit()
+
+
+def _check_code(db: Session, purpose: str, key: str, code: str) -> None:
+    """Validate an OTP without consuming it. Raises HTTPException on failure;
+    the caller deletes the row via _delete_code() once the whole flow succeeds
+    (mirrors the old dict semantics: a 404 later must not burn the code)."""
+    row = db.query(AuthCode).filter(
+        AuthCode.purpose == purpose, AuthCode.key == key
+    ).first()
+    if not row:
+        raise HTTPException(status_code=400, detail="Код не найден или устарел")
+    if datetime.utcnow() > row.expires_at:
+        db.delete(row)
+        db.commit()
+        raise HTTPException(status_code=400, detail="Код истёк, запросите новый")
+    if not secrets.compare_digest(row.code_hash, _hash_code(code.strip())):
+        row.attempts += 1
+        if row.attempts >= MAX_OTP_ATTEMPTS:
+            db.delete(row)
+            db.commit()
+            raise HTTPException(status_code=429, detail="Код аннулирован. Запросите новый.")
+        db.commit()
+        raise HTTPException(status_code=400, detail="Неверный код")
+
+
+def _delete_code(db: Session, purpose: str, key: str) -> None:
+    db.query(AuthCode).filter(
+        AuthCode.purpose == purpose, AuthCode.key == key
+    ).delete(synchronize_session=False)
+    db.commit()
+
+
+def _set_verify_code(db: Session, email: str) -> str:
     code = _generate_code()
-    _verify_codes[email] = (code, datetime.utcnow() + timedelta(minutes=15), 0)
-    _resend_cooldowns[email] = datetime.utcnow() + timedelta(seconds=RESEND_COOLDOWN_SECONDS)
+    _store_code(db, "verify", email, code, ttl_minutes=15,
+                resend_cooldown_seconds=RESEND_COOLDOWN_SECONDS)
     return code
+
+
+def _issue_oauth_state(db: Session) -> str:
+    state = secrets.token_urlsafe(16)
+    _purge_expired_codes(db)
+    db.add(AuthCode(
+        purpose="oauth", key=state, code_hash="",
+        expires_at=datetime.utcnow() + timedelta(minutes=OAUTH_STATE_TTL_MINUTES),
+    ))
+    db.commit()
+    return state
+
+
+def _consume_oauth_state(db: Session, state: str) -> bool:
+    row = db.query(AuthCode).filter(
+        AuthCode.purpose == "oauth", AuthCode.key == state
+    ).first()
+    if not row:
+        return False
+    expired = datetime.utcnow() > row.expires_at
+    db.delete(row)
+    db.commit()
+    return not expired
 
 
 @router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
@@ -181,7 +263,7 @@ def register(request: Request, payload: UserCreate, db: Session = Depends(get_db
         db.commit()
         db.refresh(user)
 
-    code = _set_verify_code(email)
+    code = _set_verify_code(db, email)
     send_verification_code(email, code, user.full_name)
     return RegisterResponse(
         message="Код отправлен на email",
@@ -194,27 +276,14 @@ def register(request: Request, payload: UserCreate, db: Session = Depends(get_db
 @limiter.limit("10/minute")
 def verify_email(request: Request, payload: VerifyEmailRequest, db: Session = Depends(get_db)):
     email = payload.email.lower()
-    entry = _verify_codes.get(email)
-    if not entry:
-        raise HTTPException(status_code=400, detail="Код не найден или устарел")
-    code, expires_at, attempts = entry
-    if datetime.utcnow() > expires_at:
-        _verify_codes.pop(email, None)
-        raise HTTPException(status_code=400, detail="Код истёк, запросите новый")
-    if not secrets.compare_digest(code, payload.code.strip()):
-        attempts += 1
-        if attempts >= MAX_OTP_ATTEMPTS:
-            _verify_codes.pop(email, None)
-            raise HTTPException(status_code=429, detail="Код аннулирован. Запросите новый.")
-        _verify_codes[email] = (code, expires_at, attempts)
-        raise HTTPException(status_code=400, detail="Неверный код")
+    _check_code(db, "verify", email, payload.code)
     user = db.query(User).filter(User.email == email).first()
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
     user.is_verified = True
     db.commit()
     db.refresh(user)
-    _verify_codes.pop(email, None)
+    _delete_code(db, "verify", email)
     # Notify admins of pending doctor (only if user not auto-approved)
     if not user.is_approved:
         try:
@@ -263,14 +332,16 @@ def resend_code(request: Request, payload: ResendCodeRequest, db: Session = Depe
         raise HTTPException(status_code=404, detail="Пользователь не найден")
     if user.is_verified:
         raise HTTPException(status_code=400, detail="Email уже подтверждён")
-    cooldown_until = _resend_cooldowns.get(email)
-    if cooldown_until and datetime.utcnow() < cooldown_until:
-        wait = int((cooldown_until - datetime.utcnow()).total_seconds())
+    existing_row = db.query(AuthCode).filter(
+        AuthCode.purpose == "verify", AuthCode.key == email
+    ).first()
+    if existing_row and existing_row.resend_after and datetime.utcnow() < existing_row.resend_after:
+        wait = int((existing_row.resend_after - datetime.utcnow()).total_seconds())
         raise HTTPException(
             status_code=429,
             detail=f"Подождите {wait} секунд перед повторной отправкой",
         )
-    code = _set_verify_code(email)
+    code = _set_verify_code(db, email)
     send_verification_code(email, code, user.full_name)
     return MessageResponse(message="Новый код отправлен на email")
 
@@ -306,9 +377,8 @@ def forgot_password(request: Request, payload: ForgotPasswordRequest, db: Sessio
     user = db.query(User).filter(User.email == email).first()
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь с таким email не найден")
-    code = f"{secrets.randbelow(1_000_000):06d}"
-    expires_at = datetime.utcnow() + timedelta(minutes=RESET_CODE_TTL_MINUTES)
-    _reset_codes[email] = (code, expires_at, 0)
+    code = _generate_code()
+    _store_code(db, "reset", email, code, ttl_minutes=RESET_CODE_TTL_MINUTES)
     send_password_reset_code(email, code, user.full_name)
     return MessageResponse(message="Код отправлен на email")
 
@@ -317,26 +387,13 @@ def forgot_password(request: Request, payload: ForgotPasswordRequest, db: Sessio
 @limiter.limit("10/minute")
 def reset_password(request: Request, payload: ResetPasswordRequest, db: Session = Depends(get_db)):
     email = payload.email.lower()
-    entry = _reset_codes.get(email)
-    if not entry:
-        raise HTTPException(status_code=400, detail="Код не найден или устарел")
-    code, expires_at, attempts = entry
-    if datetime.utcnow() > expires_at:
-        _reset_codes.pop(email, None)
-        raise HTTPException(status_code=400, detail="Код истёк, запросите новый")
-    if not secrets.compare_digest(code, payload.code):
-        attempts += 1
-        if attempts >= MAX_OTP_ATTEMPTS:
-            _reset_codes.pop(email, None)
-            raise HTTPException(status_code=429, detail="Код аннулирован. Запросите новый.")
-        _reset_codes[email] = (code, expires_at, attempts)
-        raise HTTPException(status_code=400, detail="Неверный код")
+    _check_code(db, "reset", email, payload.code)
     user = db.query(User).filter(User.email == email).first()
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
     user.password_hash = hash_password(payload.new_password)
     db.commit()
-    _reset_codes.pop(email, None)
+    _delete_code(db, "reset", email)
     return MessageResponse(message="Пароль успешно изменён")
 
 
@@ -498,11 +555,10 @@ def _redirect_with_token(token: str) -> RedirectResponse:
 
 
 @router.get("/google")
-def google_login():
+def google_login(db: Session = Depends(get_db)):
     if not GOOGLE_CLIENT_ID:
         raise HTTPException(status_code=503, detail="Google OAuth not configured")
-    state = secrets.token_urlsafe(16)
-    _oauth_states.add(state)
+    state = _issue_oauth_state(db)
     params = {
         "client_id": GOOGLE_CLIENT_ID,
         "redirect_uri": GOOGLE_REDIRECT_URI,
@@ -517,9 +573,8 @@ def google_login():
 
 @router.get("/google/callback")
 async def google_callback(code: str, state: str, db: Session = Depends(get_db)):
-    if state not in _oauth_states:
+    if not _consume_oauth_state(db, state):
         raise HTTPException(status_code=400, detail="Invalid OAuth state")
-    _oauth_states.discard(state)
     async with httpx.AsyncClient(timeout=10) as client:
         tr = await client.post(GOOGLE_TOKEN_URL, data={
             "code": code,
@@ -547,11 +602,10 @@ async def google_callback(code: str, state: str, db: Session = Depends(get_db)):
 
 
 @router.get("/mailru")
-def mailru_login():
+def mailru_login(db: Session = Depends(get_db)):
     if not MAILRU_CLIENT_ID:
         raise HTTPException(status_code=503, detail="Mail.ru OAuth not configured")
-    state = secrets.token_urlsafe(16)
-    _oauth_states.add(state)
+    state = _issue_oauth_state(db)
     params = {
         "client_id": MAILRU_CLIENT_ID,
         "redirect_uri": MAILRU_REDIRECT_URI,
@@ -564,9 +618,8 @@ def mailru_login():
 
 @router.get("/mailru/callback")
 async def mailru_callback(code: str, state: str, db: Session = Depends(get_db)):
-    if state not in _oauth_states:
+    if not _consume_oauth_state(db, state):
         raise HTTPException(status_code=400, detail="Invalid OAuth state")
-    _oauth_states.discard(state)
     async with httpx.AsyncClient(timeout=10) as client:
         tr = await client.post(MAILRU_TOKEN_URL, data={
             "code": code,

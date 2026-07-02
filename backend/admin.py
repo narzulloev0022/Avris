@@ -1,6 +1,7 @@
 import logging
 import os
 import secrets
+from typing import Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from pydantic import BaseModel
@@ -18,7 +19,7 @@ class ResetRequest(BaseModel):
     confirm: str
 
 
-def _admin_key() -> str | None:
+def _admin_key() -> Optional[str]:
     """Require a dedicated ADMIN_RESET_KEY env var. No fallback — sharing
     SECRET_KEY between JWT signing and the DB-wipe endpoint meant a single
     leaked secret could nuke production. If ADMIN_RESET_KEY is unset, the
