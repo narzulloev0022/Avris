@@ -1,5 +1,7 @@
-import os
+import html
 import logging
+import os
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -9,9 +11,19 @@ logger = logging.getLogger(__name__)
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
 FROM_EMAIL = os.getenv("FROM_EMAIL", "Avris AI <noreply@theavris.ai>")
 
+# Delivery failures must not silently eat an OTP — retry briefly before giving up.
+RESEND_MAX_ATTEMPTS = 3
+RESEND_BACKOFF_SECONDS = (0.5, 2.0)  # pause before the 2nd and 3rd attempts
+
+
+def _esc(value) -> str:
+    """User-supplied values (names, reasons, wards) go through HTML escaping
+    before landing in email markup — same rule as esc() on the frontend."""
+    return html.escape(str(value or ""), quote=True)
+
 
 def _render_code_email(code: str, headline: str, body: str, full_name: str = "") -> str:
-    greeting = f"Здравствуйте, {full_name}!" if full_name else "Здравствуйте!"
+    greeting = f"Здравствуйте, {_esc(full_name)}!" if full_name else "Здравствуйте!"
     return f"""
     <div style="font-family:Inter,Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#1a202c">
       <h2 style="color:#4AA391;margin:0 0 16px">Avris AI</h2>
@@ -29,19 +41,26 @@ def _render_code_email(code: str, headline: str, body: str, full_name: str = "")
     """
 
 
-def _send_via_resend(to_email: str, subject: str, html: str, console_label: str, code: str) -> bool:
+def _send_via_resend(to_email: str, subject: str, html_body: str, console_label: str, code: str) -> bool:
     if not RESEND_API_KEY or RESEND_API_KEY == "your-resend-key":
         # OTP codes are secrets — never log them. Status only.
         logger.warning("RESEND_API_KEY not set — %s for %s not delivered", console_label, to_email)
         return False
-    try:
-        import resend
-        resend.api_key = RESEND_API_KEY
-        resend.Emails.send({"from": FROM_EMAIL, "to": to_email, "subject": subject, "html": html})
-        return True
-    except Exception as e:
-        logger.error("Failed to send email via Resend (%s for %s): %s", console_label, to_email, e)
-        return False
+    import resend
+    resend.api_key = RESEND_API_KEY
+    payload = {"from": FROM_EMAIL, "to": to_email, "subject": subject, "html": html_body}
+    for attempt in range(1, RESEND_MAX_ATTEMPTS + 1):
+        try:
+            resend.Emails.send(payload)
+            return True
+        except Exception as e:
+            logger.error(
+                "Resend attempt %d/%d failed (%s for %s): %s",
+                attempt, RESEND_MAX_ATTEMPTS, console_label, to_email, e,
+            )
+            if attempt < RESEND_MAX_ATTEMPTS:
+                time.sleep(RESEND_BACKOFF_SECONDS[attempt - 1])
+    return False
 
 
 def send_password_reset_code(to_email: str, code: str, full_name: str = "") -> bool:
@@ -65,7 +84,7 @@ def send_verification_code(to_email: str, code: str, full_name: str = "") -> boo
 
 
 def _render_plain(headline: str, body_html: str, full_name: str = "") -> str:
-    greeting = f"Здравствуйте, {full_name}!" if full_name else "Здравствуйте!"
+    greeting = f"Здравствуйте, {_esc(full_name)}!" if full_name else "Здравствуйте!"
     return f"""
     <div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1a202c">
       <h2 style="color:#4AA391;margin:0 0 16px">Avris AI</h2>
@@ -83,10 +102,10 @@ def send_admin_new_doctor_alert(admin_email: str, doctor_full_name: str, doctor_
     body = f"""
       <p>Поступила новая заявка на доступ:</p>
       <ul style="line-height:1.8">
-        <li><strong>Имя:</strong> {doctor_full_name}</li>
-        <li><strong>Email:</strong> {doctor_email}</li>
-        <li><strong>Специальность:</strong> {specialty or '—'}</li>
-        <li><strong>Больница:</strong> {hospital or '—'}</li>
+        <li><strong>Имя:</strong> {_esc(doctor_full_name)}</li>
+        <li><strong>Email:</strong> {_esc(doctor_email)}</li>
+        <li><strong>Специальность:</strong> {_esc(specialty) or '—'}</li>
+        <li><strong>Больница:</strong> {_esc(hospital) or '—'}</li>
       </ul>
       <p style="margin-top:16px">Откройте админ-панель в Avris AI, чтобы одобрить или отклонить заявку.</p>
     """
@@ -105,7 +124,7 @@ def send_doctor_approved(to_email: str, full_name: str = "") -> bool:
 
 
 def send_doctor_rejected(to_email: str, full_name: str = "", reason: str = "") -> bool:
-    reason_block = f"<p><strong>Причина:</strong> {reason}</p>" if reason else ""
+    reason_block = f"<p><strong>Причина:</strong> {_esc(reason)}</p>" if reason else ""
     body = f"""
       <p>К сожалению, ваша заявка на доступ к Avris AI отклонена.</p>
       {reason_block}
@@ -118,14 +137,14 @@ def send_doctor_rejected(to_email: str, full_name: str = "", reason: str = "") -
 def send_call_doctor_email(to: str, doctor_name: str, patient_name: str,
                             ward: str = "—", reason: str = "—",
                             note: str = "", caller: str = "") -> bool:
-    note_block = f"<p><strong>Комментарий:</strong> {note}</p>" if note else ""
-    caller_block = f"<p style='color:#8a98a8;font-size:.92em'>Вызов от: {caller}</p>" if caller else ""
+    note_block = f"<p><strong>Комментарий:</strong> {_esc(note)}</p>" if note else ""
+    caller_block = f"<p style='color:#8a98a8;font-size:.92em'>Вызов от: {_esc(caller)}</p>" if caller else ""
     body = f"""
       <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:14px 16px;margin-bottom:16px">
         <p style="color:#ef4444;font-weight:700;font-size:1.05em;margin:0 0 6px">🚨 Срочный вызов в палату</p>
-        <p style="margin:0;color:#1a202c">Пациент <strong>{patient_name}</strong> (палата {ward}) требует немедленного осмотра.</p>
+        <p style="margin:0;color:#1a202c">Пациент <strong>{_esc(patient_name)}</strong> (палата {_esc(ward)}) требует немедленного осмотра.</p>
       </div>
-      <p><strong>Причина:</strong> {reason}</p>
+      <p><strong>Причина:</strong> {_esc(reason)}</p>
       {note_block}
       {caller_block}
       <p style="margin-top:18px"><a href="https://theavris.ai" style="background:#ef4444;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:600;display:inline-block">Открыть Avris AI</a></p>

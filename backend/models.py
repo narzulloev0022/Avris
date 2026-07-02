@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, date
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON, Float, Date, LargeBinary, Uuid
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON, Float, Date, LargeBinary, Uuid, UniqueConstraint
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -200,3 +200,29 @@ class TrainingPair(Base):
     quality_score = Column(Float, nullable=True)
     trained = Column(Boolean, nullable=False, default=False, index=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class AuthCode(Base):
+    """Server-side auth state: email-OTP (verify/reset) and OAuth state tokens.
+
+    Replaces the old in-memory dicts in auth.py so codes survive restarts and
+    work across multiple instances. One row per (purpose, key):
+      purpose = "verify" | "reset"  -> key is the user's email, code_hash is
+                sha256 of the 6-digit OTP, resend_after holds the cooldown;
+      purpose = "oauth"             -> key is the state token, code_hash empty.
+    Expired rows are lazily purged on every store operation.
+    """
+    __tablename__ = "auth_codes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    purpose = Column(String(16), nullable=False)
+    key = Column(String(255), nullable=False)
+    code_hash = Column(String(64), nullable=False, default="")
+    attempts = Column(Integer, nullable=False, default=0)
+    expires_at = Column(DateTime, nullable=False)
+    resend_after = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("purpose", "key", name="uq_auth_codes_purpose_key"),
+    )
