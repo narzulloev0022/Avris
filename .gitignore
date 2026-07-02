@@ -18,6 +18,11 @@ screenshots/
 _tools/
 _downloads/
 
+# Local marketing assets (not deployed)
+assets/smm/
+assets/poster_somoni/
+assets/logo_story_format.svg
+
 # Python
 __pycache__/
 *.pyc
