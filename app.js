@@ -639,4 +639,8 @@ $("logoutBtn").onclick=function(){confirm2(t("btn_logout"),recording?t("c_logout
 function init(){applyTheme();initClock();initWave();buildLangBtns();renderFilters();buildPatList();applyFilters();updateDash();initConsult();renderWards();renderHist();renderICU();renderActivity();renderEvidenceTranscript();renderNotifs();setupIcdSuggest();setupDotPhrases()}
 init();
 bootstrap();
+/* ===== PWA ===== */
+// Offline shell: sw.js caches static assets (never /api — PHI stays out of
+// Cache Storage); combined with Demo Mode the app opens without network.
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){/* http:// dev or unsupported — silently skip */})})}
 })();
