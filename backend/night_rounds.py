@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
+from audit import audit
 from database import get_db
 from models import NightRound, User
 from auth import get_current_user
@@ -48,6 +49,8 @@ def create_round(
     db.add(nr)
     db.commit()
     db.refresh(nr)
+    audit(db, action="create", entity="night_round", user_id=current_user.id,
+          entity_id=nr.id, meta={"patient_id": nr.patient_id, "ward": nr.ward})
     return nr
 
 
