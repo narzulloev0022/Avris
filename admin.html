@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Avris Admin — Заявки врачей</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#4AA391;--accent-dim:#3d8a79;--ok:#10b981;--warn:#f59e0b;--danger:#ef4444;--bg:#080e18;--card:#111e2e;--elev:#162437;--text:#f0f4f8;--muted:#8a98a8;--border:rgba(255,255,255,.08);--font:'Inter',-apple-system,sans-serif;--font-data:'JetBrains Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+.shell{max-width:760px;margin:0 auto;padding:32px 20px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-text{font-weight:800;font-size:1.4rem;letter-spacing:-.02em}
+.brand-dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.brand-sub{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em}
+.lang-sel{display:flex;gap:2px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:999px;padding:2px}
+.lang-sel button{min-height:32px;padding:4px 10px;border:none;background:transparent;color:var(--muted);border-radius:999px;cursor:pointer;font:600 .78rem var(--font)}
+.lang-sel button.active{background:var(--accent);color:#fff}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:18px}
+h1{font-size:1.5rem;font-weight:800;margin-bottom:6px}
+.help{color:var(--muted);font-size:.88rem;margin-bottom:18px}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.panel-head h2{font-size:1.05rem;font-weight:700}
+.count-pill{font-family:var(--font-data);font-size:.78rem;font-weight:700;background:rgba(74,163,145,.15);color:var(--accent);border-radius:999px;padding:3px 12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:10px;padding:0 18px;height:40px;font:600 14px var(--font);cursor:pointer;transition:filter .15s,transform .1s}
+.btn:disabled{opacity:.5;cursor:wait}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){filter:brightness(1.08)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-ghost:hover{background:var(--elev)}
+.btn-danger{background:transparent;border:1px solid rgba(239,68,68,.4);color:var(--danger)}
+.btn-danger:hover:not(:disabled){background:rgba(239,68,68,.08)}
+.btn-sm{height:34px;padding:0 14px;font-size:13px}
+.doc-card{background:var(--elev);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px}
+.doc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.doc-name{font-weight:700;font-size:1.02rem}
+.doc-email{color:var(--muted);font-size:.85rem;font-family:var(--font-data)}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 10px;border-radius:999px}
+.pill.ok{background:rgba(16,185,129,.15);color:var(--ok)}
+.pill.warn{background:rgba(245,158,11,.15);color:var(--warn)}
+.doc-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 18px;margin:12px 0;font-size:.86rem}
+.doc-meta .lbl{display:block;font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:1px}
+.doc-meta .val{font-weight:600;word-break:break-word}
+.doc-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.reject-form{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.reject-form.vis{display:block}
+.reject-form textarea{width:100%;min-height:64px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font:14px var(--font);resize:vertical;margin-bottom:10px}
+.reject-form textarea:focus{outline:none;border-color:var(--danger);box-shadow:0 0 0 3px rgba(239,68,68,.14)}
+.empty-state{text-align:center;padding:36px 16px;color:var(--muted)}
+.empty-state svg{margin-bottom:12px;opacity:.5}
+.error-box{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--danger);border-radius:10px;padding:12px 14px;font-size:.88rem;margin-bottom:14px;display:none}
+.error-box.vis{display:block}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 22px;box-shadow:0 10px 40px rgba(0,0,0,.4);font-weight:600;font-size:.88rem;opacity:0;pointer-events:none;transition:all .25s;z-index:99}
+.toast.vis{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:rgba(16,185,129,.4);color:var(--ok)}
+.toast.err{border-color:rgba(239,68,68,.4);color:var(--danger)}
+.gate{text-align:center;padding:40px 16px}
+.gate h1{margin-bottom:10px}
+.gate p{color:var(--muted);margin-bottom:22px}
+.spinner{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;margin:40px auto;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:480px){.shell{padding:20px 12px}.doc-actions .btn{flex:1}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="brand">
+      <span class="brand-text">Avris</span><span class="brand-dot" aria-hidden="true"></span>
+      <span class="brand-sub" data-i18n="sub">Админ-панель</span>
+    </div>
+    <div class="lang-sel" role="tablist" aria-label="Language">
+      <button type="button" role="tab" data-lang="ru" aria-selected="true">RU</button>
+      <button type="button" role="tab" data-lang="tj" aria-selected="false">TJ</button>
+      <button type="button" role="tab" data-lang="en" aria-selected="false">EN</button>
+    </div>
+  </header>
+
+  <div id="loading"><div class="spinner" aria-label="Loading"></div></div>
+
+  <div id="gate" class="card gate" style="display:none">
+    <h1 data-i18n="gate_title">Требуется вход</h1>
+    <p id="gateMsg" data-i18n="gate_msg">Войдите в Avris AI под аккаунтом администратора, затем откройте эту страницу снова.</p>
+    <a class="btn btn-primary" href="/" data-i18n="open_app">Открыть Avris AI</a>
+  </div>
+
+  <div id="panel" style="display:none">
+    <div class="card">
+      <div class="panel-head">
+        <h2><span data-i18n="pending_title">Ожидают одобрения</span> <span class="count-pill" id="countPill">0</span></h2>
+        <button type="button" class="btn btn-ghost btn-sm" id="refreshBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+          <span data-i18n="refresh">Обновить</span>
+        </button>
+      </div>
+      <div class="error-box" id="errBox" role="alert"></div>
+      <div id="list"></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="alert"></div>
+
+<script>
+(function(){
+"use strict";
+var $=function(s,r){return (r||document).querySelector(s)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+
+var TR={
+  ru:{sub:"Админ-панель",gate_title:"Требуется вход",gate_msg:"Войдите в Avris AI под аккаунтом администратора, затем откройте эту страницу снова.",gate_not_admin:"Доступ только для администратора. Войдите под аккаунтом администратора.",open_app:"Открыть Avris AI",pending_title:"Ожидают одобрения",refresh:"Обновить",empty:"Новых заявок нет",approve:"Одобрить",reject:"Отклонить",reject_ph:"Причина отклонения (необязательно)",confirm_reject:"Подтвердить отказ",cancel:"Отмена",approved_ok:"Врач одобрен",rejected_ok:"Заявка отклонена",error:"Ошибка, попробуйте ещё раз",verified:"Email подтверждён",not_verified:"Email не подтверждён",lbl_specialty:"Специальность",lbl_hospital:"Больница",lbl_department:"Отделение",lbl_license:"Лицензия",lbl_phone:"Телефон",lbl_date:"Дата заявки"},
+  tj:{sub:"Панели маъмур",gate_title:"Ворид шудан лозим аст",gate_msg:"Ба Avris AI бо ҳисоби маъмур ворид шавед, сипас ин саҳифаро аз нав кушоед.",gate_not_admin:"Дастрасӣ танҳо барои маъмур. Бо ҳисоби маъмур ворид шавед.",open_app:"Кушодани Avris AI",pending_title:"Дар интизори тасдиқ",refresh:"Навсозӣ",empty:"Дархости нав нест",approve:"Тасдиқ кардан",reject:"Рад кардан",reject_ph:"Сабаби радкунӣ (ихтиёрӣ)",confirm_reject:"Тасдиқи радкунӣ",cancel:"Бекор кардан",approved_ok:"Табиб тасдиқ шуд",rejected_ok:"Дархост рад шуд",error:"Хатогӣ, боз кӯшиш кунед",verified:"Email тасдиқ шуд",not_verified:"Email тасдиқ нашудааст",lbl_specialty:"Ихтисос",lbl_hospital:"Беморхона",lbl_department:"Шӯъба",lbl_license:"Литсензия",lbl_phone:"Телефон",lbl_date:"Санаи дархост"},
+  en:{sub:"Admin panel",gate_title:"Sign in required",gate_msg:"Sign in to Avris AI with an admin account, then open this page again.",gate_not_admin:"Admin access only. Sign in with an admin account.",open_app:"Open Avris AI",pending_title:"Pending approval",refresh:"Refresh",empty:"No pending applications",approve:"Approve",reject:"Reject",reject_ph:"Rejection reason (optional)",confirm_reject:"Confirm rejection",cancel:"Cancel",approved_ok:"Doctor approved",rejected_ok:"Application rejected",error:"Error, please try again",verified:"Email verified",not_verified:"Email not verified",lbl_specialty:"Specialty",lbl_hospital:"Hospital",lbl_department:"Department",lbl_license:"License",lbl_phone:"Phone",lbl_date:"Applied"}
+};
+var lang=localStorage.getItem("avris-lang")||"ru";
+if(!TR[lang])lang="ru";
+function t(k){return (TR[lang]&&TR[lang][k])||TR.ru[k]||k}
+function applyLang(){
+  document.documentElement.lang=lang==="tj"?"tg":lang;
+  document.querySelectorAll("[data-i18n]").forEach(function(el){el.textContent=t(el.getAttribute("data-i18n"))});
+  document.querySelectorAll(".lang-sel button").forEach(function(b){
+    var on=b.getAttribute("data-lang")===lang;
+    b.classList.toggle("active",on);b.setAttribute("aria-selected",on?"true":"false");
+  });
+  if(state.pending)renderList(state.pending);
+}
+document.querySelectorAll(".lang-sel button").forEach(function(b){
+  b.addEventListener("click",function(){lang=b.getAttribute("data-lang");localStorage.setItem("avris-lang",lang);applyLang()});
+});
+
+// admin.html is served by the backend itself — the API is always same-origin.
+var API_BASE="";
+var state={pending:null};
+
+function tokens(){return{access:localStorage.getItem("avris-token"),refresh:localStorage.getItem("avris-refresh")}}
+
+function apiFetch(path,opts,retried){
+  opts=opts||{};opts.headers=opts.headers||{};
+  var tk=tokens();
+  if(tk.access)opts.headers["Authorization"]="Bearer "+tk.access;
+  if(opts.body&&!opts.headers["Content-Type"])opts.headers["Content-Type"]="application/json";
+  return fetch(API_BASE+path,opts).then(function(r){
+    if(r.status===401&&!retried&&tk.refresh){
+      return fetch(API_BASE+"/api/auth/refresh",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({refresh_token:tk.refresh})})
+        .then(function(rr){
+          if(!rr.ok)throw{status:401};
+          return rr.json();
+        }).then(function(j){
+          localStorage.setItem("avris-token",j.access_token);
+          if(j.refresh_token)localStorage.setItem("avris-refresh",j.refresh_token);
+          return apiFetch(path,opts,true);
+        });
+    }
+    return r;
+  });
+}
+
+var toastTimer=null;
+function toast(msg,kind){
+  var el=$("#toast");el.textContent=msg;el.className="toast vis "+(kind||"ok");
+  clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.className="toast"},2600);
+}
+function showView(id){
+  ["loading","gate","panel"].forEach(function(v){$("#"+v).style.display=v===id?"":"none"});
+}
+function showGate(msgKey){
+  $("#gateMsg").setAttribute("data-i18n",msgKey);
+  $("#gateMsg").textContent=t(msgKey);
+  showView("gate");
+}
+
+function fmtDate(iso){
+  if(!iso)return"—";
+  try{
+    var loc=lang==="tj"?"tg":(lang==="en"?"en-GB":"ru");
+    return new Date(iso).toLocaleDateString(loc,{day:"numeric",month:"short",year:"numeric"});
+  }catch(e){return iso.slice(0,10)}
+}
+
+function metaCell(lblKey,val){
+  return '<div><span class="lbl">'+esc(t(lblKey))+'</span><span class="val">'+esc(val||"—")+'</span></div>';
+}
+
+function renderList(items){
+  state.pending=items;
+  $("#countPill").textContent=items.length;
+  var box=$("#list");
+  if(!items.length){
+    box.innerHTML='<div class="empty-state">'+
+      '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'+
+      '<div>'+esc(t("empty"))+'</div></div>';
+    return;
+  }
+  box.innerHTML=items.map(function(d){
+    var vpill=d.is_verified
+      ?'<span class="pill ok">'+esc(t("verified"))+'</span>'
+      :'<span class="pill warn">'+esc(t("not_verified"))+'</span>';
+    return '<div class="doc-card" data-id="'+d.id+'">'+
+      '<div class="doc-top"><div><div class="doc-name">'+esc(d.full_name)+'</div>'+
+      '<div class="doc-email">'+esc(d.email)+'</div></div>'+vpill+'</div>'+
+      '<div class="doc-meta">'+
+        metaCell("lbl_specialty",d.specialty)+
+        metaCell("lbl_hospital",d.hospital_name)+
+        metaCell("lbl_department",d.department)+
+        metaCell("lbl_license",d.license_number)+
+        metaCell("lbl_phone",d.phone)+
+        metaCell("lbl_date",fmtDate(d.created_at))+
+      '</div>'+
+      '<div class="doc-actions">'+
+        '<button type="button" class="btn btn-primary btn-sm" data-act="approve">'+esc(t("approve"))+'</button>'+
+        '<button type="button" class="btn btn-danger btn-sm" data-act="reject">'+esc(t("reject"))+'</button>'+
+      '</div>'+
+      '<div class="reject-form">'+
+        '<textarea placeholder="'+esc(t("reject_ph"))+'"></textarea>'+
+        '<div class="doc-actions">'+
+          '<button type="button" class="btn btn-danger btn-sm" data-act="confirm-reject">'+esc(t("confirm_reject"))+'</button>'+
+          '<button type="button" class="btn btn-ghost btn-sm" data-act="cancel-reject">'+esc(t("cancel"))+'</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+}
+
+function loadPending(){
+  $("#errBox").className="error-box";
+  return apiFetch("/api/auth/admin/pending-doctors").then(function(r){
+    if(r.status===401)return showGate("gate_msg");
+    if(r.status===403)return showGate("gate_not_admin");
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    return r.json().then(function(items){renderList(items);showView("panel")});
+  }).catch(function(){
+    var eb=$("#errBox");eb.textContent=t("error");eb.className="error-box vis";showView("panel");
+  });
+}
+
+$("#list").addEventListener("click",function(e){
+  var btn=e.target.closest("button[data-act]");if(!btn)return;
+  var card=btn.closest(".doc-card");var id=card.getAttribute("data-id");
+  var act=btn.getAttribute("data-act");
+  if(act==="reject"){card.querySelector(".reject-form").classList.add("vis");return}
+  if(act==="cancel-reject"){card.querySelector(".reject-form").classList.remove("vis");return}
+  var path,body;
+  if(act==="approve"){path="/api/auth/admin/approve/"+id;body=undefined}
+  else if(act==="confirm-reject"){
+    path="/api/auth/admin/reject/"+id;
+    body=JSON.stringify({reason:card.querySelector("textarea").value.trim()||null});
+  }else return;
+  card.querySelectorAll("button").forEach(function(b){b.disabled=true});
+  apiFetch(path,{method:"POST",body:body||JSON.stringify({})}).then(function(r){
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    toast(t(act==="approve"?"approved_ok":"rejected_ok"),"ok");
+    return loadPending();
+  }).catch(function(){
+    toast(t("error"),"err");
+    card.querySelectorAll("button").forEach(function(b){b.disabled=false});
+  });
+});
+
+$("#refreshBtn").addEventListener("click",loadPending);
+
+applyLang();
+if(!tokens().access){showGate("gate_msg")}
+else{
+  apiFetch("/api/auth/me").then(function(r){
+    if(!r.ok)return showGate("gate_msg");
+    return r.json().then(function(me){
+      if(!me.is_admin)return showGate("gate_not_admin");
+      return loadPending();
+    });
+  }).catch(function(){showGate("gate_msg")});
+}
+})();
+</script>
+</body>
+</html>
