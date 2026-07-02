@@ -1,3 +1,5 @@
+import json
+import logging
 import os
 from pathlib import Path
 from contextlib import asynccontextmanager
@@ -11,6 +13,26 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 load_dotenv()
+
+# Structured logs for aggregators (Railway, Cloud Run): LOG_JSON=1 switches
+# app loggers to one-JSON-object-per-line. Uvicorn's own access log keeps its
+# format — this covers everything logged via logging.getLogger(...) in the app.
+if os.getenv("LOG_JSON") == "1":
+    class _JsonFormatter(logging.Formatter):
+        def format(self, record):
+            entry = {
+                "ts": self.formatTime(record, "%Y-%m-%dT%H:%M:%S%z"),
+                "level": record.levelname,
+                "logger": record.name,
+                "msg": record.getMessage(),
+            }
+            if record.exc_info:
+                entry["exc"] = self.formatException(record.exc_info)
+            return json.dumps(entry, ensure_ascii=False)
+
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(_JsonFormatter())
+    logging.basicConfig(level=logging.INFO, handlers=[_handler], force=True)
 
 # Refuse to boot in production with a default/missing SECRET_KEY — the
 # default value is public knowledge from the source tree, so any deploy
@@ -146,6 +168,27 @@ def serve_admin():
     if ADMIN_HTML.exists():
         return FileResponse(ADMIN_HTML)
     return {"message": "Admin panel not found"}
+
+
+SW_JS = PROJECT_ROOT / "sw.js"
+MANIFEST_JSON = PROJECT_ROOT / "manifest.json"
+
+
+@app.get("/sw.js")
+def serve_sw():
+    if SW_JS.exists():
+        # no-cache: SW updates must not sit in the CDN for hours — the browser
+        # revalidates on every page load and picks up new versions immediately.
+        return FileResponse(SW_JS, media_type="application/javascript",
+                            headers={"Cache-Control": "no-cache"})
+    return {"message": "sw.js not found"}
+
+
+@app.get("/manifest.json")
+def serve_manifest():
+    if MANIFEST_JSON.exists():
+        return FileResponse(MANIFEST_JSON, media_type="application/manifest+json")
+    return {"message": "manifest.json not found"}
 
 
 STYLES_CSS = PROJECT_ROOT / "styles.css"
