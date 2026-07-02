@@ -169,3 +169,15 @@ def test_admin_page_served(client):
     r = client.get("/admin")
     assert r.status_code == 200
     assert "Avris" in r.text and "pending-doctors" in r.text
+
+
+def test_pwa_routes(client):
+    r = client.get("/sw.js")
+    assert r.status_code == 200
+    assert r.headers["cache-control"] == "no-cache"
+    assert "SW_VERSION" in r.text
+    r = client.get("/manifest.json")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["short_name"] == "Avris"
+    assert len(body["icons"]) == 2
