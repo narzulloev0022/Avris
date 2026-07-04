@@ -80,6 +80,33 @@ class LabsResponse(BaseModel):
     comment: str
 
 
+class ParsePatientRequest(BaseModel):
+    transcript: str
+    language: str = "ru"
+
+
+class ParsePatientResponse(BaseModel):
+    """Structured patient card extracted from the doctor's free-form speech.
+    Every field is a hint — the frontend pre-fills the form and the doctor
+    reviews before saving."""
+    full_name: Optional[str] = None
+    age: Optional[int] = None
+    gender: Optional[str] = None          # "М" | "Ж"
+    patient_type: Optional[str] = None    # outpatient | inpatient
+    ward: Optional[int] = None
+    blood_group: Optional[str] = None
+    height: Optional[float] = None
+    weight: Optional[float] = None
+    avris_score: Optional[int] = None
+    department: Optional[str] = None      # therapy|cardiology|surgery|neurology|pulmonology|icu|post_icu|other
+    status: Optional[str] = None          # stable|watch|serious|critical
+    diagnoses: Optional[list[str]] = None
+    allergies: Optional[list[str]] = None
+    epi_contact: Optional[bool] = None
+    epi_travel: Optional[bool] = None
+    epi_country: Optional[str] = None
+
+
 async def _claude_call(system_prompt: str, user_msg: str, max_tokens: int = 1024) -> str:
     if not ANTHROPIC_API_KEY:
         raise HTTPException(status_code=503, detail="Anthropic API не настроен (ANTHROPIC_API_KEY)")
@@ -261,6 +288,97 @@ async def generate_soap(request: Request, req: SoapRequest, current_user: User =
         severity=(parsed.get("severity") or None),
         avris_score=score,
         ai_recommendations=ai_rec,
+    )
+
+
+_PP_DEPARTMENTS = {"therapy", "cardiology", "surgery", "neurology", "pulmonology", "icu", "post_icu", "other"}
+_PP_STATUSES = {"stable", "watch", "serious", "critical"}
+_PP_GENDER_MAP = {"М": "М", "Ж": "Ж", "M": "М", "F": "Ж", "MALE": "М", "FEMALE": "Ж"}
+
+
+@router.post("/parse-patient", response_model=ParsePatientResponse)
+@limiter.limit("60/minute")
+async def parse_patient(request: Request, req: ParsePatientRequest, current_user: User = Depends(get_current_user)):
+    if not (req.transcript or "").strip():
+        raise HTTPException(status_code=400, detail="Пустой транскрипт")
+    lang_label = LANG_LABEL.get(req.language, "русский")
+    system_prompt = (
+        "Ты — AI-ассистент AvrisAI. Врач голосом описывает нового пациента; извлеки из речи "
+        "данные для карточки пациента. Заполняй поле ТОЛЬКО если оно явно названо в речи — "
+        "не выдумывай и не додумывай. "
+        f"Язык текстовых полей (ФИО, диагнозы, аллергии, страна): {lang_label}.\n\n"
+        "Поля JSON:\n"
+        'full_name (string) — ФИО; age (number); gender ("М" или "Ж"); '
+        'patient_type ("outpatient" — амбулаторный, "inpatient" — стационарный/лежит в палате); '
+        "ward (number — номер палаты); blood_group (string, например \"O(I) Rh+\"); "
+        "height (number, см); weight (number, кг); "
+        "avris_score (number 0-100 — только если врач явно назвал оценку состояния); "
+        "department — одно из: therapy / cardiology / surgery / neurology / pulmonology / icu / post_icu / other; "
+        "status — одно из: stable / watch / serious / critical; "
+        "diagnoses (array of strings); allergies (array of strings); "
+        "epi_contact (boolean — контакт с инфекционными больными); "
+        "epi_travel (boolean — выезд за рубеж); epi_country (string — страна выезда).\n\n"
+        "Если пациент «лежит в палате N» или назван стационарным — patient_type=\"inpatient\" и ward=N. "
+        "Ненайденные поля не включай в JSON или ставь null. "
+        "Верни ровно один JSON-объект, без префиксов и markdown-обёрток."
+    )
+    text = await _claude_call(system_prompt, f"Описание пациента:\n\n{req.transcript}", max_tokens=800)
+    parsed = _extract_json(text)
+
+    def _int(v, lo=None, hi=None):
+        try:
+            n = int(v) if v not in (None, "") else None
+        except (TypeError, ValueError):
+            return None
+        if n is None:
+            return None
+        if lo is not None:
+            n = max(lo, n)
+        if hi is not None:
+            n = min(hi, n)
+        return n
+
+    def _float(v, lo, hi):
+        try:
+            n = float(v) if v not in (None, "") else None
+        except (TypeError, ValueError):
+            return None
+        if n is None:
+            return None
+        return max(lo, min(hi, n))
+
+    def _strlist(v):
+        if isinstance(v, list):
+            out = [str(x).strip() for x in v if x and str(x).strip()]
+            return out or None
+        if isinstance(v, str) and v.strip():
+            return [s.strip() for s in v.split(",") if s.strip()]
+        return None
+
+    def _bool(v):
+        return v if isinstance(v, bool) else None
+
+    gender = _PP_GENDER_MAP.get(str(parsed.get("gender") or "").strip().upper())
+    department = parsed.get("department") if parsed.get("department") in _PP_DEPARTMENTS else None
+    status = parsed.get("status") if parsed.get("status") in _PP_STATUSES else None
+    patient_type = parsed.get("patient_type") if parsed.get("patient_type") in ("outpatient", "inpatient") else None
+    return ParsePatientResponse(
+        full_name=(str(parsed.get("full_name")).strip() if parsed.get("full_name") else None),
+        age=_int(parsed.get("age"), 0, 130),
+        gender=gender,
+        patient_type=patient_type,
+        ward=_int(parsed.get("ward"), 1),
+        blood_group=(str(parsed.get("blood_group")).strip() if parsed.get("blood_group") else None),
+        height=_float(parsed.get("height"), 0, 300),
+        weight=_float(parsed.get("weight"), 0, 500),
+        avris_score=_int(parsed.get("avris_score"), 0, 100),
+        department=department,
+        status=status,
+        diagnoses=_strlist(parsed.get("diagnoses")),
+        allergies=_strlist(parsed.get("allergies")),
+        epi_contact=_bool(parsed.get("epi_contact")),
+        epi_travel=_bool(parsed.get("epi_travel")),
+        epi_country=(str(parsed.get("epi_country")).strip() if parsed.get("epi_country") else None),
     )
 
 
