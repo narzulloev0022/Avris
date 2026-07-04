@@ -10,34 +10,41 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
-:root{--accent:#4AA391;--accent-dim:#3d8a79;--ok:#10b981;--warn:#f59e0b;--danger:#ef4444;--bg:#080e18;--card:#111e2e;--elev:#162437;--text:#f0f4f8;--muted:#8a98a8;--border:rgba(255,255,255,.08);--font:'Inter',-apple-system,sans-serif;--font-data:'JetBrains Mono',monospace}
+/* Liquid Glass (V2) — токены и визуальный язык синхронизированы с styles.css (тёмная тема) */
+:root{--accent:#95AEF8;--accent-dim:#6E86E0;--ok:#10b981;--warn:#f59e0b;--danger:#ef4444;--elev:rgba(17,30,46,.6);--text:#f0f4f8;--muted:#94a3b8;--border:rgba(255,255,255,.10);--input-bg:rgba(13,26,40,.5);
+--glass-bg:rgba(255,255,255,.06);--glass-bg-medium:rgba(255,255,255,.10);--glass-border:rgba(255,255,255,.10);--glass-border-accent:rgba(149,174,248,.25);
+--glass-blur:blur(24px) saturate(180%);--glass-blur-strong:blur(40px) saturate(200%);
+--glass-shadow:0 8px 32px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.12);
+--glass-radius:20px;--glass-radius-sm:14px;
+--font:'Inter',-apple-system,sans-serif;--font-data:'JetBrains Mono',monospace}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+html,body{font-family:var(--font);color:var(--text);min-height:100vh;line-height:1.5}
+html{background:linear-gradient(135deg,#04060f 0%,#080d1e 25%,#0c1228 50%,#080d1e 75%,#04060f 100%)}
 .shell{max-width:760px;margin:0 auto;padding:32px 20px}
-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding-bottom:18px;border-bottom:1px solid var(--glass-border)}
 .brand{display:flex;align-items:center;gap:10px}
 .brand-text{font-weight:800;font-size:1.4rem;letter-spacing:-.02em}
 .brand-dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
 .brand-sub{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em}
-.lang-sel{display:flex;gap:2px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:999px;padding:2px}
+.lang-sel{display:flex;gap:2px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:999px;padding:2px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .lang-sel button{min-height:32px;padding:4px 10px;border:none;background:transparent;color:var(--muted);border-radius:999px;cursor:pointer;font:600 .78rem var(--font)}
 .lang-sel button.active{background:var(--accent);color:#fff}
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:18px}
+.card{background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--glass-border);border-radius:var(--glass-radius);box-shadow:var(--glass-shadow);padding:24px;margin-bottom:18px}
 h1{font-size:1.5rem;font-weight:800;margin-bottom:6px}
 .help{color:var(--muted);font-size:.88rem;margin-bottom:18px}
 .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
 .panel-head h2{font-size:1.05rem;font-weight:700}
-.count-pill{font-family:var(--font-data);font-size:.78rem;font-weight:700;background:rgba(74,163,145,.15);color:var(--accent);border-radius:999px;padding:3px 12px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:10px;padding:0 18px;height:40px;font:600 14px var(--font);cursor:pointer;transition:filter .15s,transform .1s}
+.count-pill{font-family:var(--font-data);font-size:.78rem;font-weight:700;background:rgba(149,174,248,.15);color:var(--accent);border-radius:999px;padding:3px 12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:12px;padding:0 18px;height:40px;font:600 14px var(--font);cursor:pointer;text-decoration:none;transition:filter .15s,transform .1s,background .15s,border-color .15s}
 .btn:disabled{opacity:.5;cursor:wait}
-.btn-primary{background:var(--accent);color:#fff}
+.btn-primary{background:linear-gradient(135deg,#6E86E0,#95AEF8);color:#fff;box-shadow:0 4px 16px rgba(149,174,248,.35)}
 .btn-primary:hover:not(:disabled){filter:brightness(1.08)}
-.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
-.btn-ghost:hover{background:var(--elev)}
+.btn-ghost{background:var(--glass-bg);border:1px solid var(--glass-border);color:var(--text);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.btn-ghost:hover{background:var(--glass-bg-medium);border-color:var(--glass-border-accent)}
 .btn-danger{background:transparent;border:1px solid rgba(239,68,68,.4);color:var(--danger)}
 .btn-danger:hover:not(:disabled){background:rgba(239,68,68,.08)}
 .btn-sm{height:34px;padding:0 14px;font-size:13px}
-.doc-card{background:var(--elev);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px}
+.doc-card{background:var(--elev);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(149,174,248,.15);border-radius:var(--glass-radius-sm);padding:18px;margin-bottom:12px}
 .doc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .doc-name{font-weight:700;font-size:1.02rem}
 .doc-email{color:var(--muted);font-size:.85rem;font-family:var(--font-data)}
@@ -48,25 +55,26 @@ h1{font-size:1.5rem;font-weight:800;margin-bottom:6px}
 .doc-meta .lbl{display:block;font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:1px}
 .doc-meta .val{font-weight:600;word-break:break-word}
 .doc-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-.reject-form{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.reject-form{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--glass-border)}
 .reject-form.vis{display:block}
-.reject-form textarea{width:100%;min-height:64px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font:14px var(--font);resize:vertical;margin-bottom:10px}
+.reject-form textarea{width:100%;min-height:64px;background:var(--input-bg);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--glass-border);border-radius:var(--glass-radius-sm);padding:10px 12px;color:var(--text);font:14px var(--font);resize:vertical;margin-bottom:10px}
 .reject-form textarea:focus{outline:none;border-color:var(--danger);box-shadow:0 0 0 3px rgba(239,68,68,.14)}
 .empty-state{text-align:center;padding:36px 16px;color:var(--muted)}
 .empty-state svg{margin-bottom:12px;opacity:.5}
-.error-box{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--danger);border-radius:10px;padding:12px 14px;font-size:.88rem;margin-bottom:14px;display:none}
+.error-box{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--danger);border-radius:12px;padding:12px 14px;font-size:.88rem;margin-bottom:14px;display:none}
 .error-box.vis{display:block}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 22px;box-shadow:0 10px 40px rgba(0,0,0,.4);font-weight:600;font-size:.88rem;opacity:0;pointer-events:none;transition:all .25s;z-index:99}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(4,6,15,.85);backdrop-filter:var(--glass-blur-strong);-webkit-backdrop-filter:var(--glass-blur-strong);border:1px solid var(--glass-border);border-radius:var(--glass-radius-sm);padding:14px 22px;box-shadow:0 24px 64px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.1);font-weight:600;font-size:.88rem;opacity:0;pointer-events:none;transition:all .25s;z-index:99}
 .toast.vis{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.ok{border-color:rgba(16,185,129,.4);color:var(--ok)}
 .toast.err{border-color:rgba(239,68,68,.4);color:var(--danger)}
 .gate{text-align:center;padding:40px 16px}
 .gate h1{margin-bottom:10px}
 .gate p{color:var(--muted);margin-bottom:22px}
-.spinner{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;margin:40px auto;animation:spin .8s linear infinite}
+.spinner{width:26px;height:26px;border:3px solid var(--glass-border);border-top-color:var(--accent);border-radius:50%;margin:40px auto;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(max-width:480px){.shell{padding:20px 12px}.doc-actions .btn{flex:1}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
@@ -118,7 +126,9 @@ var TR={
   tj:{sub:"Панели маъмур",gate_title:"Ворид шудан лозим аст",gate_msg:"Ба Avris AI бо ҳисоби маъмур ворид шавед, сипас ин саҳифаро аз нав кушоед.",gate_not_admin:"Дастрасӣ танҳо барои маъмур. Бо ҳисоби маъмур ворид шавед.",open_app:"Кушодани Avris AI",pending_title:"Дар интизори тасдиқ",refresh:"Навсозӣ",empty:"Дархости нав нест",approve:"Тасдиқ кардан",reject:"Рад кардан",reject_ph:"Сабаби радкунӣ (ихтиёрӣ)",confirm_reject:"Тасдиқи радкунӣ",cancel:"Бекор кардан",approved_ok:"Табиб тасдиқ шуд",rejected_ok:"Дархост рад шуд",error:"Хатогӣ, боз кӯшиш кунед",verified:"Email тасдиқ шуд",not_verified:"Email тасдиқ нашудааст",lbl_specialty:"Ихтисос",lbl_hospital:"Беморхона",lbl_department:"Шӯъба",lbl_license:"Литсензия",lbl_phone:"Телефон",lbl_date:"Санаи дархост"},
   en:{sub:"Admin panel",gate_title:"Sign in required",gate_msg:"Sign in to Avris AI with an admin account, then open this page again.",gate_not_admin:"Admin access only. Sign in with an admin account.",open_app:"Open Avris AI",pending_title:"Pending approval",refresh:"Refresh",empty:"No pending applications",approve:"Approve",reject:"Reject",reject_ph:"Rejection reason (optional)",confirm_reject:"Confirm rejection",cancel:"Cancel",approved_ok:"Doctor approved",rejected_ok:"Application rejected",error:"Error, please try again",verified:"Email verified",not_verified:"Email not verified",lbl_specialty:"Specialty",lbl_hospital:"Hospital",lbl_department:"Department",lbl_license:"License",lbl_phone:"Phone",lbl_date:"Applied"}
 };
-var lang=localStorage.getItem("avris-lang")||"ru";
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+var lang=lsGet("avris-lang")||"ru";
 if(!TR[lang])lang="ru";
 function t(k){return (TR[lang]&&TR[lang][k])||TR.ru[k]||k}
 function applyLang(){
@@ -131,14 +141,14 @@ function applyLang(){
   if(state.pending)renderList(state.pending);
 }
 document.querySelectorAll(".lang-sel button").forEach(function(b){
-  b.addEventListener("click",function(){lang=b.getAttribute("data-lang");localStorage.setItem("avris-lang",lang);applyLang()});
+  b.addEventListener("click",function(){lang=b.getAttribute("data-lang");lsSet("avris-lang",lang);applyLang()});
 });
 
 // admin.html is served by the backend itself — the API is always same-origin.
 var API_BASE="";
 var state={pending:null};
 
-function tokens(){return{access:localStorage.getItem("avris-token"),refresh:localStorage.getItem("avris-refresh")}}
+function tokens(){return{access:lsGet("avris-token"),refresh:lsGet("avris-refresh")}}
 
 function apiFetch(path,opts,retried){
   opts=opts||{};opts.headers=opts.headers||{};
@@ -152,8 +162,8 @@ function apiFetch(path,opts,retried){
           if(!rr.ok)throw{status:401};
           return rr.json();
         }).then(function(j){
-          localStorage.setItem("avris-token",j.access_token);
-          if(j.refresh_token)localStorage.setItem("avris-refresh",j.refresh_token);
+          lsSet("avris-token",j.access_token);
+          if(j.refresh_token)lsSet("avris-refresh",j.refresh_token);
           return apiFetch(path,opts,true);
         });
     }

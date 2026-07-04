@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=39">
+<link rel="stylesheet" href="styles.css?v=40">
 </head>
 <body data-theme="light">
 <div class="login-screen" id="loginScreen">
@@ -155,7 +155,7 @@
 </div>
 <div class="p-list" id="patList"></div>
 <div class="p-empty empty-state empty-state-sm" id="patEmpty"><div class="empty-state-t" data-i18n="pat_empty">Пациенты не найдены</div></div>
-<button class="fab-exam" id="fabNewExam" type="button"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg><span data-i18n="fab_new_exam">Новый осмотр</span></button>
+<button class="fab-exam" id="fabNewPat" type="button"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg><span data-i18n="fab_new_pat">Новый пациент</span></button>
 </section>
 <section class="screen" id="consultation">
 <div class="pat-ctx" id="patCtx">
@@ -226,7 +226,7 @@
 </div>
 </div>
 <div class="consult-right exam-block" id="examDocBlock">
-<div class="card-h soap-card-h"><div class="soap-h-l"><h3 data-i18n="soap_title">SOAP-документация</h3><span class="soap-status" id="soapStatus" data-state="draft" data-i18n="soap_st_draft">Черновик</span></div><button class="ai-badge ai-badge-btn" id="soapGenBtn" type="button" aria-label="Regenerate SOAP"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M12 0l2.5 9.5L24 12l-9.5 2.5L12 24l-2.5-9.5L0 12l9.5-2.5L12 0z"/></svg><span data-i18n="btn_regen_soap">Перегенерировать SOAP</span></button></div>
+<div class="card-h soap-card-h"><div class="soap-h-l"><h3 data-i18n="soap_title">SOAP-документация</h3><span class="soap-status" id="soapStatus" data-state="draft" data-i18n="soap_st_draft">Черновик</span></div><div style="display:flex;align-items:center;gap:8px"><button class="ai-badge ai-badge-btn" id="soapGenBtn" type="button" aria-label="Regenerate SOAP"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M12 0l2.5 9.5L24 12l-9.5 2.5L12 24l-2.5-9.5L0 12l9.5-2.5L12 0z"/></svg><span data-i18n="btn_regen_soap">Перегенерировать SOAP</span></button><button class="icon-btn" id="soapPrintBtn" type="button" aria-label="Print" data-i18n-title="btn_print" title="Печать" style="width:32px;height:32px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button></div></div>
 <div class="soap-g">
 <div class="soap-c soap-s">
 <div class="soap-hdr"><h5 class="soap-lbl"><span class="soap-letter">S</span><span class="soap-word" data-i18n="soap_s_lbl">Субъективно</span></h5></div>
@@ -408,6 +408,7 @@
 <div class="set-row"><div class="set-row-info"><div class="set-row-label" data-i18n="set_stt_eng_l">STT движок</div><div class="set-row-desc">OpenAI Whisper</div></div></div>
 <div class="set-row"><div class="set-row-info"><div class="set-row-label">LLM</div><div class="set-row-desc">Claude Sonnet · Anthropic</div></div></div>
 <div class="set-row"><div class="set-row-info"><div class="set-row-label" data-i18n="set_lic_l">Лицензия</div><div class="set-row-desc">Proprietary · Hyperion Labs © 2026</div></div></div>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label" data-i18n="set_tour_l">Обучение</div><div class="set-row-desc" data-i18n="set_tour_d">Интерактивный сценарий по всем функциям</div></div><button class="btn ghost sm" id="rerunTourBtn" type="button" data-i18n="set_tour_btn">Показать</button></div>
 <div class="set-cont-title" data-i18n="set_shortcuts" style="margin-top:24px">Горячие клавиши</div>
 <div class="set-row"><div class="set-row-info"><div class="set-row-label" data-i18n="sc_search">Поиск пациента</div></div><kbd class="kbd-pill">Ctrl/⌘ + K</kbd></div>
 <div class="set-row"><div class="set-row-info"><div class="set-row-label" data-i18n="sc_save">Сохранить SOAP</div></div><kbd class="kbd-pill">Ctrl/⌘ + S</kbd></div>
@@ -476,12 +477,22 @@
 <div class="nr-modal-card" style="max-width:640px">
 <div class="nr-modal-hdr"><h3 id="patFormTitle" data-i18n="pat_new">+ Новый пациент</h3><button class="icon-btn" id="patFormClose" aria-label="Close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
 <form id="patForm" novalidate>
+<div class="pf-voice">
+<button type="button" class="pf-voice-btn" id="pfVoiceBtn"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg><span id="pfVoiceLbl" data-i18n="pat_voice_fill">Заполнить голосом</span></button>
+<div class="pf-voice-hint" data-i18n="pat_voice_hint">Скажите: ФИО, возраст, пол, диагнозы, аллергии — поля заполнятся сами</div>
+</div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
 <div><label data-i18n="pat_f_name">ФИО</label><input id="pf_full_name" type="text" required></div>
 <div><label data-i18n="pat_f_type">Тип пациента</label><select id="pf_patient_type"><option value="outpatient" data-i18n-o="pt_outpatient">Амбулаторный</option><option value="inpatient" data-i18n-o="pt_inpatient">Стационарный</option></select></div>
 <div id="pf_ward_wrap"><label data-i18n="pat_f_ward">Палата</label><input id="pf_ward" type="number" min="1" data-phk="pat_f_ward_ph" placeholder="Номер палаты"></div>
 <div><label data-i18n="pat_f_age">Возраст</label><input id="pf_age" type="number" min="0" max="130"></div>
 <div><label data-i18n="pat_f_gender">Пол</label><select id="pf_gender"><option value=""></option><option value="М" data-i18n-o="gender_m_o">М</option><option value="Ж" data-i18n-o="gender_f_o">Ж</option></select></div>
+</div>
+<div style="margin-bottom:12px;position:relative"><label data-i18n="pat_f_diag">Диагнозы (через запятую)</label><input id="pf_diagnoses" type="text" placeholder="Гипертония, Диабет II" autocomplete="off"></div>
+<div style="margin-bottom:14px"><label data-i18n="pat_f_allergy">Аллергии (через запятую)</label><input id="pf_allergies" type="text" placeholder="Метформин"></div>
+<details class="pf-more" id="pfMore">
+<summary><span data-i18n="pat_more">Дополнительно</span><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></summary>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
 <div><label data-i18n="pat_f_blood">Группа крови</label><input id="pf_blood" type="text" placeholder="O(I) Rh+"></div>
 <div><label data-i18n="pat_f_height">Рост (см)</label><input id="pf_height" type="number" min="0" max="300" step="0.1"></div>
 <div><label data-i18n="pat_f_weight">Вес (кг)</label><input id="pf_weight" type="number" min="0" max="500" step="0.1"></div>
@@ -489,12 +500,11 @@
 <div><label data-i18n="pat_f_dept">Отделение</label><select id="pf_department"><option value=""></option><option value="therapy" data-i18n-o="dept_therapy">Терапия</option><option value="cardiology" data-i18n-o="dept_cardiology">Кардиология</option><option value="surgery" data-i18n-o="dept_surgery">Хирургия</option><option value="neurology" data-i18n-o="dept_neurology">Неврология</option><option value="pulmonology" data-i18n-o="dept_pulmonology">Пульмонология</option><option value="icu" data-i18n-o="dept_icu">ОРИТ</option><option value="post_icu" data-i18n-o="dept_post_icu">Пост-реанимация</option><option value="other" data-i18n-o="dept_other">Другое</option></select></div>
 <div><label data-i18n="pat_f_status">Статус</label><select id="pf_status"><option value=""></option><option value="stable" data-i18n-o="ps_stable">Стабильный</option><option value="watch" data-i18n-o="ps_watch">Наблюдение</option><option value="serious" data-i18n-o="ps_serious">Тяжёлый</option><option value="critical" data-i18n-o="ps_critical">Критический</option></select></div>
 </div>
-<div style="margin-bottom:12px;position:relative"><label data-i18n="pat_f_diag">Диагнозы (через запятую)</label><input id="pf_diagnoses" type="text" placeholder="Гипертония, Диабет II" autocomplete="off"></div>
-<div style="margin-bottom:14px"><label data-i18n="pat_f_allergy">Аллергии (через запятую)</label><input id="pf_allergies" type="text" placeholder="Метформин"></div>
 <fieldset style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px"><legend style="padding:0 6px;font-size:.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em" data-i18n="epi_title">Эпиданамнез</legend>
 <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:8px"><label class="chk-lbl"><input type="checkbox" id="pf_epi_contact"> <span data-i18n="epi_contact">Контакт с инфекционными больными</span></label><label class="chk-lbl"><input type="checkbox" id="pf_epi_travel"> <span data-i18n="epi_travel">Выезд за рубеж</span></label></div>
 <div class="epi-grid"><div><label style="font-size:.78rem;color:var(--text-muted)" data-i18n="epi_country">Страна выезда</label><input id="pf_epi_country" type="text" placeholder="—" style="font-size:.85rem"></div><div><label style="font-size:.78rem;color:var(--text-muted)" data-i18n="epi_last_contact">Дата последнего контакта</label><input id="pf_epi_date" type="date" style="font-size:.85rem"></div></div>
 </fieldset>
+</details>
 <div style="display:flex;gap:8px;justify-content:flex-end">
 <button class="btn ghost" type="button" id="patFormCancel" data-i18n="btn_cancel">Отмена</button>
 <button class="btn primary" type="submit" id="patFormSave" data-i18n="btn_save">Сохранить</button>
@@ -557,6 +567,16 @@
 <button class="more-item" data-screen="history" type="button"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span data-i18n="nav_history">История</span></button>
 <button class="more-item" data-screen="settings" type="button"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span data-i18n="nav_settings">Настройки</span></button>
 </div>
-<script src="app.js?v=39"></script>
+<div class="tour-ov" id="tourOv" hidden>
+<div class="tour-hl" id="tourHl"></div>
+<div class="tour-card" id="tourCard" role="dialog" aria-labelledby="tourTitle">
+<div class="tour-title" id="tourTitle"></div>
+<div class="tour-desc" id="tourDesc"></div>
+<div class="tour-hint" id="tourHint" style="display:none"></div>
+<div class="tour-foot"><span class="tour-count" id="tourCount" aria-hidden="true"></span><div class="tour-btns"><button class="btn ghost sm" id="tourSkip" type="button" data-i18n="tour_skip">Пропустить</button><button class="btn primary sm" id="tourNext" type="button">Далее</button></div></div>
+</div>
+</div>
+<div class="print-sheet" id="printSheet" aria-hidden="true"></div>
+<script src="app.js?v=40"></script>
 </body>
 </html>

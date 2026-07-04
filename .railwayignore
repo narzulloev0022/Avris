@@ -1,0 +1,29 @@
+# Build context for `railway up` — only what the Dockerfile COPYs is needed.
+# Confidential / local-only (NOT in git, must never leave this machine):
+AvrisAI Knowledge Base/
+CLAUDE.md
+.claude/
+_tools/
+_downloads/
+screenshots/
+_screenshots/
+assets/smm/
+assets/poster_somoni/
+assets/logo_story_format.svg
+
+# Dev artifacts
+.git/
+node_modules/
+backend/.venv/
+backend/__pycache__/
+__pycache__/
+*.db
+*.db-journal
+test-results/
+playwright-report/
+.pytest_cache/
+.env
+*.env
+AvrisAI-Pitch-Deck.pptx
+security_report_bandit.txt
+security_audit_20260617.md
