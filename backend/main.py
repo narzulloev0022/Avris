@@ -218,4 +218,6 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", "8000"))
     reload = os.getenv("RAILWAY_ENVIRONMENT") is None and os.getenv("ENV", "dev") != "production"
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=reload)
+    # 0.0.0.0 намеренно: в контейнере Railway нужно слушать все интерфейсы,
+    # наружу порт открывает только edge-прокси Railway.
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=reload)  # nosec B104
