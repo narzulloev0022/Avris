@@ -228,6 +228,24 @@ class AuthCode(Base):
     )
 
 
+class RefreshToken(Base):
+    """Server-side registry of issued refresh tokens (one row per jti claim).
+
+    A refresh JWT is accepted only while its jti row exists and is not
+    revoked — that's what lets logout, rotation and password reset kill a
+    session before the 7-day JWT expiry. Long-expired rows are lazily purged
+    whenever a new token is issued.
+    """
+    __tablename__ = "refresh_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    jti = Column(String(36), unique=True, index=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    revoked = Column(Boolean, nullable=False, default=False)
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 class AuditLog(Base):
     """Append-only trail of who did what — the regulatory backbone for medical
     data (who created/changed/read-out which record and when). Rows carry NO
