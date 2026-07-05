@@ -1,6 +1,7 @@
 import hashlib
 import os
 import secrets
+import uuid
 from datetime import datetime, timedelta
 from typing import Optional
 from urllib.parse import urlencode
@@ -18,7 +19,7 @@ from dotenv import load_dotenv
 
 from audit import audit
 from database import get_db
-from models import AuthCode, User
+from models import AuthCode, RefreshToken, User
 from schemas import (
     UserCreate, UserLogin, UserResponse, Token, RegisterResponse,
     VerifyEmailRequest, ResendCodeRequest,
@@ -85,9 +86,14 @@ def create_access_token(user_id: int) -> str:
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def create_refresh_token(user_id: int) -> str:
+def create_refresh_token(user_id: int, db: Session) -> str:
+    # Lazy purge keeps refresh_tokens small without a cron job.
+    db.query(RefreshToken).filter(RefreshToken.expires_at < datetime.utcnow()).delete()
+    jti = str(uuid.uuid4())
     expire = datetime.utcnow() + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
-    payload = {"sub": str(user_id), "exp": expire, "type": "refresh"}
+    db.add(RefreshToken(jti=jti, user_id=user_id, expires_at=expire))
+    db.commit()
+    payload = {"sub": str(user_id), "exp": expire, "type": "refresh", "jti": jti}
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
@@ -104,15 +110,27 @@ def decode_token(token: str) -> Optional[int]:
         return None
 
 
-def decode_refresh_token(token: str) -> Optional[int]:
+def decode_refresh_token(token: str) -> Optional[tuple]:
+    """Returns (user_id, jti) or None. jti is mandatory: legacy refresh JWTs
+    issued before revocation support are rejected — those users simply
+    re-login once."""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         if payload.get("type") != "refresh":
             return None
-        sub = payload.get("sub")
-        return int(sub) if sub is not None else None
+        sub, jti = payload.get("sub"), payload.get("jti")
+        if sub is None or not jti:
+            return None
+        return int(sub), jti
     except (JWTError, ValueError):
         return None
+
+
+def _active_refresh_row(db: Session, jti: str) -> Optional[RefreshToken]:
+    row = db.query(RefreshToken).filter(RefreshToken.jti == jti).first()
+    if not row or row.revoked or row.expires_at < datetime.utcnow():
+        return None
+    return row
 
 
 def get_current_user(
@@ -298,15 +316,22 @@ def verify_email(request: Request, payload: VerifyEmailRequest, db: Session = De
         except Exception:
             pass
     token = create_access_token(user.id)
-    refresh = create_refresh_token(user.id)
+    refresh = create_refresh_token(user.id, db)
     return Token(access_token=token, refresh_token=refresh, user=UserResponse.model_validate(user))
 
 
 @router.post("/refresh", response_model=RefreshResponse)
 @limiter.limit("30/minute")
 def refresh_token(request: Request, payload: RefreshRequest, db: Session = Depends(get_db)):
-    uid = decode_refresh_token(payload.refresh_token)
-    if uid is None:
+    decoded = decode_refresh_token(payload.refresh_token)
+    if decoded is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Недействительный refresh-токен",
+        )
+    uid, jti = decoded
+    row = _active_refresh_row(db, jti)
+    if row is None or row.user_id != uid:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Недействительный refresh-токен",
@@ -317,11 +342,36 @@ def refresh_token(request: Request, payload: RefreshRequest, db: Session = Depen
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Пользователь недоступен",
         )
-    # Rotate both tokens on each refresh.
+    # Rotation: the presented token dies the moment a new one is issued,
+    # so a leaked refresh token can't be replayed after its legit use.
+    row.revoked = True
+    db.commit()
     return RefreshResponse(
         access_token=create_access_token(user.id),
-        refresh_token=create_refresh_token(user.id),
+        refresh_token=create_refresh_token(user.id, db),
     )
+
+
+class LogoutRequest(BaseModel):
+    refresh_token: Optional[str] = None
+
+
+@router.post("/logout", response_model=MessageResponse)
+@limiter.limit("30/minute")
+def logout(request: Request, payload: LogoutRequest, db: Session = Depends(get_db)):
+    """Idempotent; no access-token auth required — logout must work exactly
+    when the access token has already expired."""
+    decoded = decode_refresh_token(payload.refresh_token or "")
+    if decoded:
+        uid, jti = decoded
+        row = db.query(RefreshToken).filter(
+            RefreshToken.jti == jti, RefreshToken.user_id == uid
+        ).first()
+        if row and not row.revoked:
+            row.revoked = True
+            db.commit()
+            audit(db, action="logout", entity="user", user_id=uid)
+    return MessageResponse(message="Выход выполнен")
 
 
 @router.post("/resend-code", response_model=MessageResponse)
@@ -367,7 +417,7 @@ def login(request: Request, payload: UserLogin, db: Session = Depends(get_db)):
             detail="Email не подтверждён",
         )
     token = create_access_token(user.id)
-    refresh = create_refresh_token(user.id)
+    refresh = create_refresh_token(user.id, db)
     audit(db, action="login", entity="user", user_id=user.id)
     return Token(access_token=token, refresh_token=refresh, user=UserResponse.model_validate(user))
 
@@ -394,6 +444,10 @@ def reset_password(request: Request, payload: ResetPasswordRequest, db: Session 
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
     user.password_hash = hash_password(payload.new_password)
+    # Пароль сменён — убиваем все выданные refresh-сессии пользователя.
+    db.query(RefreshToken).filter(
+        RefreshToken.user_id == user.id, RefreshToken.revoked.is_(False)
+    ).update({RefreshToken.revoked: True})
     db.commit()
     _delete_code(db, "reset", email)
     audit(db, action="password_reset", entity="user", user_id=user.id)

@@ -62,7 +62,7 @@ function authToken(){try{return localStorage.getItem("avris-token")||""}catch(e)
 function setAuthToken(tk){try{tk?localStorage.setItem("avris-token",tk):localStorage.removeItem("avris-token")}catch(e){}}
 function refreshTok(){try{return localStorage.getItem("avris-refresh")||""}catch(e){return""}}
 function setRefreshTok(tk){try{tk?localStorage.setItem("avris-refresh",tk):localStorage.removeItem("avris-refresh")}catch(e){}}
-function _logout(){setAuthToken("");setRefreshTok("");currentUser=null;showLogin()}
+function _logout(){var rt=refreshTok();if(rt&&!window.DEMO_MODE){/* отзываем refresh-токен на сервере; fire-and-forget — выход не должен зависеть от сети */try{fetch(API_BASE+"/api/auth/logout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({refresh_token:rt}),keepalive:true}).catch(function(){})}catch(e){}}setAuthToken("");setRefreshTok("");currentUser=null;showLogin()}
 /* Exchange the (7-day) refresh token for a fresh 60-min access token.
    Resolves true on success (new tokens stored), false otherwise. */
 function doRefresh(){var rt=refreshTok();if(!rt)return Promise.resolve(false);return fetch(API_BASE+"/api/auth/refresh",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({refresh_token:rt})}).then(function(r){if(!r.ok)return false;return r.json().then(function(d){if(d&&d.access_token){setAuthToken(d.access_token);if(d.refresh_token)setRefreshTok(d.refresh_token);return true}return false})}).catch(function(){return false})}

@@ -100,6 +100,46 @@ def test_refresh_rotates_tokens(client):
     assert r.status_code == 401
 
 
+def test_refresh_rotation_revokes_old_token(client):
+    tok = register_and_verify(client, email="rotate@test.tj")
+    r = client.post("/api/auth/refresh", json={"refresh_token": tok["refresh_token"]})
+    assert r.status_code == 200
+    new_refresh = r.json()["refresh_token"]
+    # The old token was rotated out — replaying it must fail...
+    r = client.post("/api/auth/refresh", json={"refresh_token": tok["refresh_token"]})
+    assert r.status_code == 401
+    # ...while the newly issued one keeps working.
+    r = client.post("/api/auth/refresh", json={"refresh_token": new_refresh})
+    assert r.status_code == 200
+
+
+def test_logout_revokes_refresh_token(client):
+    tok = register_and_verify(client, email="logout@test.tj")
+    r = client.post("/api/auth/logout", json={"refresh_token": tok["refresh_token"]})
+    assert r.status_code == 200
+    r = client.post("/api/auth/refresh", json={"refresh_token": tok["refresh_token"]})
+    assert r.status_code == 401
+    # Idempotent: repeated logout with the same (already dead) token is fine
+    r = client.post("/api/auth/logout", json={"refresh_token": tok["refresh_token"]})
+    assert r.status_code == 200
+    # Garbage/missing token doesn't error either
+    r = client.post("/api/auth/logout", json={"refresh_token": "not-a-jwt"})
+    assert r.status_code == 200
+
+
+def test_password_reset_revokes_sessions(client):
+    tok = register_and_verify(client, email="killsess@test.tj", password="oldpass1")
+    client.post("/api/auth/forgot-password", json={"email": "killsess@test.tj"})
+    code = SENT_CODES[("reset", "killsess@test.tj")]
+    r = client.post("/api/auth/reset-password", json={
+        "email": "killsess@test.tj", "code": code, "new_password": "newpass2",
+    })
+    assert r.status_code == 200
+    # Old refresh token must be dead after the password change
+    r = client.post("/api/auth/refresh", json={"refresh_token": tok["refresh_token"]})
+    assert r.status_code == 401
+
+
 def test_resend_cooldown(client):
     email = "cooldown@test.tj"
     client.post("/api/auth/register", json={"email": email, "password": "pass1234"})
