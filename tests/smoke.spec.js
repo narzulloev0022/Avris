@@ -1,9 +1,8 @@
 const { test, expect } = require('@playwright/test');
 
-test('root serves the waitlist landing', async ({ page }) => {
+test('root responds with an Avris page', async ({ page }) => {
   await page.goto('https://theavris.ai');
   await expect(page).toHaveTitle(/Avris/);
-  await expect(page.locator('#wlForm')).toBeAttached();
 });
 
 test('app login lives at /app', async ({ page }) => {

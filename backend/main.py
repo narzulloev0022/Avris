@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from slowapi import _rate_limit_exceeded_handler
@@ -143,12 +143,19 @@ def health():
     return {"status": "ok", "service": "avris-backend", "version": "0.1.0"}
 
 
+def _waitlist_live() -> bool:
+    """Launch switch for the marketing landing. Until WAITLIST_LIVE=1 is set,
+    the root keeps serving the product app and /waitlist redirects home —
+    lets us finish the page in main without publishing it."""
+    return os.getenv("WAITLIST_LIVE") == "1"
+
+
 @app.get("/")
 def serve_root():
-    """Marketing waitlist is the public face; the product app lives at /app."""
-    if WAITLIST_HTML.exists():
+    """Marketing waitlist is the public face (when live); the app lives at /app."""
+    if _waitlist_live() and WAITLIST_HTML.exists():
         return FileResponse(WAITLIST_HTML)
-    if INDEX_HTML.exists():          # fallback if marketing page is missing
+    if INDEX_HTML.exists():
         return FileResponse(INDEX_HTML)
     return {"message": "Avris backend running."}
 
@@ -166,9 +173,9 @@ WAITLIST_HTML = PROJECT_ROOT / "marketing" / "waitlist.html"
 
 @app.get("/waitlist")
 def serve_waitlist():
-    if WAITLIST_HTML.exists():
+    if _waitlist_live() and WAITLIST_HTML.exists():
         return FileResponse(WAITLIST_HTML)
-    return {"message": "Waitlist page not found"}
+    return RedirectResponse("/", status_code=307)
 
 
 LAB_HTML = PROJECT_ROOT / "lab.html"
