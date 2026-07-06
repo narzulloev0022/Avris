@@ -225,7 +225,8 @@ html[data-theme="light"] .aurora{opacity:.5}
 .hero-sub{display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-top:44px;flex-wrap:wrap}
 .hero-sub .lead{max-width:46ch}
 .hero-ctas{display:flex;gap:14px;flex-wrap:wrap}
-.ecg{position:absolute;left:0;right:0;bottom:8%;width:100%;height:120px;pointer-events:none;opacity:.55}
+.ecg{position:absolute;left:0;right:0;bottom:8px;width:100%;height:78px;pointer-events:none;opacity:.38}
+@media (max-height:760px){.ecg{display:none}}
 .ecg path{stroke:url(#ecgGrad);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
 /* ---------- marquee ---------- */
