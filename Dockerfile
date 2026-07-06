@@ -17,6 +17,7 @@ RUN pip install --no-cache-dir -r ./backend/requirements.txt
 COPY backend/ ./backend/
 COPY index.html lab.html admin.html styles.css app.js sw.js manifest.json ./
 COPY assets/ ./assets/
+COPY marketing/ ./marketing/
 
 WORKDIR /app/backend
 
