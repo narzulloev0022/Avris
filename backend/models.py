@@ -260,3 +260,18 @@ class AuditLog(Base):
     entity_id = Column(String(64), nullable=True)
     meta = Column(JSON, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+
+
+class WaitlistEntry(Base):
+    """Public waitlist signup from the marketing page (/waitlist).
+
+    Deliberately minimal and PHI-free: an email, a self-declared role and the
+    UI language at signup (so launch emails go out in the right language).
+    Duplicate emails are collapsed at the API level, not by a DB error."""
+    __tablename__ = "waitlist"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    role = Column(String(16), nullable=False, default="doctor")   # doctor|clinic|investor
+    lang = Column(String(4), nullable=False, default="ru")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)

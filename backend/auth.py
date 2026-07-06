@@ -609,8 +609,11 @@ def admin_reject(user_id: int, payload: _RejectBody, current_user: User = Depend
 
 
 def _redirect_with_token(token: str) -> RedirectResponse:
-    sep = "&" if "?" in FRONTEND_URL else "?"
-    return RedirectResponse(f"{FRONTEND_URL}{sep}token={token}")
+    # The SPA lives at /app now (the root is the marketing waitlist), so OAuth
+    # must land the user inside the app where the ?token= handler runs.
+    app_url = os.getenv("APP_URL", FRONTEND_URL.rstrip("/") + "/app")
+    sep = "&" if "?" in app_url else "?"
+    return RedirectResponse(f"{app_url}{sep}token={token}")
 
 
 @router.get("/google")

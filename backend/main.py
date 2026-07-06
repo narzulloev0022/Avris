@@ -57,6 +57,7 @@ from notifications import router as notifications_router
 from icd10 import router as icd10_router
 from drugs import router as drugs_router
 from stats import router as stats_router
+from waitlist import router as waitlist_router
 from rate_limit import limiter
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:8080")
@@ -134,6 +135,7 @@ app.include_router(notifications_router)
 app.include_router(icd10_router)
 app.include_router(drugs_router)
 app.include_router(stats_router)
+app.include_router(waitlist_router)
 
 
 @app.get("/api/health")
@@ -142,10 +144,31 @@ def health():
 
 
 @app.get("/")
-def serve_frontend():
+def serve_root():
+    """Marketing waitlist is the public face; the product app lives at /app."""
+    if WAITLIST_HTML.exists():
+        return FileResponse(WAITLIST_HTML)
+    if INDEX_HTML.exists():          # fallback if marketing page is missing
+        return FileResponse(INDEX_HTML)
+    return {"message": "Avris backend running."}
+
+
+@app.get("/app")
+@app.get("/app/")
+def serve_app():
     if INDEX_HTML.exists():
         return FileResponse(INDEX_HTML)
-    return {"message": "Avris backend running. Frontend not found at " + str(INDEX_HTML)}
+    return {"message": "Frontend not found at " + str(INDEX_HTML)}
+
+
+WAITLIST_HTML = PROJECT_ROOT / "marketing" / "waitlist.html"
+
+
+@app.get("/waitlist")
+def serve_waitlist():
+    if WAITLIST_HTML.exists():
+        return FileResponse(WAITLIST_HTML)
+    return {"message": "Waitlist page not found"}
 
 
 LAB_HTML = PROJECT_ROOT / "lab.html"
