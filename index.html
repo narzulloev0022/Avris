@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=41">
+<link rel="stylesheet" href="styles.css?v=42">
 </head>
 <body data-theme="light">
 <div class="login-screen" id="loginScreen">
@@ -577,6 +577,32 @@
 </div>
 </div>
 <div class="print-sheet" id="printSheet" aria-hidden="true"></div>
-<script src="app.js?v=41"></script>
+<!-- Animation stack: GSAP core + all free plugins (3.13+), anime.js v4, motion.dev.
+     Vendored locally (CSP script-src 'self'). EaselPlugin/PixiPlugin skipped (need EaselJS/PixiJS).
+     GSDevTools/MotionPathHelper vendored in assets/vendor/gsap/ for dev use only. -->
+<script src="assets/vendor/gsap/gsap.min.js"></script>
+<script src="assets/vendor/gsap/CustomEase.min.js"></script>
+<script src="assets/vendor/gsap/CustomBounce.min.js"></script>
+<script src="assets/vendor/gsap/CustomWiggle.min.js"></script>
+<script src="assets/vendor/gsap/CSSRulePlugin.min.js"></script>
+<script src="assets/vendor/gsap/Draggable.min.js"></script>
+<script src="assets/vendor/gsap/DrawSVGPlugin.min.js"></script>
+<script src="assets/vendor/gsap/EasePack.min.js"></script>
+<script src="assets/vendor/gsap/Flip.min.js"></script>
+<script src="assets/vendor/gsap/InertiaPlugin.min.js"></script>
+<script src="assets/vendor/gsap/MorphSVGPlugin.min.js"></script>
+<script src="assets/vendor/gsap/MotionPathPlugin.min.js"></script>
+<script src="assets/vendor/gsap/Observer.min.js"></script>
+<script src="assets/vendor/gsap/Physics2DPlugin.min.js"></script>
+<script src="assets/vendor/gsap/PhysicsPropsPlugin.min.js"></script>
+<script src="assets/vendor/gsap/ScrambleTextPlugin.min.js"></script>
+<script src="assets/vendor/gsap/ScrollTrigger.min.js"></script>
+<script src="assets/vendor/gsap/ScrollSmoother.min.js"></script>
+<script src="assets/vendor/gsap/ScrollToPlugin.min.js"></script>
+<script src="assets/vendor/gsap/SplitText.min.js"></script>
+<script src="assets/vendor/gsap/TextPlugin.min.js"></script>
+<script src="assets/vendor/anime.umd.min.js"></script>
+<script src="assets/vendor/motion.min.js"></script>
+<script src="app.js?v=42"></script>
 </body>
 </html>

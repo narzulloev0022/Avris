@@ -13,17 +13,40 @@
  */
 "use strict";
 
-var SW_VERSION = "v41";
+var SW_VERSION = "v42";
 var SHELL_CACHE = "avris-shell-" + SW_VERSION;
 var STATIC_CACHE = "avris-static-" + SW_VERSION;
 
 var SHELL_URLS = [
   "/",
-  "/styles.css?v=41",
-  "/app.js?v=41",
+  "/styles.css?v=42",
+  "/app.js?v=42",
   "/assets/favicon-hyperion.svg",
   "/assets/logo.svg",
-  "/manifest.json"
+  "/manifest.json",
+  "/assets/vendor/anime.umd.min.js",
+  "/assets/vendor/motion.min.js",
+  "/assets/vendor/gsap/gsap.min.js",
+  "/assets/vendor/gsap/CustomEase.min.js",
+  "/assets/vendor/gsap/CustomBounce.min.js",
+  "/assets/vendor/gsap/CustomWiggle.min.js",
+  "/assets/vendor/gsap/CSSRulePlugin.min.js",
+  "/assets/vendor/gsap/Draggable.min.js",
+  "/assets/vendor/gsap/DrawSVGPlugin.min.js",
+  "/assets/vendor/gsap/EasePack.min.js",
+  "/assets/vendor/gsap/Flip.min.js",
+  "/assets/vendor/gsap/InertiaPlugin.min.js",
+  "/assets/vendor/gsap/MorphSVGPlugin.min.js",
+  "/assets/vendor/gsap/MotionPathPlugin.min.js",
+  "/assets/vendor/gsap/Observer.min.js",
+  "/assets/vendor/gsap/Physics2DPlugin.min.js",
+  "/assets/vendor/gsap/PhysicsPropsPlugin.min.js",
+  "/assets/vendor/gsap/ScrambleTextPlugin.min.js",
+  "/assets/vendor/gsap/ScrollTrigger.min.js",
+  "/assets/vendor/gsap/ScrollSmoother.min.js",
+  "/assets/vendor/gsap/ScrollToPlugin.min.js",
+  "/assets/vendor/gsap/SplitText.min.js",
+  "/assets/vendor/gsap/TextPlugin.min.js"
 ];
 
 self.addEventListener("install", function (e) {
