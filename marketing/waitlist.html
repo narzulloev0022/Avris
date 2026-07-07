@@ -840,10 +840,20 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
     </div>
     <div class="form-card" data-rv>
       <form id="wlForm" novalidate>
+        <div class="field" id="fName">
+          <label for="wlName">Имя и фамилия</label>
+          <input type="text" id="wlName" name="full_name" placeholder="Азиз Алиев" autocomplete="name" required />
+          <span class="err">Укажите имя и фамилию</span>
+        </div>
         <div class="field" id="fEmail">
           <label for="wlEmail">Рабочая почта</label>
           <input type="email" id="wlEmail" name="email" placeholder="doctor@clinic.tj" autocomplete="email" required />
           <span class="err">Проверьте адрес почты</span>
+        </div>
+        <div class="field" id="fPhone">
+          <label for="wlPhone">Телефон</label>
+          <input type="tel" id="wlPhone" name="phone" placeholder="+992 900 00 00 00" autocomplete="tel" required />
+          <span class="err">Проверьте номер телефона</span>
         </div>
         <div class="field">
           <label for="wlRole">Кто вы</label>
@@ -1124,6 +1134,10 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
       "Займите место": "Claim your spot",
       "в первой волне.": "in the first wave.",
       "Доступ открываем волнами, и первыми его получают врачи из листа ожидания. Оставьте почту, позовём, как только откроется ваша волна.": "Access opens in waves, and doctors on the waitlist go first. Leave your email and we'll invite you as soon as your wave opens.",
+      "Имя и фамилия": "Full name",
+      "Укажите имя и фамилию": "Enter your full name",
+      "Телефон": "Phone",
+      "Проверьте номер телефона": "Check the phone number",
       "Рабочая почта": "Work email",
       "Проверьте адрес почты": "Check the email address",
       "Кто вы": "Who are you",
@@ -1162,7 +1176,11 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
       }
     }
   })();
-  function applyRegistry(){ REG.forEach(function(r){ r.n.nodeValue = r[LANG]; }); }
+  function applyRegistry(){
+    REG.forEach(function(r){ r.n.nodeValue = r[LANG]; });
+    var nm = $("#wlName");
+    if (nm) nm.placeholder = LANG === "en" ? "Aziz Aliev" : "Азиз Алиев";
+  }
   function persistLang(){
     try { localStorage.setItem("avris-wl-lang", LANG); } catch(e){}
     if (LANG === "en") document.documentElement.setAttribute("data-lang", "en");
@@ -1258,6 +1276,8 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
   var SUBMIT_LABEL = { ru: "В лист ожидания", en: "Join the waitlist" };
   function initForm(animated){
     var form = $("#wlForm"), fEmail = $("#fEmail"), email = $("#wlEmail");
+    var nameEl = $("#wlName"), fName = $("#fName");
+    var phoneEl = $("#wlPhone"), fPhone = $("#fPhone");
     var btn = $("#wlSubmit"), sendErr = $("#wlSendErr");
 
     function showSuccess(v){
@@ -1275,9 +1295,15 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
 
     form.addEventListener("submit", function(e){
       e.preventDefault();
+      var nv = nameEl.value.trim().replace(/\s+/g, " ");
+      if (nv.length < 2){ fName.classList.add("invalid"); nameEl.focus(); return; }
+      fName.classList.remove("invalid");
       var v = email.value.trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){ fEmail.classList.add("invalid"); email.focus(); return; }
       fEmail.classList.remove("invalid");
+      var pv = phoneEl.value.trim();
+      if (!/^\+?[\d\s\-()]{7,20}$/.test(pv)){ fPhone.classList.add("invalid"); phoneEl.focus(); return; }
+      fPhone.classList.remove("invalid");
       sendErr.hidden = true;
 
       /* local preview from file:// has no backend — show the success state */
@@ -1290,6 +1316,8 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: v,
+          full_name: nv,
+          phone: pv,
           role: $("#wlRole").value,
           lang: LANG,
           website: $("#wlHoney").value
@@ -1307,6 +1335,8 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
       });
     });
     email.addEventListener("input", function(){ fEmail.classList.remove("invalid"); });
+    nameEl.addEventListener("input", function(){ fName.classList.remove("invalid"); });
+    phoneEl.addEventListener("input", function(){ fPhone.classList.remove("invalid"); });
   }
 
   /* success particle burst: celebratory feedback on the one conversion action */

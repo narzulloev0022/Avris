@@ -272,6 +272,8 @@ class WaitlistEntry(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, index=True, nullable=False)
+    full_name = Column(String(120), nullable=True)
+    phone = Column(String(32), nullable=True)
     role = Column(String(16), nullable=False, default="doctor")   # doctor|clinic|investor
     lang = Column(String(4), nullable=False, default="ru")
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
