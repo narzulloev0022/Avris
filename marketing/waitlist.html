@@ -427,6 +427,7 @@ html[data-theme="light"] .bga::after{
 .spk{
   position:absolute;pointer-events:none;z-index:2;
   animation:spk 1.3s ease-in-out infinite;transform:scale(0);
+  animation-play-state:paused;
 }
 .spk svg{display:block;width:100%;height:100%}
 @keyframes spk{
@@ -1328,15 +1329,29 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
       s.style.width = sz + "px"; s.style.height = sz + "px";
       s.style.color = colors[Math.floor(Math.random() * colors.length)];
     }
+    /* sparkles run only while the cursor is on the button; on leave each
+       star finishes its current flare and parks at scale(0) */
+    var hovering = false;
     for (var i = 0; i < 8; i++){
       var s = document.createElement("span");
       s.className = "spk";
       s.innerHTML = STAR;
-      s.style.animationDelay = (Math.random() * 1.3).toFixed(2) + "s";
+      s.style.animationDelay = (Math.random() * 0.9).toFixed(2) + "s";
       roll(s);
-      s.addEventListener("animationiteration", function(){ roll(this); });
+      s.addEventListener("animationiteration", function(){
+        roll(this);
+        if (!hovering) this.style.animationPlayState = "paused";
+      });
       host.appendChild(s);
     }
+    function spkRun(on){
+      hovering = on;
+      if (on) host.querySelectorAll(".spk").forEach(function(s){ s.style.animationPlayState = "running"; });
+    }
+    host.addEventListener("pointerenter", function(){ spkRun(true); });
+    host.addEventListener("pointerleave", function(){ spkRun(false); });
+    host.addEventListener("focus", function(){ spkRun(true); });
+    host.addEventListener("blur", function(){ spkRun(false); });
   })();
 
   /* background-gradient-animation: one blob lazily follows the pointer */
