@@ -33,6 +33,13 @@ def init_db():
     # Postgres where create_all() won't add new columns to an existing table.
     from sqlalchemy import text, inspect
     insp = inspect(engine)
+    if "waitlist" in insp.get_table_names():
+        existing_wl = {c["name"] for c in insp.get_columns("waitlist")}
+        with engine.begin() as conn:
+            if "full_name" not in existing_wl:
+                conn.execute(text("ALTER TABLE waitlist ADD COLUMN full_name VARCHAR(120)"))
+            if "phone" not in existing_wl:
+                conn.execute(text("ALTER TABLE waitlist ADD COLUMN phone VARCHAR(32)"))
     if "patients" in insp.get_table_names():
         existing = {c["name"] for c in insp.get_columns("patients")}
         with engine.begin() as conn:
