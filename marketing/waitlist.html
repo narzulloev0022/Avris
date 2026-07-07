@@ -316,9 +316,25 @@ html[data-theme="light"] .aurora{opacity:.5}
   background:radial-gradient(460px circle at var(--mx,50%) var(--my,50%),rgba(149,174,248,.11),transparent 65%);
 }
 .f-card:hover::after,.slide:hover::after{opacity:1}
-/* serafim pixel-canvas port: twinkling pixel grid on hover, behind content */
-.pxc{position:absolute;inset:0;z-index:0;pointer-events:none}
-.f-card>*:not(.pxc),.slide>*:not(.pxc){position:relative;z-index:1}
+/* easemize spotlight-card port: a glowing border ring follows the cursor.
+   No mask-composite (flaky across engines): the radial paints on border-box,
+   an opaque padding-box layer covers the middle, and the whole ring sits
+   under the card content. */
+.sgl{
+  --sgl-grad:radial-gradient(230px circle at var(--mx,-300px) var(--my,-300px),
+    #C5D0FB,rgba(149,174,248,.8) 35%,rgba(110,134,224,.35) 60%,transparent 78%);
+  position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
+  border:2px solid transparent;
+  opacity:0;transition:opacity .35s;
+}
+html[data-theme="light"] .sgl{
+  --sgl-grad:radial-gradient(230px circle at var(--mx,-300px) var(--my,-300px),
+    #4659B5,rgba(76,95,192,.8) 35%,rgba(110,134,224,.35) 60%,transparent 78%);
+}
+.f-card .sgl{background:linear-gradient(var(--card-2),var(--card-2)) padding-box,var(--sgl-grad) border-box}
+.slide .sgl{background:linear-gradient(var(--card),var(--card)) padding-box,var(--sgl-grad) border-box}
+.f-card>*:not(.sgl),.slide>*:not(.sgl){position:relative;z-index:1}
+.f-card:hover .sgl,.slide:hover .sgl{opacity:1}
 .f-body{display:contents}
 .stack-item{display:contents}
 .f-7{grid-column:span 7}.f-5{grid-column:span 5}
@@ -1691,57 +1707,13 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
       });
     });
 
-    /* serafim pixel-canvas port: pixels twinkle in on hover, fade out on leave */
+    /* easemize spotlight-card port: glow ring element per card,
+       driven by the same --mx/--my the inner spotlight already updates */
     document.querySelectorAll(".f-card, .slide").forEach(function(card){
-      var cv = document.createElement("canvas");
-      cv.className = "pxc";
-      card.appendChild(cv);
-      var ctx = cv.getContext("2d");
-      var px = [], raf = null, progress = 0, target = 0, W = 0, H = 0;
-      function colors(){
-        return document.documentElement.getAttribute("data-theme") === "light"
-          ? ["#4C5FC0", "#8AA0EE", "#B9C6F5"]
-          : ["#95AEF8", "#C5D0FB", "#6E86E0"];
-      }
-      function build(){
-        var r = card.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
-        W = r.width; H = r.height;
-        cv.width = W * dpr; cv.height = H * dpr;
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        px = [];
-        for (var x = 8; x < W; x += 16){
-          for (var y = 8; y < H; y += 16){
-            px.push({ x: x, y: y, d: Math.random(), ph: Math.random() * 6.28, sp: 2 + Math.random() * 3, c: Math.floor(Math.random() * 3) });
-          }
-        }
-      }
-      function frame(ts){
-        progress += (target - progress) * 0.07;
-        ctx.clearRect(0, 0, W, H);
-        if (progress > 0.005){
-          var pal = colors();
-          for (var i = 0; i < px.length; i++){
-            var p = px[i];
-            var ramp = Math.max(0, Math.min(1, progress * 1.7 - p.d * 0.7));
-            if (!ramp) continue;
-            var tw = 0.3 + 0.7 * Math.abs(Math.sin(ts / 1000 * p.sp + p.ph));
-            ctx.globalAlpha = ramp * tw * 0.85;
-            ctx.fillStyle = pal[p.c];
-            ctx.fillRect(p.x, p.y, 2.4, 2.4);
-          }
-          ctx.globalAlpha = 1;
-          raf = requestAnimationFrame(frame);
-        } else {
-          raf = null;
-        }
-      }
-      card.addEventListener("pointerenter", function(){
-        var r = card.getBoundingClientRect();
-        if (!px.length || Math.abs(r.width - W) > 2 || Math.abs(r.height - H) > 2) build();
-        target = 1;
-        if (!raf) raf = requestAnimationFrame(frame);
-      });
-      card.addEventListener("pointerleave", function(){ target = 0; });
+      var g = document.createElement("span");
+      g.className = "sgl";
+      g.setAttribute("aria-hidden", "true");
+      card.appendChild(g);
     });
   }
 
