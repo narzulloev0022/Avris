@@ -13,12 +13,13 @@
  */
 "use strict";
 
-var SW_VERSION = "v42";
+var SW_VERSION = "v43";
 var SHELL_CACHE = "avris-shell-" + SW_VERSION;
 var STATIC_CACHE = "avris-static-" + SW_VERSION;
 
 var SHELL_URLS = [
   "/",
+  "/app",
   "/styles.css?v=42",
   "/app.js?v=42",
   "/assets/favicon-hyperion.svg",
@@ -78,14 +79,21 @@ self.addEventListener("fetch", function (e) {
   if (url.pathname.indexOf("/api/") === 0) return;
 
   // App navigations: fresh HTML when online, cached shell when offline.
+  // Each page is cached under its own URL — a visit to /lab or the marketing
+  // root must never overwrite the app shell (that broke offline Demo Mode).
   if (req.mode === "navigate") {
     e.respondWith(
       fetch(req).then(function (resp) {
         var copy = resp.clone();
-        caches.open(SHELL_CACHE).then(function (c) { c.put("/", copy); });
+        caches.open(SHELL_CACHE).then(function (c) { c.put(url.pathname, copy); });
         return resp;
       }).catch(function () {
-        return caches.match("/", { cacheName: SHELL_CACHE });
+        return caches.match(url.pathname, { cacheName: SHELL_CACHE }).then(function (own) {
+          return own ||
+            caches.match("/app", { cacheName: SHELL_CACHE }).then(function (app) {
+              return app || caches.match("/", { cacheName: SHELL_CACHE });
+            });
+        });
       })
     );
     return;
