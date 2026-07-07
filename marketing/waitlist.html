@@ -400,6 +400,39 @@ td.avris .yes svg{color:var(--acc-2)}
   border:1px solid var(--line-2);border-radius:var(--r-card);
   background:linear-gradient(120deg,var(--card-2),var(--card) 70%);
   padding:clamp(32px,5vw,56px);
+  position:relative;overflow:hidden;isolation:isolate;
+}
+.access .wrap>*:not(.bga){position:relative;z-index:1}
+/* Aceternity background-gradient-animation, vanilla port: blurred brand blobs on orbits */
+.bga{position:absolute;inset:0;z-index:0;pointer-events:none;filter:blur(38px) saturate(1.2);opacity:.8}
+html[data-theme="light"] .bga{opacity:.7}
+.bga i{position:absolute;height:250%;aspect-ratio:1;border-radius:50%}
+.bga i:nth-child(1){top:-80%;left:-8%;background:radial-gradient(circle,rgba(149,174,248,.95),transparent 62%);animation:bga-v 24s ease-in-out infinite}
+.bga i:nth-child(2){top:-60%;right:-6%;background:radial-gradient(circle,rgba(70,89,181,.95),transparent 62%);animation:bga-o 34s linear infinite}
+.bga i:nth-child(3){top:-90%;right:22%;background:radial-gradient(circle,rgba(125,162,255,.9),transparent 62%);animation:bga-h 30s ease-in-out infinite}
+.bga i:nth-child(4){top:-40%;left:24%;background:radial-gradient(circle,rgba(197,208,251,.85),transparent 62%);animation:bga-o 44s linear infinite reverse}
+.bga .bga-mouse{height:200%;top:-50%;left:34%;background:radial-gradient(circle,rgba(149,174,248,.85),transparent 60%);animation:none;transition:transform 1.1s cubic-bezier(.2,.8,.3,1)}
+@keyframes bga-v{0%,100%{transform:translateY(-16%)}50%{transform:translateY(16%)}}
+@keyframes bga-h{0%,100%{transform:translateX(-20%) translateY(-6%)}50%{transform:translateX(20%) translateY(8%)}}
+@keyframes bga-o{from{transform:rotate(0deg) translateX(14%) rotate(0deg)}to{transform:rotate(360deg) translateX(14%) rotate(-360deg)}}
+/* readability scrim: text side stays calm, blobs breathe on the right */
+.bga::after{
+  content:"";position:absolute;inset:-70px;
+  background:linear-gradient(95deg,rgba(8,11,20,.72) 28%,rgba(8,11,20,.2) 58%,transparent 78%);
+}
+html[data-theme="light"] .bga::after{
+  background:linear-gradient(95deg,rgba(247,249,255,.78) 28%,rgba(247,249,255,.25) 58%,transparent 78%);
+}
+/* Magic UI sparkles-text, vanilla port: tiny stars flare around the label */
+.spk{
+  position:absolute;pointer-events:none;z-index:2;
+  animation:spk 1.3s ease-in-out infinite;transform:scale(0);
+}
+.spk svg{display:block;width:100%;height:100%}
+@keyframes spk{
+  0%{transform:scale(0) rotate(0deg)}
+  50%{transform:scale(1) rotate(70deg)}
+  100%{transform:scale(0) rotate(140deg)}
 }
 .access h2{font-size:clamp(1.6rem,2.8vw,2.4rem);margin-bottom:10px}
 .access .lead{max-width:48ch}
@@ -476,6 +509,8 @@ footer{border-top:1px solid var(--line);padding:52px 0 40px;background:var(--bg-
   .preloader{display:none}
   .pre-trail{display:none}
   .btn-rainbow,.btn-rainbow::before{animation:none}
+  .bga i{animation:none}
+  .spk{display:none}
   *{transition:none!important}
 }
 </style>
@@ -761,11 +796,12 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
 <!-- ============ ACCESS ============ -->
 <section class="access">
   <div class="wrap" data-rv>
+    <div class="bga" aria-hidden="true"><i></i><i></i><i></i><i></i><i class="bga-mouse" id="bgaMouse"></i></div>
     <div>
       <h2>Работает сразу в браузере</h2>
       <p class="lead">Web App открывается на любом компьютере клиники. Без установки и без интеграций на старте. Покажем на живом приёме.</p>
     </div>
-    <a class="btn btn-ghost" href="mailto:info@theavris.ai?subject=%D0%94%D0%B5%D0%BC%D0%BE%20AvrisAI" data-magnetic>Записаться на демо</a>
+    <a class="btn btn-ghost" id="demoBtn" href="mailto:info@theavris.ai?subject=%D0%94%D0%B5%D0%BC%D0%BE%20AvrisAI" data-magnetic>Записаться на демо</a>
   </div>
 </section>
 
@@ -1270,6 +1306,51 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
   window.addEventListener("resize", tubeRecalc);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(tubeRecalc);
   tubeRecalc();
+
+  /* sparkles-text: stars twinkle around the demo button; each star re-rolls
+     its position after every flare cycle */
+  (function(){
+    if (reduce) return;
+    var host = $("#demoBtn");
+    if (!host) return;
+    host.style.position = "relative";
+    var STAR = '<svg viewBox="0 0 21 21" fill="currentColor" aria-hidden="true"><path d="M9.82 1.03c.2-.92 1.5-.92 1.7 0l.52 2.4a6.6 6.6 0 0 0 5.06 5.06l2.4.52c.92.2.92 1.5 0 1.7l-2.4.52a6.6 6.6 0 0 0-5.06 5.06l-.52 2.4c-.2.92-1.5.92-1.7 0l-.52-2.4a6.6 6.6 0 0 0-5.06-5.06l-2.4-.52c-.92-.2-.92-1.5 0-1.7l2.4-.52a6.6 6.6 0 0 0 5.06-5.06z"/></svg>';
+    function palette(){
+      return document.documentElement.getAttribute("data-theme") === "light"
+        ? ["#4C5FC0", "#6E86E0", "#4659B5"]
+        : ["#95AEF8", "#C5D0FB", "#7DA2FF"];
+    }
+    function roll(s){
+      var colors = palette();
+      s.style.left = (2 + Math.random() * 96) + "%";
+      s.style.top = (-16 + Math.random() * 122) + "%";
+      var sz = 9 + Math.random() * 8;
+      s.style.width = sz + "px"; s.style.height = sz + "px";
+      s.style.color = colors[Math.floor(Math.random() * colors.length)];
+    }
+    for (var i = 0; i < 8; i++){
+      var s = document.createElement("span");
+      s.className = "spk";
+      s.innerHTML = STAR;
+      s.style.animationDelay = (Math.random() * 1.3).toFixed(2) + "s";
+      roll(s);
+      s.addEventListener("animationiteration", function(){ roll(this); });
+      host.appendChild(s);
+    }
+  })();
+
+  /* background-gradient-animation: one blob lazily follows the pointer */
+  (function(){
+    if (reduce || !finePointer) return;
+    var card = document.querySelector(".access .wrap"), blob = $("#bgaMouse");
+    if (!card || !blob) return;
+    card.addEventListener("pointermove", function(e){
+      var r = card.getBoundingClientRect();
+      blob.style.transform = "translate(" +
+        (e.clientX - r.left - r.width * 0.53) + "px," +
+        (e.clientY - r.top - r.height * 0.55) + "px)";
+    });
+  })();
 
   if (typeof gsap === "undefined" || reduce){
     fillStatic();
