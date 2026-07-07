@@ -316,6 +316,9 @@ html[data-theme="light"] .aurora{opacity:.5}
   background:radial-gradient(460px circle at var(--mx,50%) var(--my,50%),rgba(149,174,248,.11),transparent 65%);
 }
 .f-card:hover::after,.slide:hover::after{opacity:1}
+/* serafim pixel-canvas port: twinkling pixel grid on hover, behind content */
+.pxc{position:absolute;inset:0;z-index:0;pointer-events:none}
+.f-card>*:not(.pxc),.slide>*:not(.pxc){position:relative;z-index:1}
 .f-body{display:contents}
 .stack-item{display:contents}
 .f-7{grid-column:span 7}.f-5{grid-column:span 5}
@@ -685,7 +688,7 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
     <article class="slide">
       <span class="slide-num" aria-hidden="true">01</span>
       <div>
-        <div class="s-icon" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
+        <div class="s-icon" aria-hidden="true" data-anim="mic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
         <h3>Говорите с пациентом</h3>
       </div>
       <p>Нажмите запись и ведите осмотр как обычно. Компьютер больше не отвлекает от человека.</p>
@@ -693,7 +696,7 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
     <article class="slide">
       <span class="slide-num" aria-hidden="true">02</span>
       <div>
-        <div class="s-icon" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3l3-8 4 16 3-8h7"/></svg></div>
+        <div class="s-icon" aria-hidden="true" data-anim="wave"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3l3-8 4 16 3-8h7"/></svg></div>
         <h3>Avris слушает и распознаёт</h3>
       </div>
       <p>Whisper переводит речь в текст на русском и таджикском прямо во время разговора.</p>
@@ -701,7 +704,7 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
     <article class="slide">
       <span class="slide-num" aria-hidden="true">03</span>
       <div>
-        <div class="s-icon" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></div>
+        <div class="s-icon" aria-hidden="true" data-anim="doc"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></div>
         <h3>SOAP готов к подписи</h3>
       </div>
       <p>Claude структурирует жалобы, объективный статус, диагноз с кодом МКБ-10 и план лечения. Каждая строка привязана к фразе врача.</p>
@@ -709,7 +712,7 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
     <article class="slide">
       <span class="slide-num" aria-hidden="true">04</span>
       <div>
-        <div class="s-icon" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14h1M14 20h1M20 20h1"/></svg></div>
+        <div class="s-icon" aria-hidden="true" data-anim="qr"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14h1M14 20h1M20 20h1"/></svg></div>
         <h3>Анализы уходят в лабораторию</h3>
       </div>
       <p>Направление формируется QR-кодом за секунды. Результаты возвращаются в карту пациента автоматически.</p>
@@ -724,7 +727,7 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
     <p class="lead" data-rv style="margin-top:14px">Не просто диктовка. Инструменты, закрывающие целый рабочий день: от утреннего приёма до ночного обхода.</p>
     <div class="bento">
       <div class="stack-item"><article class="f-card f-7" data-rv>
-        <div class="f-body"><div class="f-icon" data-draw aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
+        <div class="f-body"><div class="f-icon" data-draw aria-hidden="true" data-anim="mic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
         <h3>Voice Night Rounds</h3>
         <p>Ночной обход голосом. Витальные показатели, статус палаты и план фиксируются на ходу, без возврата к компьютеру на посту.</p></div>
         <div class="f-visual chips" aria-hidden="true">
@@ -734,13 +737,13 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
         </div>
       </article></div>
       <div class="stack-item"><article class="f-card f-5" data-rv>
-        <div class="f-body"><div class="f-icon" data-draw aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14h1M14 20h1M20 20h1"/></svg></div>
+        <div class="f-body"><div class="f-icon" data-draw aria-hidden="true" data-anim="qr"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14h1M14 20h1M20 20h1"/></svg></div>
         <h3>Lab Connect QR</h3>
         <p>Направление на анализы за секунды. Пациент уносит QR-код, лаборатория видит заказ мгновенно.</p></div>
         <div class="f-visual chips" aria-hidden="true"><span class="chip"><b>38</b> исследований в каталоге</span></div>
       </article></div>
       <div class="stack-item"><article class="f-card f-5" data-rv>
-        <div class="f-body"><div class="f-icon" data-draw aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7a5 5 0 1 0 5 5"/><path d="M12 12 17 7"/></svg></div>
+        <div class="f-body"><div class="f-icon" data-draw aria-hidden="true" data-anim="gauge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7a5 5 0 1 0 5 5"/><path d="M12 12 17 7"/></svg></div>
         <h3>Avris Score</h3>
         <p>Индекс состояния пациента от 0 до 100. Подсвечивает тех, к кому стоит подойти первым.</p></div>
         <div class="f-visual ring-wrap" aria-hidden="true">
@@ -753,7 +756,7 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
         </div>
       </article></div>
       <div class="stack-item"><article class="f-card f-7" data-rv>
-        <div class="f-body"><div class="f-icon" data-draw aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+        <div class="f-body"><div class="f-icon" data-draw aria-hidden="true" data-anim="link"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
         <h3>Evidence Link</h3>
         <p>Каждая строка SOAP связана с фразой из речи врача. Один клик, и видно, откуда взялась формулировка. Полная проверяемость документа.</p></div>
         <div class="f-visual ev-demo" aria-hidden="true">
@@ -1464,11 +1467,45 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
       scrollTrigger: { trigger: el, start: "top 86%", once: true } });
   });
 
-  /* ---------- stroke icons draw themselves on reveal ---------- */
-  gsap.utils.toArray("[data-draw] svg, .s-icon svg").forEach(function(svg){
-    var strokes = svg.querySelectorAll("path,line,rect,circle");
-    gsap.from(strokes, { drawSVG: "0%", duration: 1.1, ease: "power2.inOut", stagger: 0.1,
-      scrollTrigger: { trigger: svg, start: "top 88%", once: true } });
+  /* ---------- icon loops: each pictogram acts out its meaning ---------- */
+  gsap.utils.toArray("[data-anim]").forEach(function(box){
+    var svg = box.querySelector("svg");
+    var type = box.getAttribute("data-anim");
+    var paths = svg.querySelectorAll("path");
+    var tl = gsap.timeline({ repeat: -1, repeatDelay: 0.6 });
+    if (type === "mic"){
+      /* breathing, like a live recording */
+      tl.to(svg, { y: -1.5, scale: 1.1, duration: 1.0, ease: "sine.inOut" })
+        .to(svg, { y: 0, scale: 1, duration: 1.0, ease: "sine.inOut" });
+    } else if (type === "wave"){
+      /* a monitor sweep runs along the trace */
+      var line = svg.querySelector("polyline, path");
+      tl.fromTo(line, { drawSVG: "0% 24%" }, { drawSVG: "76% 100%", duration: 1.6, ease: "none" });
+      tl.repeatDelay(0.25);
+    } else if (type === "doc"){
+      /* the note writes its lines, then the page refreshes */
+      var ink = paths[1];
+      tl.fromTo(ink, { drawSVG: "0%" }, { drawSVG: "100%", duration: 1.4, ease: "power1.inOut" })
+        .to(ink, { opacity: 0, duration: 0.4, delay: 1.0 })
+        .set(ink, { drawSVG: "0%" })
+        .to(ink, { opacity: 1, duration: 0.2 });
+    } else if (type === "qr"){
+      /* scan flicker across the code squares */
+      var cells = svg.querySelectorAll("rect, path");
+      tl.to(cells, { opacity: 0.25, duration: 0.4, stagger: 0.14, ease: "sine.inOut" })
+        .to(cells, { opacity: 1, duration: 0.4, stagger: 0.14, ease: "sine.inOut" });
+    } else if (type === "gauge"){
+      /* the needle sweeps the dial */
+      var needle = paths[paths.length - 1];
+      tl.to(needle, { rotation: 52, svgOrigin: "12 12", duration: 1.4, ease: "sine.inOut" })
+        .to(needle, { rotation: 0, svgOrigin: "12 12", duration: 1.4, ease: "sine.inOut" });
+    } else if (type === "link"){
+      /* the two link halves tug together */
+      tl.to(paths[0], { x: 1.1, y: 1.1, duration: 0.9, ease: "sine.inOut" }, 0)
+        .to(paths[1], { x: -1.1, y: -1.1, duration: 0.9, ease: "sine.inOut" }, 0)
+        .to(paths[0], { x: 0, y: 0, duration: 0.9, ease: "sine.inOut" })
+        .to(paths[1], { x: 0, y: 0, duration: 0.9, ease: "sine.inOut" }, "<");
+    }
   });
 
   /* ---------- demo wave: continuous life ---------- */
@@ -1652,6 +1689,59 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
         el.style.setProperty("--mx", (e.clientX - r.left) + "px");
         el.style.setProperty("--my", (e.clientY - r.top) + "px");
       });
+    });
+
+    /* serafim pixel-canvas port: pixels twinkle in on hover, fade out on leave */
+    document.querySelectorAll(".f-card, .slide").forEach(function(card){
+      var cv = document.createElement("canvas");
+      cv.className = "pxc";
+      card.appendChild(cv);
+      var ctx = cv.getContext("2d");
+      var px = [], raf = null, progress = 0, target = 0, W = 0, H = 0;
+      function colors(){
+        return document.documentElement.getAttribute("data-theme") === "light"
+          ? ["#4C5FC0", "#8AA0EE", "#B9C6F5"]
+          : ["#95AEF8", "#C5D0FB", "#6E86E0"];
+      }
+      function build(){
+        var r = card.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+        W = r.width; H = r.height;
+        cv.width = W * dpr; cv.height = H * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        px = [];
+        for (var x = 8; x < W; x += 16){
+          for (var y = 8; y < H; y += 16){
+            px.push({ x: x, y: y, d: Math.random(), ph: Math.random() * 6.28, sp: 2 + Math.random() * 3, c: Math.floor(Math.random() * 3) });
+          }
+        }
+      }
+      function frame(ts){
+        progress += (target - progress) * 0.07;
+        ctx.clearRect(0, 0, W, H);
+        if (progress > 0.005){
+          var pal = colors();
+          for (var i = 0; i < px.length; i++){
+            var p = px[i];
+            var ramp = Math.max(0, Math.min(1, progress * 1.7 - p.d * 0.7));
+            if (!ramp) continue;
+            var tw = 0.3 + 0.7 * Math.abs(Math.sin(ts / 1000 * p.sp + p.ph));
+            ctx.globalAlpha = ramp * tw * 0.85;
+            ctx.fillStyle = pal[p.c];
+            ctx.fillRect(p.x, p.y, 2.4, 2.4);
+          }
+          ctx.globalAlpha = 1;
+          raf = requestAnimationFrame(frame);
+        } else {
+          raf = null;
+        }
+      }
+      card.addEventListener("pointerenter", function(){
+        var r = card.getBoundingClientRect();
+        if (!px.length || Math.abs(r.width - W) > 2 || Math.abs(r.height - H) > 2) build();
+        target = 1;
+        if (!raf) raf = requestAnimationFrame(frame);
+      });
+      card.addEventListener("pointerleave", function(){ target = 0; });
     });
   }
 
