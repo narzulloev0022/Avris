@@ -113,6 +113,23 @@ def send_admin_new_doctor_alert(admin_email: str, doctor_full_name: str, doctor_
     return _send_via_resend(admin_email, "Avris AI — новая заявка от врача", html, "Admin alert", doctor_email)
 
 
+def send_waitlist_alert(to_email: str, signup_email: str, role: str, lang: str) -> bool:
+    """Owner notification for a new waitlist signup (marketing landing)."""
+    html_body = f"""
+    <div style="font-family:Inter,Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#1a202c">
+      <h2 style="color:#4659B5;margin:0 0 16px">Avris AI · Лист ожидания</h2>
+      <p><strong>Новая заявка!</strong></p>
+      <p>Email: <strong>{_esc(signup_email)}</strong><br>
+         Роль: {_esc(role)}<br>
+         Язык страницы: {_esc(lang)}</p>
+      <hr style="border:none;border-top:1px solid rgba(0,0,0,.08);margin:24px 0">
+      <p style="color:#8a8275;font-size:12px">Hyperion Labs · Avris AI</p>
+    </div>
+    """
+    return _send_via_resend(to_email, "Avris AI — новая заявка в лист ожидания",
+                            html_body, "waitlist alert", "")
+
+
 def send_doctor_approved(to_email: str, full_name: str = "") -> bool:
     body = """
       <p>Ваша заявка на доступ к Avris AI одобрена.</p>

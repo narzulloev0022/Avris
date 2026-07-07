@@ -30,6 +30,13 @@ def _auth_aware_key(request: Request) -> str:
                 return f"user:{uid}"
         except Exception:
             pass
+    # Behind Cloudflare the socket peer is a CF edge node, which would make
+    # every visitor share one bucket. CF-Connecting-IP carries the real client.
+    # (If someone hits the Railway origin directly and forges the header they
+    # only shard their own bucket — each request still pays full cost.)
+    cf_ip = request.headers.get("cf-connecting-ip")
+    if cf_ip:
+        return f"ip:{cf_ip}"
     return f"ip:{get_remote_address(request)}"
 
 

@@ -11,12 +11,14 @@ ADMIN_RESET_KEY env var as the destructive admin endpoints (503 when unset).
 """
 import logging
 import os
+import secrets
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Request, status
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 
+import email_service
 from database import get_db
 from models import WaitlistEntry
 from rate_limit import limiter
@@ -37,7 +39,7 @@ class WaitlistIn(BaseModel):
 
 @router.post("")
 @limiter.limit("5/minute")
-def join_waitlist(request: Request, payload: WaitlistIn, db: Session = Depends(get_db)):
+def join_waitlist(request: Request, payload: WaitlistIn, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     if payload.website:
         # Honeypot tripped — pretend success so bots learn nothing.
         return {"ok": True}
@@ -45,13 +47,20 @@ def join_waitlist(request: Request, payload: WaitlistIn, db: Session = Depends(g
     role = payload.role if payload.role in ROLES else "doctor"
     lang = payload.lang if payload.lang in ("ru", "en", "tj") else "ru"
 
+    # Deliberately indistinguishable from a fresh signup — the endpoint must
+    # not double as an "is this email on the list?" oracle.
     if db.query(WaitlistEntry).filter(WaitlistEntry.email == email).first():
-        return {"ok": True, "already": True}
+        return {"ok": True}
 
     db.add(WaitlistEntry(email=email, role=role, lang=lang))
     db.commit()
     # Log the domain only — full addresses stay out of the log stream.
     log.info("waitlist: +1 %s (@%s, %s)", role, email.split("@")[-1], lang)
+
+    # Owner alert — best-effort, after the response, never blocks the signup.
+    notify = os.getenv("WAITLIST_NOTIFY_EMAIL", "")
+    if notify:
+        background_tasks.add_task(email_service.send_waitlist_alert, notify, email, role, lang)
     return {"ok": True}
 
 
@@ -63,7 +72,7 @@ def export_waitlist(
     admin_key: Optional[str] = os.getenv("ADMIN_RESET_KEY")
     if not admin_key:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Export disabled: ADMIN_RESET_KEY not set")
-    if x_admin_reset_key != admin_key:
+    if not secrets.compare_digest(x_admin_reset_key or "", admin_key):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Bad admin key")
     rows = db.query(WaitlistEntry).order_by(WaitlistEntry.created_at.desc()).all()
     return {
