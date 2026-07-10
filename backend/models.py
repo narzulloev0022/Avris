@@ -336,6 +336,23 @@ class PatientRefreshToken(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
 
+class PatientLinkCode(Base):
+    """Short-lived 6-digit code the patient shows at the reception desk.
+
+    One-time and TTL-bound (~5 min): the DB row — not the QR payload — is the
+    source of truth, so a screenshot of an old QR is worthless. Issued only
+    when onboarding consent is present; consumed (used_at) on a successful
+    link. Expired rows are lazily purged on every issue."""
+    __tablename__ = "patient_link_codes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(6), unique=True, index=True, nullable=False)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
+    expires_at = Column(DateTime, nullable=False)
+    used_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 class VisitSummary(Base):
     """Patient-readable retelling of a consultation's SOAP note.
 
