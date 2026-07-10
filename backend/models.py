@@ -321,6 +321,21 @@ class PatientLink(Base):
     )
 
 
+class PatientRefreshToken(Base):
+    """Refresh-token registry for the patient door — mirrors ``refresh_tokens``
+    but points at ``patient_accounts``. Kept as a separate table (not a column
+    on refresh_tokens) so the two identity spaces can never be confused by an
+    integer id collision between users.id and patient_accounts.id."""
+    __tablename__ = "patient_refresh_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    jti = Column(String(36), unique=True, index=True, nullable=False)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
+    revoked = Column(Boolean, nullable=False, default=False)
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 class VisitSummary(Base):
     """Patient-readable retelling of a consultation's SOAP note.
 
