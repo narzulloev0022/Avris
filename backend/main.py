@@ -60,6 +60,7 @@ from stats import router as stats_router
 from waitlist import router as waitlist_router
 from patient_auth import router as patient_auth_router
 from patient_api import router as patient_api_router
+from patient_links import patient_router as patient_links_patient_router, doctor_router as patient_links_doctor_router
 from rate_limit import limiter
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:8080")
@@ -140,6 +141,8 @@ app.include_router(stats_router)
 app.include_router(waitlist_router)
 app.include_router(patient_auth_router)
 app.include_router(patient_api_router)
+app.include_router(patient_links_patient_router)
+app.include_router(patient_links_doctor_router)
 
 
 @app.get("/api/health")
