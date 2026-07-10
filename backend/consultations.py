@@ -1,7 +1,7 @@
 from datetime import datetime
 from io import BytesIO
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
@@ -50,6 +50,7 @@ class ConsultationResponse(BaseModel):
 @router.post("/", response_model=ConsultationResponse, status_code=status.HTTP_201_CREATED)
 def create_consultation(
     payload: ConsultationCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -67,6 +68,10 @@ def create_consultation(
     db.refresh(c)
     audit(db, action="create", entity="consultation", user_id=current_user.id,
           entity_id=c.id, meta={"patient_id": c.patient_id, "language": c.language})
+    # Patient app: pre-generate the patient-readable summary in the background.
+    # Best-effort by design — a Claude failure never breaks the doctor's save.
+    from patient_visits import generate_visit_summary
+    background_tasks.add_task(generate_visit_summary, c.id)
     return c
 
 
