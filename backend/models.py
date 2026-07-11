@@ -290,6 +290,10 @@ class PatientAccount(Base):
     allergies = Column(JSON, nullable=False, default=list)
     medications = Column(JSON, nullable=False, default=list)
     consent_doctors_at = Column(DateTime, nullable=True)
+    # Which consent text/version the patient agreed to (recorded together with
+    # consent_doctors_at at onboarding). A bare timestamp isn't legally
+    # defensible on its own — you must be able to show WHAT was consented to.
+    consent_version = Column(String(32), nullable=True)
     language_pref = Column(String(4), nullable=False, default="ru")
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
@@ -351,6 +355,23 @@ class PatientLinkCode(Base):
     expires_at = Column(DateTime, nullable=False)
     used_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class LinkThrottle(Base):
+    """Per-doctor brute-force guard for patient-link code entry.
+
+    A wrong or dead 6-digit code (404/410) from preview/confirm increments
+    ``consecutive_failures``; after MAX_LINK_FAILURES in a row this doctor's
+    linking is locked for LINK_LOCKOUT_MINUTES. A successful resolve resets
+    the counter. One row per doctor. See patient_links.py for the constants.
+    """
+    __tablename__ = "link_throttle"
+
+    id = Column(Integer, primary_key=True, index=True)
+    doctor_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False, index=True)
+    consecutive_failures = Column(Integer, nullable=False, default=0)
+    locked_until = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
 
 class VisitSummary(Base):
