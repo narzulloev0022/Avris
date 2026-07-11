@@ -84,6 +84,47 @@ class TestProfile:
         assert client.get("/api/patient/profile").status_code == 401
 
 
+class TestEmergencyProfile:
+    def test_returns_only_emergency_fields(self, client):
+        h = _auth(client, "+992901000020")
+        # заполняем ВЕСЬ профиль, включая поля, которых в экстренной карточке быть не должно
+        client.put("/api/patient/profile", headers=h, json={
+            "full_name": "Носирова Мехрангез",
+            "blood_type": "A(II) Rh+",
+            "allergies": ["Пенициллин"],
+            "chronic_conditions": ["Гипотиреоз"],
+            "height": 164.0, "weight": 58.5, "gender": "female",
+            "date_of_birth": "1992-03-14", "medications": ["Левотироксин"],
+        })
+        r = client.get("/api/patient/emergency", headers=h)
+        assert r.status_code == 200
+        body = r.json()
+        # ровно 5 полей, ничего лишнего
+        assert set(body.keys()) == {
+            "avris_patient_id", "full_name", "blood_type", "allergies", "chronic_conditions"
+        }
+        # критично — суть эндпоинта: чувствительные/лишние поля НЕ утекают
+        for leaked in ("height", "weight", "gender", "date_of_birth",
+                       "medications", "phone", "email", "consent_doctors_at", "consent_version"):
+            assert leaked not in body, f"leaked field: {leaked}"
+        # нужные поля — на месте
+        assert body["blood_type"] == "A(II) Rh+"
+        assert body["allergies"] == ["Пенициллин"]
+        assert body["chronic_conditions"] == ["Гипотиреоз"]
+        assert body["avris_patient_id"].startswith("AV-")
+
+    def test_unauthenticated_401(self, client):
+        assert client.get("/api/patient/emergency").status_code == 401
+
+    def test_each_patient_sees_only_own_emergency(self, client):
+        h_a = _auth(client, "+992901000021")
+        h_b = _auth(client, "+992901000022")
+        client.put("/api/patient/profile", headers=h_a, json={"blood_type": "O(I) Rh-"})
+        client.put("/api/patient/profile", headers=h_b, json={"blood_type": "AB(IV) Rh+"})
+        assert client.get("/api/patient/emergency", headers=h_a).json()["blood_type"] == "O(I) Rh-"
+        assert client.get("/api/patient/emergency", headers=h_b).json()["blood_type"] == "AB(IV) Rh+"
+
+
 class TestIsolation:
     def test_each_patient_sees_only_own_profile(self, client):
         h_a = _auth(client, "+992901000005")

@@ -62,11 +62,37 @@ class PatientProfileUpdate(BaseModel):
         return v
 
 
+class EmergencyProfileOut(BaseModel):
+    """Deliberately minimal — ONLY what an emergency responder needs, small
+    enough to cache offline on the phone. Any field beyond these five is a
+    privacy leak (see test_returns_only_emergency_fields)."""
+    avris_patient_id: str
+    full_name: Optional[str] = None
+    blood_type: Optional[str] = None
+    allergies: List[str] = []
+    chronic_conditions: List[str] = []
+
+
 # ---------- endpoints ----------
 
 @router.get("/profile", response_model=PatientProfileOut)
 def get_profile(current: PatientAccount = Depends(get_current_patient)):
     return PatientProfileOut.model_validate(current)
+
+
+@router.get("/emergency", response_model=EmergencyProfileOut)
+def emergency_profile(current: PatientAccount = Depends(get_current_patient)):
+    """Minimal emergency card for offline caching — same self-scoped auth as
+    /profile (a patient reads their own data; consent gates DOCTOR access, not
+    self-read). Built explicitly, not from the full account, so no extra field
+    can ever ride along."""
+    return EmergencyProfileOut(
+        avris_patient_id=current.avris_patient_id,
+        full_name=current.full_name,
+        blood_type=current.blood_type,
+        allergies=list(current.allergies or []),
+        chronic_conditions=list(current.chronic_conditions or []),
+    )
 
 
 @router.put("/profile", response_model=PatientProfileOut)
