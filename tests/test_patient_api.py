@@ -115,3 +115,23 @@ class TestConsent:
             AuditLog.action == "consent",
         ).all()
         assert len(rows) == 1
+
+    def test_consent_records_default_version(self, client):
+        h = _auth(client, "+992901000009")
+        r = client.post("/api/patient/consent", headers=h)
+        assert r.status_code == 200
+        assert r.json()["consent_version"] == "1.0"
+
+    def test_consent_records_explicit_version(self, client):
+        h = _auth(client, "+992901000010")
+        r = client.post("/api/patient/consent", headers=h, json={"version": "2.1-tj"})
+        assert r.status_code == 200
+        assert r.json()["consent_version"] == "2.1-tj"
+
+    def test_consent_version_not_overwritten(self, client):
+        h = _auth(client, "+992901000011")
+        first = client.post("/api/patient/consent", headers=h, json={"version": "1.0"}).json()
+        second = client.post("/api/patient/consent", headers=h, json={"version": "9.9"}).json()
+        # первое согласие — юридически значимое, версия не переустанавливается
+        assert second["consent_version"] == "1.0"
+        assert second["consent_doctors_at"] == first["consent_doctors_at"]

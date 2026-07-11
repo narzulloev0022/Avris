@@ -21,6 +21,10 @@ from models import PatientAccount
 from patient_auth import PatientAccountOut, get_current_patient
 from rate_limit import limiter
 
+# Bump when the consent text shown at onboarding changes materially, so old
+# acceptances remain distinguishable from new ones.
+CURRENT_CONSENT_VERSION = "1.0"
+
 router = APIRouter(prefix="/api/patient", tags=["patient"])
 
 
@@ -84,19 +88,25 @@ def update_profile(
     return PatientProfileOut.model_validate(current)
 
 
+class ConsentBody(BaseModel):
+    version: Optional[str] = None  # which consent text the client displayed
+
+
 @router.post("/consent", response_model=PatientProfileOut)
 @limiter.limit("10/minute")
 def give_consent(
     request: Request,
+    body: Optional[ConsentBody] = None,
     current: PatientAccount = Depends(get_current_patient),
     db: Session = Depends(get_db),
 ):
     """Onboarding consent to doctor access. Idempotent: the first timestamp
-    is the legally meaningful one and is never overwritten."""
+    AND version are the legally meaningful ones and are never overwritten."""
     if current.consent_doctors_at is None:
         current.consent_doctors_at = datetime.utcnow()
+        current.consent_version = (body.version if body else None) or CURRENT_CONSENT_VERSION
         db.commit()
         db.refresh(current)
         audit(db, action="consent", entity="patient_account", user_id=None,
-              entity_id=current.id, meta={"door": "patient"})
+              entity_id=current.id, meta={"door": "patient", "version": current.consent_version})
     return PatientProfileOut.model_validate(current)

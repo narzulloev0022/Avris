@@ -143,6 +143,7 @@ class PatientAccountOut(BaseModel):
     email: Optional[str] = None
     full_name: Optional[str] = None
     consent_doctors_at: Optional[datetime] = None
+    consent_version: Optional[str] = None
     language_pref: str = "ru"
 
     model_config = ConfigDict(from_attributes=True)

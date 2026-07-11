@@ -14,6 +14,7 @@ here: a medical-record link demands consent + short TTL + single use.
 """
 import secrets
 from datetime import date, datetime, timedelta
+from math import ceil
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
@@ -25,12 +26,21 @@ from sqlalchemy.orm import Session
 from audit import audit
 from auth import ALGORITHM, SECRET_KEY, get_current_user
 from database import get_db
-from models import Patient, PatientAccount, PatientLink, PatientLinkCode, User
+from models import LinkThrottle, Patient, PatientAccount, PatientLink, PatientLinkCode, User
 from patient_auth import get_current_patient
 from rate_limit import limiter
 
 LINK_CODE_TTL_MINUTES = 5
 LINK_AUDIENCE = "patient-link"
+
+# Brute-force guard for code entry. Only 404/410 (unknown / dead code) count as
+# failures — a valid code blocked by 403 (no consent) is not a guess. 5-in-a-row
+# locks the doctor's linking for 15 min: long enough that sweeping the 10^6 code
+# space (which also rotates every 5-min TTL) is hopeless, short enough not to
+# strand a doctor who merely fat-fingered a digit. rate_limit.py's 20-30/min
+# caps burst rate; this adds the hard stop the endpoint limit alone can't.
+MAX_LINK_FAILURES = 5
+LINK_LOCKOUT_MINUTES = 15
 
 patient_router = APIRouter(prefix="/api/patient", tags=["patient"])
 doctor_router = APIRouter(prefix="/api/patient-links", tags=["patient-links"])
@@ -116,6 +126,38 @@ def _resolve_code_row(db: Session, code: str) -> PatientLinkCode:
     if datetime.utcnow() > row.expires_at:
         raise HTTPException(status_code=410, detail="Код истёк — попросите пациента показать новый")
     return row
+
+
+def _ensure_not_locked(db: Session, doctor_id: int) -> None:
+    row = db.query(LinkThrottle).filter(LinkThrottle.doctor_id == doctor_id).first()
+    if row and row.locked_until and row.locked_until > datetime.utcnow():
+        mins = ceil((row.locked_until - datetime.utcnow()).total_seconds() / 60)
+        raise HTTPException(
+            status_code=429,
+            detail=f"Слишком много неудачных попыток привязки. Повторите через ~{mins} мин.",
+        )
+
+
+def _record_link_failure(db: Session, doctor_id: int) -> None:
+    row = db.query(LinkThrottle).filter(LinkThrottle.doctor_id == doctor_id).first()
+    if not row:
+        row = LinkThrottle(doctor_id=doctor_id)
+        db.add(row)
+    row.consecutive_failures = (row.consecutive_failures or 0) + 1
+    row.updated_at = datetime.utcnow()
+    if row.consecutive_failures >= MAX_LINK_FAILURES:
+        row.locked_until = datetime.utcnow() + timedelta(minutes=LINK_LOCKOUT_MINUTES)
+        row.consecutive_failures = 0
+    db.commit()
+
+
+def _record_link_success(db: Session, doctor_id: int) -> None:
+    row = db.query(LinkThrottle).filter(LinkThrottle.doctor_id == doctor_id).first()
+    if row and (row.consecutive_failures or row.locked_until):
+        row.consecutive_failures = 0
+        row.locked_until = None
+        row.updated_at = datetime.utcnow()
+        db.commit()
 
 
 def _account_or_403(db: Session, account_id: int) -> PatientAccount:
@@ -232,8 +274,15 @@ def preview_by_code(
     doctor: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    row = _resolve_code_row(db, code)
-    account = _account_or_403(db, row.patient_account_id)
+    _ensure_not_locked(db, doctor.id)
+    try:
+        row = _resolve_code_row(db, code)
+        account = _account_or_403(db, row.patient_account_id)
+    except HTTPException as e:
+        if e.status_code in (404, 410):
+            _record_link_failure(db, doctor.id)
+        raise
+    _record_link_success(db, doctor.id)
     return LinkPreviewOut(
         full_name=account.full_name,
         date_of_birth=account.date_of_birth,
@@ -252,26 +301,35 @@ def confirm_link(
     doctor: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if body.code:
-        row = _resolve_code_row(db, body.code.strip())
-        account = _account_or_403(db, row.patient_account_id)
-        row.used_at = datetime.utcnow()
-        db.commit()
-        result = _link(db, doctor, account, method="qr")
-    elif body.avris_patient_id and body.full_name:
-        account = db.query(PatientAccount).filter(
-            PatientAccount.avris_patient_id == body.avris_patient_id.strip().upper()
-        ).first()
-        # Name mismatch and unknown ID are the same 404 on purpose — the
-        # fallback must not leak which Avris IDs exist.
-        if not account or not account.full_name or \
-                account.full_name.strip().casefold() != body.full_name.strip().casefold():
-            raise HTTPException(status_code=404, detail="Пациент не найден или имя не совпадает")
-        if account.consent_doctors_at is None:
-            raise HTTPException(status_code=403, detail="Пациент не дал согласие на доступ врачей")
-        result = _link(db, doctor, account, method="name")
-    else:
-        raise HTTPException(status_code=422, detail="Нужен код или Avris ID + ФИО")
+    _ensure_not_locked(db, doctor.id)
+    try:
+        if body.code:
+            row = _resolve_code_row(db, body.code.strip())
+            account = _account_or_403(db, row.patient_account_id)
+            row.used_at = datetime.utcnow()
+            db.commit()
+            result = _link(db, doctor, account, method="qr")
+        elif body.avris_patient_id and body.full_name:
+            account = db.query(PatientAccount).filter(
+                PatientAccount.avris_patient_id == body.avris_patient_id.strip().upper()
+            ).first()
+            # Name mismatch and unknown ID are the same 404 on purpose — the
+            # fallback must not leak which Avris IDs exist.
+            if not account or not account.full_name or \
+                    account.full_name.strip().casefold() != body.full_name.strip().casefold():
+                raise HTTPException(status_code=404, detail="Пациент не найден или имя не совпадает")
+            if account.consent_doctors_at is None:
+                raise HTTPException(status_code=403, detail="Пациент не дал согласие на доступ врачей")
+            result = _link(db, doctor, account, method="name")
+        else:
+            raise HTTPException(status_code=422, detail="Нужен код или Avris ID + ФИО")
+    except HTTPException as e:
+        # Only wrong/dead lookups count as brute-force; 403 (valid but no consent)
+        # and 422 (malformed request) are not guesses.
+        if e.status_code in (404, 410):
+            _record_link_failure(db, doctor.id)
+        raise
+    _record_link_success(db, doctor.id)
 
     if not result.created:
         response.status_code = 200  # идемпотентный повтор — не «создано»
