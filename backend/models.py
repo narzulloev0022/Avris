@@ -387,6 +387,11 @@ class VisitSummary(Base):
     consultation_id = Column(Integer, ForeignKey("consultations.id", ondelete="CASCADE"), unique=True, nullable=False, index=True)
     patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
     summary = Column(Text, nullable=False)
+    # Human-readable rendering of the treatment plan (SOAP "P"), produced by the
+    # SAME Claude pass as the summary — never raw SOAP. NULL = no prescriptions
+    # in this visit. Distinct from PatientAccount.medications ("known meds" the
+    # patient self-reported at onboarding), which is never mixed in here.
+    prescriptions = Column(Text, nullable=True)
     language = Column(String(4), nullable=False, default="ru")
     model = Column(String(64), nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)

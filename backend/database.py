@@ -67,6 +67,12 @@ def init_db():
         with engine.begin() as conn:
             if "consent_version" not in pa_existing:
                 conn.execute(text("ALTER TABLE patient_accounts ADD COLUMN consent_version VARCHAR(32)"))
+    # visit_summaries — prescriptions block added after the table shipped.
+    if "visit_summaries" in insp.get_table_names():
+        vs_existing = {c["name"] for c in insp.get_columns("visit_summaries")}
+        with engine.begin() as conn:
+            if "prescriptions" not in vs_existing:
+                conn.execute(text("ALTER TABLE visit_summaries ADD COLUMN prescriptions TEXT"))
     # Lightweight in-place migrations for sqlite (idempotent)
     if DATABASE_URL.startswith("sqlite"):
         from sqlalchemy import text, inspect
