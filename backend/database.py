@@ -61,6 +61,12 @@ def init_db():
                 conn.execute(text("ALTER TABLE users ADD COLUMN soap_edited_count INTEGER NOT NULL DEFAULT 0"))
             if "stt_consent" not in u_existing:
                 conn.execute(text("ALTER TABLE users ADD COLUMN stt_consent BOOLEAN NOT NULL DEFAULT FALSE"))
+    # patient_accounts — consent_version added after the table shipped.
+    if "patient_accounts" in insp.get_table_names():
+        pa_existing = {c["name"] for c in insp.get_columns("patient_accounts")}
+        with engine.begin() as conn:
+            if "consent_version" not in pa_existing:
+                conn.execute(text("ALTER TABLE patient_accounts ADD COLUMN consent_version VARCHAR(32)"))
     # Lightweight in-place migrations for sqlite (idempotent)
     if DATABASE_URL.startswith("sqlite"):
         from sqlalchemy import text, inspect
