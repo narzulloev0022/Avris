@@ -5,6 +5,7 @@ never live on stage). A summary that slips into diagnosis-speak ("вероятн
 у вас…") is dropped by the safety net and stays pending. Patient access goes
 strictly through patient_links ownership.
 """
+import json
 import os
 
 os.environ.setdefault("PATIENT_DEV_OTP", "424242")
@@ -126,6 +127,49 @@ class TestSummaryGeneration:
         h, pid = _linked_patient(client, doctor_headers)
         cid = _save_consultation(client, doctor_headers, pid)  # asserts 201 inside
         assert client.get(f"/api/patient/visits/{cid}", headers=h).json()["summary"] is None
+
+
+class TestPrescriptions:
+    def test_prescriptions_extracted_as_separate_block(self, client, doctor_headers, mock_claude):
+        mock_claude["reply"] = json.dumps({
+            "summary": GOOD_SUMMARY,
+            "prescriptions": "Амброксол 30мг — 3 раза в день после еды, 5 дней.\nОбильное тёплое питьё.",
+        })
+        h, pid = _linked_patient(client, doctor_headers)
+        cid = _save_consultation(client, doctor_headers, pid)
+
+        detail = client.get(f"/api/patient/visits/{cid}", headers=h).json()
+        assert detail["summary"] == GOOD_SUMMARY
+        assert "Амброксол" in detail["prescriptions"]
+        assert detail["summary_status"] == "ready"
+
+    def test_no_prescriptions_when_plan_empty(self, client, doctor_headers, mock_claude):
+        mock_claude["reply"] = json.dumps({"summary": GOOD_SUMMARY, "prescriptions": ""})
+        h, pid = _linked_patient(client, doctor_headers)
+        cid = _save_consultation(client, doctor_headers, pid)
+        detail = client.get(f"/api/patient/visits/{cid}", headers=h).json()
+        assert detail["summary"] == GOOD_SUMMARY
+        assert detail["prescriptions"] is None
+
+    def test_plaintext_reply_still_works_as_summary(self, client, doctor_headers, mock_claude):
+        """Fallback: a non-JSON Claude reply becomes the summary, no prescriptions."""
+        mock_claude["reply"] = GOOD_SUMMARY  # plain text, not JSON
+        h, pid = _linked_patient(client, doctor_headers)
+        cid = _save_consultation(client, doctor_headers, pid)
+        detail = client.get(f"/api/patient/visits/{cid}", headers=h).json()
+        assert detail["summary"] == GOOD_SUMMARY
+        assert detail["prescriptions"] is None
+
+    def test_forbidden_in_prescriptions_dropped_but_summary_kept(self, client, doctor_headers, mock_claude):
+        mock_claude["reply"] = json.dumps({
+            "summary": GOOD_SUMMARY,
+            "prescriptions": "Вероятно, у вас пневмония, принимайте антибиотики.",
+        })
+        h, pid = _linked_patient(client, doctor_headers)
+        cid = _save_consultation(client, doctor_headers, pid)
+        detail = client.get(f"/api/patient/visits/{cid}", headers=h).json()
+        assert detail["summary"] == GOOD_SUMMARY       # хорошее резюме сохранено
+        assert detail["prescriptions"] is None          # опасный блок отброшен
 
 
 class TestVisitAccess:
