@@ -59,6 +59,8 @@ class Patient(Base):
     full_name = Column(String, nullable=False)
     full_name_en = Column(String, nullable=True)
     age = Column(Integer, nullable=True)
+    date_of_birth = Column(Date, nullable=True)
+    record_number = Column(String, nullable=True)  # № истории болезни / амбулаторной карты
     gender = Column(String, nullable=True)
     gender_en = Column(String, nullable=True)
     blood_type = Column(String, nullable=True)
@@ -72,6 +74,11 @@ class Patient(Base):
     department = Column(String, nullable=True)  # therapy|cardiology|surgery|neurology|pulmonology|icu|post_icu|other
     status = Column(String, nullable=True)  # stable|watch|serious|critical
     patient_type = Column(String, nullable=False, default="outpatient")  # outpatient|inpatient
+    # Стационарный слой (заполняется при patient_type=inpatient) — снимок момента
+    # госпитализации, НЕ перезаписывается текущим состоянием (status/diagnoses).
+    admission_date = Column(DateTime, nullable=True)
+    admission_diagnosis = Column(Text, nullable=True)
+    admission_status = Column(String, nullable=True)  # stable|watch|serious|critical на момент поступления
     allergies = Column(JSON, nullable=False, default=list)
     allergies_en = Column(JSON, nullable=False, default=list)
     diagnoses = Column(JSON, nullable=False, default=list)
@@ -107,6 +114,9 @@ class Consultation(Base):
     soap_p = Column(Text, nullable=True)
     language = Column(String, nullable=False, default="ru")
     duration_seconds = Column(Integer, nullable=True)
+    # visit — амбулаторный приём (default), primary — первичный осмотр при
+    # поступлении, daily — ежедневный дневник стационара.
+    visit_type = Column(String, nullable=False, default="visit")
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     patient = relationship("Patient", back_populates="consultations")

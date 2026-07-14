@@ -51,6 +51,23 @@ def init_db():
                 # Backfill existing rows as outpatient (safe default — no ward
                 # required, no ICU/round side-effects).
                 conn.execute(text("ALTER TABLE patients ADD COLUMN patient_type VARCHAR NOT NULL DEFAULT 'outpatient'"))
+            # Медкарта-фундамент: ДР, № истории болезни, снимок поступления.
+            if "date_of_birth" not in existing:
+                conn.execute(text("ALTER TABLE patients ADD COLUMN date_of_birth DATE"))
+            if "record_number" not in existing:
+                conn.execute(text("ALTER TABLE patients ADD COLUMN record_number VARCHAR"))
+            if "admission_date" not in existing:
+                conn.execute(text("ALTER TABLE patients ADD COLUMN admission_date TIMESTAMP"))
+            if "admission_diagnosis" not in existing:
+                conn.execute(text("ALTER TABLE patients ADD COLUMN admission_diagnosis TEXT"))
+            if "admission_status" not in existing:
+                conn.execute(text("ALTER TABLE patients ADD COLUMN admission_status VARCHAR"))
+    if "consultations" in insp.get_table_names():
+        c_existing = {c["name"] for c in insp.get_columns("consultations")}
+        with engine.begin() as conn:
+            if "visit_type" not in c_existing:
+                # Backfill: всё, что было до стационарного слоя — амбулаторный приём.
+                conn.execute(text("ALTER TABLE consultations ADD COLUMN visit_type VARCHAR NOT NULL DEFAULT 'visit'"))
     # users table — accuracy counters added late, need cross-DB ALTER too.
     if "users" in insp.get_table_names():
         u_existing = {c["name"] for c in insp.get_columns("users")}
