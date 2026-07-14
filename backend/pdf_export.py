@@ -232,6 +232,11 @@ def render_consultation_pdf(consultation, patient, doctor) -> bytes:
     if patient:
         meta.append(("Пациент", patient.full_name or "—"))
         sub_parts = []
+        if getattr(patient, "date_of_birth", None):
+            try:
+                sub_parts.append("д.р. " + patient.date_of_birth.strftime("%d.%m.%Y"))
+            except Exception:
+                sub_parts.append("д.р. " + str(patient.date_of_birth))
         if patient.age is not None:
             sub_parts.append(f"{patient.age} лет")
         if patient.gender:
@@ -240,6 +245,8 @@ def render_consultation_pdf(consultation, patient, doctor) -> bytes:
             sub_parts.append(patient.ward)
         if sub_parts:
             meta.append(("", " · ".join(sub_parts)))
+        if getattr(patient, "record_number", None):
+            meta.append(("№ карты/ИБ", patient.record_number))
         if patient.diagnoses:
             meta.append(("Диагнозы", ", ".join(patient.diagnoses)))
         if patient.allergies:
@@ -252,7 +259,7 @@ def render_consultation_pdf(consultation, patient, doctor) -> bytes:
     story.append(Spacer(0, 0.4 * cm))
 
     # SOAP block
-    story.append(Paragraph("SOAP-ДОКУМЕНТАЦИЯ · Claude Sonnet", styles["h2"]))
+    story.append(Paragraph("ЗАПИСЬ ОСМОТРА (SOAP) · Claude Sonnet", styles["h2"]))
     story.append(Spacer(0, 0.2 * cm))
     soap_rows = [
         ("S — Subjective · Жалобы", consultation.soap_s),
@@ -430,12 +437,19 @@ def render_lab_order_pdf(order, patient, doctor) -> bytes:
     if patient:
         meta.append(("Пациент", patient.full_name or "—"))
         sub_parts = []
+        if getattr(patient, "date_of_birth", None):
+            try:
+                sub_parts.append("д.р. " + patient.date_of_birth.strftime("%d.%m.%Y"))
+            except Exception:
+                sub_parts.append("д.р. " + str(patient.date_of_birth))
         if patient.age is not None:
             sub_parts.append(f"{patient.age} лет")
         if patient.ward:
             sub_parts.append(patient.ward)
         if sub_parts:
             meta.append(("", " · ".join(sub_parts)))
+        if getattr(patient, "record_number", None):
+            meta.append(("№ карты/ИБ", patient.record_number))
     meta.append(("Код QR", order.qr_token))
     story.append(_meta_table(meta))
     story.append(Spacer(0, 0.4 * cm))
