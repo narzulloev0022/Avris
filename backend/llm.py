@@ -105,6 +105,10 @@ class ParsePatientResponse(BaseModel):
     epi_contact: Optional[bool] = None
     epi_travel: Optional[bool] = None
     epi_country: Optional[str] = None
+    date_of_birth: Optional[str] = None    # ISO YYYY-MM-DD
+    record_number: Optional[str] = None
+    admission_diagnosis: Optional[str] = None
+    admission_status: Optional[str] = None  # stable|watch|serious|critical
 
 
 async def _claude_call(system_prompt: str, user_msg: str, max_tokens: int = 1024) -> str:
@@ -296,6 +300,17 @@ _PP_STATUSES = {"stable", "watch", "serious", "critical"}
 _PP_GENDER_MAP = {"М": "М", "Ж": "Ж", "M": "М", "F": "Ж", "MALE": "М", "FEMALE": "Ж"}
 
 
+def _iso_date(v) -> Optional[str]:
+    """Валидная ISO-дата YYYY-MM-DD или None — LLM-даты не принимаем на веру."""
+    if not v:
+        return None
+    try:
+        from datetime import date as _d
+        return _d.fromisoformat(str(v).strip()).isoformat()
+    except (ValueError, TypeError):
+        return None
+
+
 @router.post("/parse-patient", response_model=ParsePatientResponse)
 @limiter.limit("60/minute")
 async def parse_patient(request: Request, req: ParsePatientRequest, current_user: User = Depends(get_current_user)):
@@ -317,8 +332,13 @@ async def parse_patient(request: Request, req: ParsePatientRequest, current_user
         "status — одно из: stable / watch / serious / critical; "
         "diagnoses (array of strings); allergies (array of strings); "
         "epi_contact (boolean — контакт с инфекционными больными); "
-        "epi_travel (boolean — выезд за рубеж); epi_country (string — страна выезда).\n\n"
+        "epi_travel (boolean — выезд за рубеж); epi_country (string — страна выезда); "
+        'date_of_birth (string "YYYY-MM-DD" — только если названа дата рождения, не вычисляй из возраста); '
+        "record_number (string — номер карты / истории болезни, если назван); "
+        "admission_diagnosis (string — диагноз, с которым пациент ПОСТУПИЛ, если врач говорит о поступлении); "
+        "admission_status — состояние при поступлении, одно из: stable / watch / serious / critical.\n\n"
         "Если пациент «лежит в палате N» или назван стационарным — patient_type=\"inpatient\" и ward=N. "
+        "«Поступил с …» / «доставлен с …» — это admission_diagnosis (и admission_status, если названа тяжесть при поступлении). "
         "Ненайденные поля не включай в JSON или ставь null. "
         "Верни ровно один JSON-объект, без префиксов и markdown-обёрток."
     )
@@ -379,6 +399,10 @@ async def parse_patient(request: Request, req: ParsePatientRequest, current_user
         epi_contact=_bool(parsed.get("epi_contact")),
         epi_travel=_bool(parsed.get("epi_travel")),
         epi_country=(str(parsed.get("epi_country")).strip() if parsed.get("epi_country") else None),
+        date_of_birth=_iso_date(parsed.get("date_of_birth")),
+        record_number=(str(parsed.get("record_number")).strip() if parsed.get("record_number") else None),
+        admission_diagnosis=(str(parsed.get("admission_diagnosis")).strip() if parsed.get("admission_diagnosis") else None),
+        admission_status=(parsed.get("admission_status") if parsed.get("admission_status") in _PP_STATUSES else None),
     )
 
 
