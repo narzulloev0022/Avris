@@ -58,6 +58,7 @@ from icd10 import router as icd10_router
 from drugs import router as drugs_router
 from stats import router as stats_router
 from waitlist import router as waitlist_router
+from epicrises import router as epicrises_router
 from rate_limit import limiter
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:8080")
@@ -136,6 +137,7 @@ app.include_router(icd10_router)
 app.include_router(drugs_router)
 app.include_router(stats_router)
 app.include_router(waitlist_router)
+app.include_router(epicrises_router)
 
 
 @app.get("/api/health")

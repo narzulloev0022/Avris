@@ -469,7 +469,24 @@
 </div>
 <div class="pm-actions">
 <button class="pm-btn-primary" id="pmStartExam" data-i18n="pm_start_exam">Начать осмотр →</button>
+<button class="pm-btn-secondary" id="pmEpicrisis" data-i18n="pm_epicrisis">Эпикриз</button>
 <button class="pm-btn-secondary" id="pmShowHist" data-i18n="pm_history">История</button>
+</div>
+</div>
+</div>
+<div class="nr-modal-ov" id="ecModal">
+<div class="nr-modal-card" style="max-width:720px">
+<div class="nr-modal-hdr"><h3 id="ecTitle" data-i18n="ec_title">Эпикриз</h3><button class="icon-btn" id="ecClose" aria-label="Close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:8px">
+<div style="flex:1;min-width:160px"><label data-i18n="ec_kind">Тип</label><select id="ec_kind"><option value="discharge" data-i18n-o="ec_kind_discharge">Выписной</option><option value="interim" data-i18n-o="ec_kind_interim">Этапный</option></select></div>
+<button class="btn primary" type="button" id="ecGenerate"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span id="ecGenerateLbl" data-i18n="ec_generate">Сгенерировать черновик</span></button>
+</div>
+<div style="font-size:.78rem;color:var(--text-muted);margin:0 0 12px" data-i18n="ec_hint">Черновик собирается из всей истории болезни: поступление, записи врача, обходы, анализы</div>
+<div id="ecListWrap" style="margin-bottom:12px" hidden><label data-i18n="ec_saved">Сохранённые</label><div id="ecList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div></div>
+<div style="margin-bottom:14px"><textarea id="ec_body" data-phk="ec_ph" placeholder="Нажмите «Сгенерировать черновик» — Claude соберёт эпикриз из всей истории болезни. Затем отредактируйте и сохраните." style="min-height:320px;font-size:.85rem;line-height:1.5"></textarea></div>
+<div style="display:flex;gap:8px;justify-content:flex-end">
+<button class="btn ghost" type="button" id="ecPdfBtn" disabled>PDF</button>
+<button class="btn primary" type="button" id="ecSaveBtn" data-i18n="btn_save">Сохранить</button>
 </div>
 </div>
 </div>

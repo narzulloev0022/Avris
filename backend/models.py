@@ -158,6 +158,24 @@ class LabOrder(Base):
     files = relationship("LabFile", back_populates="lab_order", cascade="all, delete-orphan")
 
 
+class Epicrisis(Base):
+    """Эпикриз — врачебная сводка истории болезни пациента.
+
+    kind: interim (этапный) | discharge (выписной). body — финальный текст
+    после правок врача (Claude даёт только черновик, он не сохраняется).
+    Каждое сохранение — новая запись: история версий вместо перезаписи.
+    """
+    __tablename__ = "epicrises"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=False, index=True)
+    doctor_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    kind = Column(String, nullable=False, default="discharge")  # interim|discharge
+    body = Column(Text, nullable=False)
+    language = Column(String, nullable=False, default="ru")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 class LabFile(Base):
     __tablename__ = "lab_files"
 
