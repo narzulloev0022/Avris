@@ -226,7 +226,7 @@
 </div>
 </div>
 <div class="consult-right exam-block" id="examDocBlock">
-<div class="card-h soap-card-h"><div class="soap-h-l"><h3 data-i18n="soap_title">SOAP-документация</h3><span class="soap-status" id="soapStatus" data-state="draft" data-i18n="soap_st_draft">Черновик</span></div><div style="display:flex;align-items:center;gap:8px"><button class="ai-badge ai-badge-btn" id="soapGenBtn" type="button" aria-label="Regenerate SOAP"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M12 0l2.5 9.5L24 12l-9.5 2.5L12 24l-2.5-9.5L0 12l9.5-2.5L12 0z"/></svg><span data-i18n="btn_regen_soap">Перегенерировать SOAP</span></button><button class="icon-btn" id="soapPrintBtn" type="button" aria-label="Print" data-i18n-title="btn_print" title="Печать" style="width:32px;height:32px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button></div></div>
+<div class="card-h soap-card-h"><div class="soap-h-l"><h3 data-i18n="soap_title">SOAP-документация</h3><span class="soap-status" id="soapStatus" data-state="draft" data-i18n="soap_st_draft">Черновик</span><select id="vtSelect" data-i18n-title="vt_label" title="Тип записи" aria-label="Тип записи" style="width:auto;padding:5px 8px;font-size:.76rem;margin-left:8px"><option value="visit" data-i18n-o="tl_visit">Приём</option><option value="primary" data-i18n-o="tl_primary">Первичный осмотр</option><option value="daily" data-i18n-o="tl_daily">Дневник</option></select></div><div style="display:flex;align-items:center;gap:8px"><button class="ai-badge ai-badge-btn" id="soapGenBtn" type="button" aria-label="Regenerate SOAP"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M12 0l2.5 9.5L24 12l-9.5 2.5L12 24l-2.5-9.5L0 12l9.5-2.5L12 0z"/></svg><span data-i18n="btn_regen_soap">Перегенерировать SOAP</span></button><button class="icon-btn" id="soapPrintBtn" type="button" aria-label="Print" data-i18n-title="btn_print" title="Печать" style="width:32px;height:32px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button></div></div>
 <div class="soap-g">
 <div class="soap-c soap-s">
 <div class="soap-hdr"><h5 class="soap-lbl"><span class="soap-letter">S</span><span class="soap-word" data-i18n="soap_s_lbl">Субъективно</span></h5></div>
@@ -447,6 +447,7 @@
 <div class="pm-tabs">
 <button class="pm-tab active" data-pt="pmOverview" data-i18n="pm_overview">Обзор</button>
 <button class="pm-tab" data-pt="pmSoap">SOAP</button>
+<button class="pm-tab" data-pt="pmTimeline" data-i18n="pm_tab_timeline">История болезни</button>
 <button class="pm-tab" data-pt="pmHistory" data-i18n="pm_history">История</button>
 </div>
 <div class="pm-pane active" id="pmOverview">
@@ -462,6 +463,10 @@
 <div class="pm-pane" id="pmSoap">
 <div class="pm-sec-title" data-i18n="pm_last_soap">Последняя SOAP-запись</div>
 <p style="color:var(--text-muted);font-size:.85rem" data-i18n="pm_no_records">Нет записей для этого пациента</p>
+</div>
+<div class="pm-pane" id="pmTimeline">
+<div class="pm-sec-title" data-i18n="pm_tab_timeline">История болезни</div>
+<div id="pmTl"></div>
 </div>
 <div class="pm-pane" id="pmHistory">
 <div class="pm-sec-title" data-i18n="m_hist">Анамнез</div>
