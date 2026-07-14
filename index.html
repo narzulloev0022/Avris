@@ -484,10 +484,19 @@
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
 <div><label data-i18n="pat_f_name">ФИО</label><input id="pf_full_name" type="text" required></div>
 <div><label data-i18n="pat_f_type">Тип пациента</label><select id="pf_patient_type"><option value="outpatient" data-i18n-o="pt_outpatient">Амбулаторный</option><option value="inpatient" data-i18n-o="pt_inpatient">Стационарный</option></select></div>
+<div><label data-i18n="pat_f_record">№ карты / ИБ</label><input id="pf_record" type="text" placeholder="ИБ-2026/0417"></div>
 <div id="pf_ward_wrap"><label data-i18n="pat_f_ward">Палата</label><input id="pf_ward" type="number" min="1" data-phk="pat_f_ward_ph" placeholder="Номер палаты"></div>
+<div><label data-i18n="pat_f_dob">Дата рождения</label><input id="pf_dob" type="date"></div>
 <div><label data-i18n="pat_f_age">Возраст</label><input id="pf_age" type="number" min="0" max="130"></div>
 <div><label data-i18n="pat_f_gender">Пол</label><select id="pf_gender"><option value=""></option><option value="М" data-i18n-o="gender_m_o">М</option><option value="Ж" data-i18n-o="gender_f_o">Ж</option></select></div>
 </div>
+<fieldset id="pf_admission_wrap" style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px;display:none"><legend style="padding:0 6px;font-size:.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em" data-i18n="adm_title">Поступление</legend>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px">
+<div><label data-i18n="pat_f_adm_date">Дата поступления</label><input id="pf_adm_date" type="datetime-local"></div>
+<div><label data-i18n="pat_f_adm_status">Состояние при поступлении</label><select id="pf_adm_status"><option value=""></option><option value="stable" data-i18n-o="ps_stable">Стабильный</option><option value="watch" data-i18n-o="ps_watch">Наблюдение</option><option value="serious" data-i18n-o="ps_serious">Тяжёлый</option><option value="critical" data-i18n-o="ps_critical">Критический</option></select></div>
+</div>
+<div><label data-i18n="pat_f_adm_diag">Диагноз при поступлении</label><input id="pf_adm_diag" type="text" data-phk="pat_f_adm_diag_ph" placeholder="Внебольничная пневмония"></div>
+</fieldset>
 <div style="margin-bottom:12px;position:relative"><label data-i18n="pat_f_diag">Диагнозы (через запятую)</label><input id="pf_diagnoses" type="text" placeholder="Гипертония, Диабет II" autocomplete="off"></div>
 <div style="margin-bottom:14px"><label data-i18n="pat_f_allergy">Аллергии (через запятую)</label><input id="pf_allergies" type="text" placeholder="Метформин"></div>
 <details class="pf-more" id="pfMore">
