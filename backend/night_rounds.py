@@ -6,10 +6,44 @@ from sqlalchemy.orm import Session
 
 from audit import audit
 from database import get_db
-from models import NightRound, User
+from models import NightRound, Patient, User
 from auth import get_current_user
 
 router = APIRouter(prefix="/api/night-rounds", tags=["night-rounds"])
+
+# Витальные обхода → карта пациента: ICU-монитор читает last-value из
+# Patient.vitals, так голосовой обход становится живым источником данных.
+_VITALS_MAP = {"pulse": "ЧСС", "temp": "T°C", "spo2": "SpO₂"}  # bp — отдельно (строка "150/90")
+_VITALS_CAP = 7  # столько точек держит спарклайн
+
+
+def _merge_round_vitals(patient: Patient, nr_vitals) -> bool:
+    """Дописать значения обхода в массивы Patient.vitals (cap последних 7)."""
+    if not isinstance(nr_vitals, dict):
+        return False
+    cur = dict(patient.vitals) if isinstance(patient.vitals, dict) else {}
+    changed = False
+
+    def _push(key, val):
+        nonlocal changed
+        try:
+            num = float(val)
+        except (TypeError, ValueError):
+            return
+        arr = list(cur.get(key) or [])
+        arr.append(int(num) if num == int(num) else num)
+        cur[key] = arr[-_VITALS_CAP:]
+        changed = True
+
+    for src, dst in _VITALS_MAP.items():
+        if nr_vitals.get(src) is not None:
+            _push(dst, nr_vitals[src])
+    bp = nr_vitals.get("bp")
+    if bp is not None:
+        _push("АД", str(bp).split("/")[0].strip())  # храним систолическое, как в остальных данных
+    if changed:
+        patient.vitals = cur  # reassign — SQLAlchemy не трекает мутации JSON
+    return changed
 
 
 class NightRoundCreate(BaseModel):
@@ -47,6 +81,15 @@ def create_round(
 ):
     nr = NightRound(doctor_id=current_user.id, **payload.model_dump())
     db.add(nr)
+    # Обход с витальными обновляет карту пациента (строго своего — чужой
+    # patient_id молча игнорируем, обход при этом сохраняется как есть).
+    if nr.patient_id and nr.vitals:
+        p = db.query(Patient).filter(
+            Patient.id == nr.patient_id,
+            Patient.doctor_id == current_user.id,
+        ).first()
+        if p:
+            _merge_round_vitals(p, nr.vitals)
     db.commit()
     db.refresh(nr)
     audit(db, action="create", entity="night_round", user_id=current_user.id,
