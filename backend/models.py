@@ -397,6 +397,29 @@ class VisitSummary(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
 
+class PatientPreVisitNote(Base):
+    """A short free-text note the patient writes BEFORE a visit — "what I want
+    to raise with the doctor this time" — surfaced to the doctor ONCE, at the
+    moment they confirm the QR link.
+
+    One ACTIVE (unseen) note per account: the patient-side POST create-or-updates
+    it in place. When a doctor first sees it at confirm_link, ``seen_at`` and
+    ``seen_by_doctor_id`` are stamped and it is never shown again; the next POST
+    then begins a fresh note (old seen rows remain as an immutable trail and do
+    NOT block writing a new one). Doctor visibility rides entirely on the
+    existing confirm_link consent + PatientLink gate — there is no standalone
+    doctor read endpoint, so consent is enforced once, not duplicated here.
+    """
+    __tablename__ = "patient_previsit_notes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
+    note_text = Column(String(300), nullable=False)
+    seen_by_doctor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    seen_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 class WaitlistEntry(Base):
     """Public waitlist signup from the marketing page (/waitlist).
 

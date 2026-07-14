@@ -26,7 +26,8 @@ from sqlalchemy.orm import Session
 from audit import audit
 from auth import ALGORITHM, SECRET_KEY, get_current_user
 from database import get_db
-from models import LinkThrottle, Patient, PatientAccount, PatientLink, PatientLinkCode, User
+from models import LinkThrottle, Patient, PatientAccount, PatientLink, PatientLinkCode, PatientPreVisitNote, User
+from patient_api import PreVisitNoteOut
 from patient_auth import get_current_patient
 from rate_limit import limiter
 
@@ -89,6 +90,9 @@ class LinkResultOut(BaseModel):
     created: bool
     link_id: int
     patient: LinkedPatientOut
+    # Patient's active pre-visit note, surfaced ONCE at confirm time (then marked
+    # seen). None when there is no unseen note. See confirm_link.
+    pre_visit_note: Optional[PreVisitNoteOut] = None
 
 
 # ---------- helpers ----------
@@ -330,6 +334,20 @@ def confirm_link(
             _record_link_failure(db, doctor.id)
         raise
     _record_link_success(db, doctor.id)
+
+    # Surface the patient's active pre-visit note ONCE, then stamp it seen. It
+    # rides on the consent + link gate this endpoint already cleared above (code
+    # resolved, _account_or_403 passed) — there is no separate doctor read path,
+    # so consent is not re-checked here.
+    note = db.query(PatientPreVisitNote).filter(
+        PatientPreVisitNote.patient_account_id == account.id,
+        PatientPreVisitNote.seen_at.is_(None),
+    ).first()
+    if note is not None:
+        result.pre_visit_note = PreVisitNoteOut(note_text=note.note_text, created_at=note.created_at)
+        note.seen_by_doctor_id = doctor.id
+        note.seen_at = datetime.utcnow()
+        db.commit()
 
     if not result.created:
         response.status_code = 200  # идемпотентный повтор — не «создано»

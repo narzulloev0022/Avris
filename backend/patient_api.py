@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 from audit import audit
 from database import get_db
-from models import PatientAccount
+from models import PatientAccount, PatientPreVisitNote
 from patient_auth import PatientAccountOut, get_current_patient
 from rate_limit import limiter
 
@@ -136,3 +136,53 @@ def give_consent(
         audit(db, action="consent", entity="patient_account", user_id=None,
               entity_id=current.id, meta={"door": "patient", "version": current.consent_version})
     return PatientProfileOut.model_validate(current)
+
+
+# ---------- pre-visit note ----------
+
+class PreVisitNoteBody(BaseModel):
+    note_text: str = Field(min_length=1, max_length=300)
+
+    @field_validator("note_text")
+    @classmethod
+    def _strip_nonempty(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("Заметка не может быть пустой")
+        return v
+
+
+class PreVisitNoteOut(BaseModel):
+    note_text: str
+    created_at: datetime
+
+
+@router.post("/pre-visit-note", response_model=PreVisitNoteOut)
+@limiter.limit("20/minute")
+def upsert_pre_visit_note(
+    request: Request,
+    body: PreVisitNoteBody,
+    current: PatientAccount = Depends(get_current_patient),
+    db: Session = Depends(get_db),
+):
+    """Create-or-update the patient's single ACTIVE pre-visit note (self-scoped,
+    like everything in this file). No consent check here on purpose: the note is
+    invisible to anyone until a doctor confirms a link, and confirm_link already
+    enforces the consent + PatientLink gate — consent is reused there, never
+    duplicated. If the current note was already seen by a doctor it is history,
+    so a new POST starts a fresh note instead of reviving the old one."""
+    note = db.query(PatientPreVisitNote).filter(
+        PatientPreVisitNote.patient_account_id == current.id,
+        PatientPreVisitNote.seen_at.is_(None),
+    ).first()
+    if note is None:
+        note = PatientPreVisitNote(patient_account_id=current.id, note_text=body.note_text)
+        db.add(note)
+    else:
+        note.note_text = body.note_text
+        note.created_at = datetime.utcnow()
+    db.commit()
+    db.refresh(note)
+    audit(db, action="upsert", entity="patient_previsit_note", user_id=None,
+          entity_id=note.id, meta={"door": "patient"})
+    return PreVisitNoteOut(note_text=note.note_text, created_at=note.created_at)
