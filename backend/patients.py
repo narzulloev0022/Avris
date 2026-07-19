@@ -308,6 +308,50 @@ def update_patient(
     return p
 
 
+class PrevisitBriefRequest(BaseModel):
+    language: str = "ru"
+
+
+class PrevisitBriefResponse(BaseModel):
+    brief: str
+
+
+_PV_LANG = {"ru": "русском", "tj": "таджикском", "en": "английском"}
+
+_PV_SYSTEM = """Ты — ассистент врача. По истории болезни составь КОРОТКУЮ сводку
+перед приёмом: максимум 5 пунктов, каждый с новой строки, маркер «— ».
+Что важно: текущая картина и динамика; что стоит проверить сегодня; незакрытые
+вопросы (несданные анализы, невыполненный план); риски (аллергии, тяжесть).
+Только факты из переданных данных, ничего не выдумывай. Врачебный регистр,
+телеграфно кратко. Без заголовков и преамбул — только пункты."""
+
+
+@router.post("/{pid}/previsit-brief", response_model=PrevisitBriefResponse)
+async def previsit_brief(
+    pid: int,
+    payload: PrevisitBriefRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """AI-сводка «что важно перед приёмом» — фаза подготовки (не сохраняется)."""
+    from epicrises import _build_history
+    from llm import _claude_call
+
+    p = _get_owned_patient(db, pid, current_user)
+    history, _counts = _build_history(db, p, max_consults=5, max_rounds=5, max_labs=3)
+    lang_name = _PV_LANG.get(payload.language, "русском")
+    text = await _claude_call(
+        _PV_SYSTEM,
+        f"Язык сводки: {lang_name}.\n\nИстория болезни:\n\n{history}",
+        max_tokens=500,
+    )
+    brief = (text or "").strip()
+    if not brief:
+        raise HTTPException(status_code=502, detail="Пустой ответ модели — повторите попытку")
+    audit(db, action="previsit_brief", entity="patient", user_id=current_user.id, entity_id=p.id)
+    return PrevisitBriefResponse(brief=brief)
+
+
 @router.delete("/{pid}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_patient(
     pid: int,

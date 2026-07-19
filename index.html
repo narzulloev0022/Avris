@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=43">
+<link rel="stylesheet" href="styles.css?v=44">
 </head>
 <body data-theme="light">
 <div class="login-screen" id="loginScreen">
@@ -451,6 +451,8 @@
 <button class="pm-tab" data-pt="pmHistory" data-i18n="pm_history">История</button>
 </div>
 <div class="pm-pane active" id="pmOverview">
+<div class="pm-sec-title" data-i18n="pv_title">Сводка к приёму</div>
+<div id="pmPrevisit" style="margin-bottom:14px"><button class="btn ghost" type="button" id="pmPrevisitBtn" style="font-size:.8rem;padding:7px 12px"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:5px"><path d="M12 0l2.5 9.5L24 12l-9.5 2.5L12 24l-2.5-9.5L0 12l9.5-2.5L12 0z"/></svg><span id="pmPrevisitLbl" data-i18n="pv_btn">Сформировать · Claude</span></button><div id="pmPrevisitOut" style="display:none;font-size:.85rem;line-height:1.5;white-space:pre-wrap;color:var(--text-primary);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px;margin-top:8px"></div></div>
 <div class="pm-sec-title" data-i18n="m_profile">Профиль</div>
 <div class="pm-list" id="pmProfile"></div>
 <div class="pm-sec-title" data-i18n="m_diag">Диагнозы</div>
@@ -634,6 +636,6 @@
 <script src="assets/vendor/gsap/TextPlugin.min.js"></script>
 <script src="assets/vendor/anime.umd.min.js"></script>
 <script src="assets/vendor/motion.min.js"></script>
-<script src="app.js?v=43"></script>
+<script src="app.js?v=44"></script>
 </body>
 </html>
