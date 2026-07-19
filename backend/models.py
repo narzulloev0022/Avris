@@ -262,6 +262,164 @@ class AuditLog(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
 
 
+class PatientAccount(Base):
+    """The platform's first GLOBAL patient identity — "the second door".
+
+    Owned by the patient (phone/email + OTP login from the mobile app), not by
+    a doctor. Existing doctor-scoped ``patients`` rows stay untouched; the two
+    worlds meet through ``patient_links``. ``avris_patient_id`` is the
+    human-facing ID shown as QR/code at the reception desk.
+
+    ``consent_doctors_at`` — timestamp of the in-app onboarding consent that
+    allows network doctors to see the profile on linking. NULL = no consent;
+    linking must refuse. Regulatory anchor, do not repurpose.
+    """
+    __tablename__ = "patient_accounts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    avris_patient_id = Column(String(16), unique=True, index=True, nullable=False)
+    phone = Column(String(32), unique=True, index=True, nullable=True)
+    email = Column(String(255), unique=True, index=True, nullable=True)
+    full_name = Column(String(120), nullable=True)
+    date_of_birth = Column(Date, nullable=True)
+    gender = Column(String(16), nullable=True)
+    height = Column(Float, nullable=True)
+    weight = Column(Float, nullable=True)
+    blood_type = Column(String(16), nullable=True)
+    chronic_conditions = Column(JSON, nullable=False, default=list)
+    allergies = Column(JSON, nullable=False, default=list)
+    medications = Column(JSON, nullable=False, default=list)
+    consent_doctors_at = Column(DateTime, nullable=True)
+    # Which consent text/version the patient agreed to (recorded together with
+    # consent_doctors_at at onboarding). A bare timestamp isn't legally
+    # defensible on its own — you must be able to show WHAT was consented to.
+    consent_version = Column(String(32), nullable=True)
+    language_pref = Column(String(4), nullable=False, default="ru")
+    is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    links = relationship("PatientLink", back_populates="account", cascade="all, delete-orphan")
+
+
+class PatientLink(Base):
+    """Bridge between a patient's own account and a doctor's ``patients`` row.
+
+    Created when the doctor links the patient in the cabinet (QR/code scan,
+    or name search with manual confirmation — ``method`` records which).
+    One row per (account, doctor-record) pair — re-linking is idempotent at
+    the DB level. Every creation is audit-logged by the API layer.
+    """
+    __tablename__ = "patient_links"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False, index=True)
+    doctor_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    method = Column(String(8), nullable=False, default="qr")  # qr|name
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    account = relationship("PatientAccount", back_populates="links")
+
+    __table_args__ = (
+        UniqueConstraint("patient_account_id", "patient_id", name="uq_patient_links_account_patient"),
+    )
+
+
+class PatientRefreshToken(Base):
+    """Refresh-token registry for the patient door — mirrors ``refresh_tokens``
+    but points at ``patient_accounts``. Kept as a separate table (not a column
+    on refresh_tokens) so the two identity spaces can never be confused by an
+    integer id collision between users.id and patient_accounts.id."""
+    __tablename__ = "patient_refresh_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    jti = Column(String(36), unique=True, index=True, nullable=False)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
+    revoked = Column(Boolean, nullable=False, default=False)
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class PatientLinkCode(Base):
+    """Short-lived 6-digit code the patient shows at the reception desk.
+
+    One-time and TTL-bound (~5 min): the DB row — not the QR payload — is the
+    source of truth, so a screenshot of an old QR is worthless. Issued only
+    when onboarding consent is present; consumed (used_at) on a successful
+    link. Expired rows are lazily purged on every issue."""
+    __tablename__ = "patient_link_codes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(6), unique=True, index=True, nullable=False)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
+    expires_at = Column(DateTime, nullable=False)
+    used_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class LinkThrottle(Base):
+    """Per-doctor brute-force guard for patient-link code entry.
+
+    A wrong or dead 6-digit code (404/410) from preview/confirm increments
+    ``consecutive_failures``; after MAX_LINK_FAILURES in a row this doctor's
+    linking is locked for LINK_LOCKOUT_MINUTES. A successful resolve resets
+    the counter. One row per doctor. See patient_links.py for the constants.
+    """
+    __tablename__ = "link_throttle"
+
+    id = Column(Integer, primary_key=True, index=True)
+    doctor_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False, index=True)
+    consecutive_failures = Column(Integer, nullable=False, default=0)
+    locked_until = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class VisitSummary(Base):
+    """Patient-readable retelling of a consultation's SOAP note.
+
+    Generated by Claude right when the doctor saves the consultation (never
+    live on stage — the cached row is what the app shows), one per
+    consultation. ``language`` follows the patient's language_pref.
+    """
+    __tablename__ = "visit_summaries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    consultation_id = Column(Integer, ForeignKey("consultations.id", ondelete="CASCADE"), unique=True, nullable=False, index=True)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
+    summary = Column(Text, nullable=False)
+    # Human-readable rendering of the treatment plan (SOAP "P"), produced by the
+    # SAME Claude pass as the summary — never raw SOAP. NULL = no prescriptions
+    # in this visit. Distinct from PatientAccount.medications ("known meds" the
+    # patient self-reported at onboarding), which is never mixed in here.
+    prescriptions = Column(Text, nullable=True)
+    language = Column(String(4), nullable=False, default="ru")
+    model = Column(String(64), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class PatientPreVisitNote(Base):
+    """A short free-text note the patient writes BEFORE a visit — "what I want
+    to raise with the doctor this time" — surfaced to the doctor ONCE, at the
+    moment they confirm the QR link.
+
+    One ACTIVE (unseen) note per account: the patient-side POST create-or-updates
+    it in place. When a doctor first sees it at confirm_link, ``seen_at`` and
+    ``seen_by_doctor_id`` are stamped and it is never shown again; the next POST
+    then begins a fresh note (old seen rows remain as an immutable trail and do
+    NOT block writing a new one). Doctor visibility rides entirely on the
+    existing confirm_link consent + PatientLink gate — there is no standalone
+    doctor read endpoint, so consent is enforced once, not duplicated here.
+    """
+    __tablename__ = "patient_previsit_notes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
+    note_text = Column(String(300), nullable=False)
+    seen_by_doctor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    seen_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 class WaitlistEntry(Base):
     """Public waitlist signup from the marketing page (/waitlist).
 
