@@ -290,6 +290,21 @@ class AuditLog(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
 
 
+class AssistantUsage(Base):
+    """Дневной счётчик AI-ассистента пациента — серверный кап защиты затрат.
+
+    Клиентский paywall держит тарифную границу (Free = 3/день), этот счётчик —
+    жёсткий предохранитель от абьюза независимо от тарифа. day = YYYY-MM-DD UTC.
+    """
+    __tablename__ = "assistant_usage"
+    __table_args__ = (UniqueConstraint("patient_account_id", "day", name="uq_assistant_usage_day"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
+    day = Column(String(10), nullable=False)
+    count = Column(Integer, nullable=False, default=0)
+
+
 class PatientAccount(Base):
     """The platform's first GLOBAL patient identity — "the second door".
 
