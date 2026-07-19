@@ -98,6 +98,10 @@ _STATUS_RU = {"stable": "стабильное", "watch": "наблюдение",
 
 _VISIT_RU = {"primary": "первичный осмотр", "daily": "дневник", "visit": "приём"}
 
+_DEPT_RU = {"therapy": "Терапия", "cardiology": "Кардиология", "surgery": "Хирургия",
+            "neurology": "Неврология", "pulmonology": "Пульмонология",
+            "icu": "ОРИТ", "post_icu": "Пост-реанимация", "other": "Другое"}
+
 
 def _fmt_d(dt) -> str:
     try:
@@ -143,7 +147,7 @@ def _build_history(db: Session, p: Patient,
     if p.record_number:
         passport.append(f"№ карты/ИБ: {p.record_number}")
     if p.department:
-        passport.append(f"Отделение: {p.department}")
+        passport.append(f"Отделение: {_DEPT_RU.get(p.department, p.department)}")
     if p.ward:
         passport.append(f"Палата: {p.ward}")
     passport.append(f"Тип: {'стационарный' if p.patient_type == 'inpatient' else 'амбулаторный'}")
