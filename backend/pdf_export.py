@@ -315,6 +315,9 @@ def render_consultation_pdf(consultation, patient, doctor) -> bytes:
 _EPI_KIND_TITLE = {"discharge": "Выписной эпикриз", "interim": "Этапный эпикриз"}
 _EPI_STATUS_RU = {"stable": "стабильное", "watch": "наблюдение",
                   "serious": "тяжёлое", "critical": "критическое"}
+_DEPT_RU = {"therapy": "Терапия", "cardiology": "Кардиология", "surgery": "Хирургия",
+            "neurology": "Неврология", "pulmonology": "Пульмонология",
+            "icu": "ОРИТ", "post_icu": "Пост-реанимация", "other": "Другое"}
 
 
 def render_epicrisis_pdf(epicrisis, patient, doctor) -> bytes:
@@ -360,7 +363,7 @@ def render_epicrisis_pdf(epicrisis, patient, doctor) -> bytes:
             meta.append(("", " · ".join(sub_parts)))
         if getattr(patient, "record_number", None):
             meta.append(("№ карты/ИБ", patient.record_number))
-        loc = " · ".join(x for x in [patient.department, patient.ward] if x)
+        loc = " · ".join(x for x in [_DEPT_RU.get(patient.department, patient.department), patient.ward] if x)
         if loc:
             meta.append(("Отделение", loc))
         adm_parts = []
