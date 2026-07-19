@@ -24,6 +24,9 @@ class ConsultationCreate(BaseModel):
     soap_p: Optional[str] = None
     language: str = "ru"
     duration_seconds: Optional[int] = None
+    # visit — амбулаторный приём (default), primary — первичный осмотр при
+    # поступлении, daily — ежедневный дневник стационара.
+    visit_type: str = "visit"
     # Accuracy tracking. Set by the frontend at save time:
     #   None  → SOAP wasn't AI-generated (manual entry) — don't count
     #   False → AI-generated, doctor saved without edits → accurate
@@ -44,6 +47,7 @@ class ConsultationResponse(BaseModel):
     soap_p: Optional[str] = None
     language: str
     duration_seconds: Optional[int] = None
+    visit_type: str = "visit"
     created_at: datetime
 
 

@@ -232,6 +232,11 @@ def render_consultation_pdf(consultation, patient, doctor) -> bytes:
     if patient:
         meta.append(("Пациент", patient.full_name or "—"))
         sub_parts = []
+        if getattr(patient, "date_of_birth", None):
+            try:
+                sub_parts.append("д.р. " + patient.date_of_birth.strftime("%d.%m.%Y"))
+            except Exception:
+                sub_parts.append("д.р. " + str(patient.date_of_birth))
         if patient.age is not None:
             sub_parts.append(f"{patient.age} лет")
         if patient.gender:
@@ -240,6 +245,8 @@ def render_consultation_pdf(consultation, patient, doctor) -> bytes:
             sub_parts.append(patient.ward)
         if sub_parts:
             meta.append(("", " · ".join(sub_parts)))
+        if getattr(patient, "record_number", None):
+            meta.append(("№ карты/ИБ", patient.record_number))
         if patient.diagnoses:
             meta.append(("Диагнозы", ", ".join(patient.diagnoses)))
         if patient.allergies:
@@ -252,7 +259,7 @@ def render_consultation_pdf(consultation, patient, doctor) -> bytes:
     story.append(Spacer(0, 0.4 * cm))
 
     # SOAP block
-    story.append(Paragraph("SOAP-ДОКУМЕНТАЦИЯ · Claude Sonnet", styles["h2"]))
+    story.append(Paragraph("ЗАПИСЬ ОСМОТРА (SOAP) · Claude Sonnet", styles["h2"]))
     story.append(Spacer(0, 0.2 * cm))
     soap_rows = [
         ("S — Subjective · Жалобы", consultation.soap_s),
@@ -305,6 +312,100 @@ def render_consultation_pdf(consultation, patient, doctor) -> bytes:
     return buf.getvalue()
 
 
+_EPI_KIND_TITLE = {"discharge": "Выписной эпикриз", "interim": "Этапный эпикриз"}
+_EPI_STATUS_RU = {"stable": "стабильное", "watch": "наблюдение",
+                  "serious": "тяжёлое", "critical": "критическое"}
+
+
+def render_epicrisis_pdf(epicrisis, patient, doctor) -> bytes:
+    """Render epicrisis as PDF. Тело — плоский текст врача; строки-заголовки
+    (ЗАГЛАВНЫМИ, короткие) оформляются как секции."""
+    styles = _styles()
+    buf = BytesIO()
+    title = _EPI_KIND_TITLE.get(epicrisis.kind, "Эпикриз")
+    doc = SimpleDocTemplate(
+        buf, pagesize=A4,
+        leftMargin=2 * cm, rightMargin=2 * cm,
+        topMargin=2 * cm, bottomMargin=2 * cm,
+        title=f"{title} #{epicrisis.id}",
+        author="Avris AI",
+    )
+
+    story = []
+    story.append(_brand_block(styles, lang=epicrisis.language))
+    story.append(Paragraph("Hyperion Labs · Голосовая медицинская документация", styles["subtitle"]))
+    story.append(_hr(ACCENT))
+    story.append(Spacer(0, 0.5 * cm))
+
+    story.append(Paragraph(title, styles["h1"]))
+    story.append(Paragraph(_format_dt(epicrisis.created_at), styles["subtitle"]))
+
+    # Паспортная шапка — с ДР и № карты (официальные поля)
+    meta = []
+    if doctor:
+        meta.append(("Врач", f"{doctor.full_name or ''}{(' · ' + doctor.specialty) if getattr(doctor, 'specialty', None) else ''}"))
+    if patient:
+        meta.append(("Пациент", patient.full_name or "—"))
+        sub_parts = []
+        if getattr(patient, "date_of_birth", None):
+            try:
+                sub_parts.append("д.р. " + patient.date_of_birth.strftime("%d.%m.%Y"))
+            except Exception:
+                sub_parts.append("д.р. " + str(patient.date_of_birth))
+        if patient.age is not None:
+            sub_parts.append(f"{patient.age} лет")
+        if patient.gender:
+            sub_parts.append(patient.gender)
+        if sub_parts:
+            meta.append(("", " · ".join(sub_parts)))
+        if getattr(patient, "record_number", None):
+            meta.append(("№ карты/ИБ", patient.record_number))
+        loc = " · ".join(x for x in [patient.department, patient.ward] if x)
+        if loc:
+            meta.append(("Отделение", loc))
+        adm_parts = []
+        if getattr(patient, "admission_date", None):
+            adm_parts.append(_format_dt(patient.admission_date))
+        if getattr(patient, "admission_status", None):
+            adm_parts.append(_EPI_STATUS_RU.get(patient.admission_status, patient.admission_status))
+        if adm_parts:
+            meta.append(("Поступление", " · ".join(adm_parts)))
+        if getattr(patient, "admission_diagnosis", None):
+            meta.append(("Диагноз при пост.", patient.admission_diagnosis))
+    story.append(_meta_table(meta))
+    story.append(Spacer(0, 0.4 * cm))
+    story.append(_hr())
+    story.append(Spacer(0, 0.4 * cm))
+
+    # Тело: секционные заголовки → h2, остальное → body-абзацы
+    for raw_line in (epicrisis.body or "").split("\n"):
+        line = raw_line.strip()
+        if not line:
+            story.append(Spacer(0, 0.18 * cm))
+            continue
+        is_header = (len(line) < 70 and line == line.upper()
+                     and any(ch.isalpha() for ch in line))
+        if is_header:
+            story.append(Spacer(0, 0.2 * cm))
+            story.append(Paragraph(_esc(line), styles["h2"]))
+        else:
+            story.append(Paragraph(_esc(raw_line), styles["body"]))
+
+    story.append(Spacer(0, 0.8 * cm))
+    story.append(_hr())
+    story.append(Spacer(0, 0.4 * cm))
+    sign_name = (doctor.full_name or "") if doctor else ""
+    story.append(Paragraph(
+        f"Лечащий врач: {_esc(sign_name)} ____________________",
+        styles["body"],
+    ))
+    story.append(Spacer(0, 0.6 * cm))
+    story.append(_footer(styles))
+
+    doc.build(story)
+    return buf.getvalue()
+
+
 def render_lab_order_pdf(order, patient, doctor) -> bytes:
     """Render lab order results as PDF, returns bytes."""
     styles = _styles()
@@ -336,12 +437,19 @@ def render_lab_order_pdf(order, patient, doctor) -> bytes:
     if patient:
         meta.append(("Пациент", patient.full_name or "—"))
         sub_parts = []
+        if getattr(patient, "date_of_birth", None):
+            try:
+                sub_parts.append("д.р. " + patient.date_of_birth.strftime("%d.%m.%Y"))
+            except Exception:
+                sub_parts.append("д.р. " + str(patient.date_of_birth))
         if patient.age is not None:
             sub_parts.append(f"{patient.age} лет")
         if patient.ward:
             sub_parts.append(patient.ward)
         if sub_parts:
             meta.append(("", " · ".join(sub_parts)))
+        if getattr(patient, "record_number", None):
+            meta.append(("№ карты/ИБ", patient.record_number))
     meta.append(("Код QR", order.qr_token))
     story.append(_meta_table(meta))
     story.append(Spacer(0, 0.4 * cm))

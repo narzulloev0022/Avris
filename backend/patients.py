@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import List, Optional, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field
@@ -18,6 +18,8 @@ class PatientBase(BaseModel):
     full_name: str = Field(min_length=1)
     full_name_en: Optional[str] = None
     age: Optional[int] = None
+    date_of_birth: Optional[date] = None
+    record_number: Optional[str] = None
     gender: Optional[str] = None
     gender_en: Optional[str] = None
     blood_type: Optional[str] = None
@@ -31,6 +33,9 @@ class PatientBase(BaseModel):
     department: Optional[str] = None
     status: Optional[str] = None
     patient_type: Optional[str] = "outpatient"
+    admission_date: Optional[datetime] = None
+    admission_diagnosis: Optional[str] = None
+    admission_status: Optional[str] = None
     allergies: List[str] = []
     allergies_en: List[str] = []
     diagnoses: List[str] = []
@@ -55,6 +60,8 @@ class PatientUpdate(BaseModel):
     full_name: Optional[str] = None
     full_name_en: Optional[str] = None
     age: Optional[int] = None
+    date_of_birth: Optional[date] = None
+    record_number: Optional[str] = None
     gender: Optional[str] = None
     gender_en: Optional[str] = None
     blood_type: Optional[str] = None
@@ -68,6 +75,9 @@ class PatientUpdate(BaseModel):
     department: Optional[str] = None
     status: Optional[str] = None
     patient_type: Optional[str] = None
+    admission_date: Optional[datetime] = None
+    admission_diagnosis: Optional[str] = None
+    admission_status: Optional[str] = None
     allergies: Optional[List[str]] = None
     allergies_en: Optional[List[str]] = None
     diagnoses: Optional[List[str]] = None
@@ -213,6 +223,14 @@ def seed_demo_patients_for(db: Session, doctor_id: int) -> int:
 
 # ---------- Endpoints ----------
 
+def _age_from_dob(dob: Optional[date]) -> Optional[int]:
+    """Полных лет на сегодня. None-safe — вернёт None без даты рождения."""
+    if not dob:
+        return None
+    today = date.today()
+    return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+
+
 def _get_owned_patient(db: Session, pid: int, user: User) -> Patient:
     p = db.query(Patient).filter(Patient.id == pid).first()
     if not p or not p.is_active:
@@ -228,7 +246,11 @@ def create_patient(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    p = Patient(doctor_id=current_user.id, **payload.model_dump())
+    data = payload.model_dump()
+    # ДР — источник истины для возраста: если возраст не передан явно, считаем сами.
+    if data.get("date_of_birth") and data.get("age") is None:
+        data["age"] = _age_from_dob(data["date_of_birth"])
+    p = Patient(doctor_id=current_user.id, **data)
     db.add(p)
     db.commit()
     db.refresh(p)
@@ -274,6 +296,9 @@ def update_patient(
 ):
     p = _get_owned_patient(db, pid, current_user)
     updates = payload.model_dump(exclude_unset=True)
+    # Обновили ДР, но не возраст — пересчитываем возраст из новой даты.
+    if updates.get("date_of_birth") and "age" not in updates:
+        updates["age"] = _age_from_dob(updates["date_of_birth"])
     for k, v in updates.items():
         setattr(p, k, v)
     db.commit()
