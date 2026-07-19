@@ -155,7 +155,12 @@ app.include_router(epicrises_router)
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "service": "avris-backend", "version": "0.1.0"}
+    # pdf_font — ops-сигнал: "AvrisFont" = кириллический TTF зарегистрирован,
+    # "Helvetica" = фолбэк, кириллица в PDF будет квадратами (нет шрифта в образе).
+    import pdf_export
+    pdf_export._register_fonts()
+    return {"status": "ok", "service": "avris-backend", "version": "0.1.0",
+            "pdf_font": pdf_export._FONT_NAME}
 
 
 def _waitlist_live() -> bool:
