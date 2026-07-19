@@ -69,3 +69,6 @@ build/
 test-results/
 playwright-report/
 _screenshots/
+
+# stray/abandoned local Flutter attempt — real app lives in ~/AvrisPatientApp
+mobile/
