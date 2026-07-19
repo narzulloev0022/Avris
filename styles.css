@@ -1028,6 +1028,17 @@ body[data-theme="dark"] .btn-logout:hover{background:rgba(255,255,255,0.06)}
 .pm-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
 .pm-sec-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:8px;margin-top:16px}
 .pm-sec-title:first-child{margin-top:0}
+/* Таймлайн истории болезни (карточка пациента) */
+.tl-item{border:1px solid var(--border);border-radius:var(--radius-md);padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+.tl-item:hover{border-color:var(--accent)}
+.tl-item-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tl-date{font-family:var(--font-data);font-size:.76rem;color:var(--text-muted)}
+.tl-badge{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);border:1px solid var(--accent);border-radius:var(--radius-pill);padding:2px 8px}
+.tl-badge.round{color:var(--info);border-color:var(--info)}
+.tl-snip{font-size:.82rem;color:var(--text-secondary);margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tl-body{display:none;font-size:.82rem;color:var(--text-primary);margin-top:8px;white-space:pre-wrap;border-top:1px solid var(--border);padding-top:8px}
+.tl-item.open .tl-body{display:block}
+.tl-item.open .tl-snip{display:none}
 .pm-card::-webkit-scrollbar{width:4px}.pm-card::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
 @media(max-width:768px){
 .nr-grid{grid-template-columns:1fr 1fr}
