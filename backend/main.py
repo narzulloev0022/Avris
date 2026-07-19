@@ -63,6 +63,7 @@ from patient_api import router as patient_api_router
 from patient_links import patient_router as patient_links_patient_router, doctor_router as patient_links_doctor_router
 from patient_visits import router as patient_visits_router
 from patient_labs import router as patient_labs_router
+from patient_assistant import router as patient_assistant_router
 from epicrises import router as epicrises_router
 from rate_limit import limiter
 
@@ -148,6 +149,7 @@ app.include_router(patient_links_patient_router)
 app.include_router(patient_links_doctor_router)
 app.include_router(patient_visits_router)
 app.include_router(patient_labs_router)
+app.include_router(patient_assistant_router)
 app.include_router(epicrises_router)
 
 
