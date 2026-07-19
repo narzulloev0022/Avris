@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=42">
+<link rel="stylesheet" href="styles.css?v=43">
 </head>
 <body data-theme="light">
 <div class="login-screen" id="loginScreen">
@@ -81,7 +81,7 @@
 <div class="profile-setup-hdr">
 <div class="login-brand"><img class="login-brand-logo" src="assets/logo.svg?v=36" alt="Avris"></div>
 <h2 data-i18n="prof_setup_title">Заполните профиль врача</h2>
-<p class="profile-setup-sub" data-i18n="prof_setup_sub">Эти данные будут использованы в SOAP-документации и направлениях</p>
+<p class="profile-setup-sub" data-i18n="prof_setup_sub">Эти данные будут использованы в записях осмотров и направлениях</p>
 </div>
 <form id="profileForm" novalidate>
 <div class="avatar-uploader" id="pfAvatarWrap" tabindex="0" role="button" aria-label="Upload photo">
@@ -144,7 +144,7 @@
 <div class="dash-stats">
 <div class="dash-stat"><div class="ds-v" id="statPatients">0</div><div class="ds-l" data-i18n="m_pat_today">Пациентов сегодня</div></div>
 <div class="dash-stat" id="statCritCard"><div class="ds-v" id="statCrit">0</div><div class="ds-l" data-i18n="hero_crit">Критические</div></div>
-<div class="dash-stat"><div class="ds-v" id="statSoap">0</div><div class="ds-l" data-i18n="m_soap_today">SOAP за сегодня</div></div>
+<div class="dash-stat"><div class="ds-v" id="statSoap">0</div><div class="ds-l" data-i18n="m_soap_today">Записей сегодня</div></div>
 </div>
 <input id="patSearch" type="search" class="dash-search" data-phk="ph_search" placeholder="Поиск по ФИО или диагнозу...">
 <div class="dash-pills" id="dashPills" role="tablist">
@@ -226,7 +226,7 @@
 </div>
 </div>
 <div class="consult-right exam-block" id="examDocBlock">
-<div class="card-h soap-card-h"><div class="soap-h-l"><h3 data-i18n="soap_title">SOAP-документация</h3><span class="soap-status" id="soapStatus" data-state="draft" data-i18n="soap_st_draft">Черновик</span></div><div style="display:flex;align-items:center;gap:8px"><button class="ai-badge ai-badge-btn" id="soapGenBtn" type="button" aria-label="Regenerate SOAP"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M12 0l2.5 9.5L24 12l-9.5 2.5L12 24l-2.5-9.5L0 12l9.5-2.5L12 0z"/></svg><span data-i18n="btn_regen_soap">Перегенерировать SOAP</span></button><button class="icon-btn" id="soapPrintBtn" type="button" aria-label="Print" data-i18n-title="btn_print" title="Печать" style="width:32px;height:32px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button></div></div>
+<div class="card-h soap-card-h"><div class="soap-h-l"><h3 data-i18n="soap_title">Запись осмотра · SOAP</h3><span class="soap-status" id="soapStatus" data-state="draft" data-i18n="soap_st_draft">Черновик</span><select id="vtSelect" data-i18n-title="vt_label" title="Тип записи" aria-label="Тип записи" style="width:auto;padding:5px 8px;font-size:.76rem;margin-left:8px"><option value="visit" data-i18n-o="tl_visit">Приём</option><option value="primary" data-i18n-o="tl_primary">Первичный осмотр</option><option value="daily" data-i18n-o="tl_daily">Дневник</option></select></div><div style="display:flex;align-items:center;gap:8px"><button class="ai-badge ai-badge-btn" id="soapGenBtn" type="button" aria-label="Regenerate note"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M12 0l2.5 9.5L24 12l-9.5 2.5L12 24l-2.5-9.5L0 12l9.5-2.5L12 0z"/></svg><span data-i18n="btn_regen_soap">Перегенерировать запись</span></button><button class="icon-btn" id="soapPrintBtn" type="button" aria-label="Print" data-i18n-title="btn_print" title="Печать" style="width:32px;height:32px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button></div></div>
 <div class="soap-g">
 <div class="soap-c soap-s">
 <div class="soap-hdr"><h5 class="soap-lbl"><span class="soap-letter">S</span><span class="soap-word" data-i18n="soap_s_lbl">Субъективно</span></h5></div>
@@ -274,7 +274,7 @@
 </div>
 </div>
 </div>
-<div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn primary" id="soapConfirm" data-i18n="btn_soap">Подтвердить SOAP</button></div>
+<div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn primary" id="soapConfirm" data-i18n="btn_soap">Подтвердить запись</button></div>
 </div>
 </div>
 </div>
@@ -411,7 +411,7 @@
 <div class="set-row"><div class="set-row-info"><div class="set-row-label" data-i18n="set_tour_l">Обучение</div><div class="set-row-desc" data-i18n="set_tour_d">Интерактивный сценарий по всем функциям</div></div><button class="btn ghost sm" id="rerunTourBtn" type="button" data-i18n="set_tour_btn">Показать</button></div>
 <div class="set-cont-title" data-i18n="set_shortcuts" style="margin-top:24px">Горячие клавиши</div>
 <div class="set-row"><div class="set-row-info"><div class="set-row-label" data-i18n="sc_search">Поиск пациента</div></div><kbd class="kbd-pill">Ctrl/⌘ + K</kbd></div>
-<div class="set-row"><div class="set-row-info"><div class="set-row-label" data-i18n="sc_save">Сохранить SOAP</div></div><kbd class="kbd-pill">Ctrl/⌘ + S</kbd></div>
+<div class="set-row"><div class="set-row-info"><div class="set-row-label" data-i18n="sc_save">Сохранить запись</div></div><kbd class="kbd-pill">Ctrl/⌘ + S</kbd></div>
 <div class="set-row"><div class="set-row-info"><div class="set-row-label" data-i18n="sc_record">Начать / остановить запись</div></div><kbd class="kbd-pill">Ctrl/⌘ + R</kbd></div>
 <div class="set-row"><div class="set-row-info"><div class="set-row-label" data-i18n="sc_escape">Закрыть модалку / выйти из фокуса</div></div><kbd class="kbd-pill">Esc</kbd></div>
 <div class="set-row"><div class="set-row-info"><div class="set-row-label" data-i18n="sc_voice">Голосовые команды</div><div class="set-row-desc" data-i18n="vc_examples">Двойной пробел или иконка волны в шапке. Примеры: «открой дашборд», «новая запись», «начать запись», «следующий пациент», «закрыть»</div></div><kbd class="kbd-pill">Space ×2</kbd></div>
@@ -447,6 +447,7 @@
 <div class="pm-tabs">
 <button class="pm-tab active" data-pt="pmOverview" data-i18n="pm_overview">Обзор</button>
 <button class="pm-tab" data-pt="pmSoap">SOAP</button>
+<button class="pm-tab" data-pt="pmTimeline" data-i18n="pm_tab_timeline">История болезни</button>
 <button class="pm-tab" data-pt="pmHistory" data-i18n="pm_history">История</button>
 </div>
 <div class="pm-pane active" id="pmOverview">
@@ -460,8 +461,12 @@
 <div class="pm-list" id="pmMeds"></div>
 </div>
 <div class="pm-pane" id="pmSoap">
-<div class="pm-sec-title" data-i18n="pm_last_soap">Последняя SOAP-запись</div>
+<div class="pm-sec-title" data-i18n="pm_last_soap">Последняя запись осмотра</div>
 <p style="color:var(--text-muted);font-size:.85rem" data-i18n="pm_no_records">Нет записей для этого пациента</p>
+</div>
+<div class="pm-pane" id="pmTimeline">
+<div class="pm-sec-title" data-i18n="pm_tab_timeline">История болезни</div>
+<div id="pmTl"></div>
 </div>
 <div class="pm-pane" id="pmHistory">
 <div class="pm-sec-title" data-i18n="m_hist">Анамнез</div>
@@ -469,7 +474,24 @@
 </div>
 <div class="pm-actions">
 <button class="pm-btn-primary" id="pmStartExam" data-i18n="pm_start_exam">Начать осмотр →</button>
+<button class="pm-btn-secondary" id="pmEpicrisis" data-i18n="pm_epicrisis">Эпикриз</button>
 <button class="pm-btn-secondary" id="pmShowHist" data-i18n="pm_history">История</button>
+</div>
+</div>
+</div>
+<div class="nr-modal-ov" id="ecModal">
+<div class="nr-modal-card" style="max-width:720px">
+<div class="nr-modal-hdr"><h3 id="ecTitle" data-i18n="ec_title">Эпикриз</h3><button class="icon-btn" id="ecClose" aria-label="Close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:8px">
+<div style="flex:1;min-width:160px"><label data-i18n="ec_kind">Тип</label><select id="ec_kind"><option value="discharge" data-i18n-o="ec_kind_discharge">Выписной</option><option value="interim" data-i18n-o="ec_kind_interim">Этапный</option></select></div>
+<button class="btn primary" type="button" id="ecGenerate"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span id="ecGenerateLbl" data-i18n="ec_generate">Сгенерировать черновик</span></button>
+</div>
+<div style="font-size:.78rem;color:var(--text-muted);margin:0 0 12px" data-i18n="ec_hint">Черновик собирается из всей истории болезни: поступление, записи врача, обходы, анализы</div>
+<div id="ecListWrap" style="margin-bottom:12px" hidden><label data-i18n="ec_saved">Сохранённые</label><div id="ecList" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div></div>
+<div style="margin-bottom:14px"><textarea id="ec_body" data-phk="ec_ph" placeholder="Нажмите «Сгенерировать черновик» — Claude соберёт эпикриз из всей истории болезни. Затем отредактируйте и сохраните." style="min-height:320px;font-size:.85rem;line-height:1.5"></textarea></div>
+<div style="display:flex;gap:8px;justify-content:flex-end">
+<button class="btn ghost" type="button" id="ecPdfBtn" disabled>PDF</button>
+<button class="btn primary" type="button" id="ecSaveBtn" data-i18n="btn_save">Сохранить</button>
 </div>
 </div>
 </div>
@@ -484,10 +506,19 @@
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
 <div><label data-i18n="pat_f_name">ФИО</label><input id="pf_full_name" type="text" required></div>
 <div><label data-i18n="pat_f_type">Тип пациента</label><select id="pf_patient_type"><option value="outpatient" data-i18n-o="pt_outpatient">Амбулаторный</option><option value="inpatient" data-i18n-o="pt_inpatient">Стационарный</option></select></div>
+<div><label data-i18n="pat_f_record">№ карты / ИБ</label><input id="pf_record" type="text" placeholder="ИБ-2026/0417"></div>
 <div id="pf_ward_wrap"><label data-i18n="pat_f_ward">Палата</label><input id="pf_ward" type="number" min="1" data-phk="pat_f_ward_ph" placeholder="Номер палаты"></div>
+<div><label data-i18n="pat_f_dob">Дата рождения</label><input id="pf_dob" type="date"></div>
 <div><label data-i18n="pat_f_age">Возраст</label><input id="pf_age" type="number" min="0" max="130"></div>
 <div><label data-i18n="pat_f_gender">Пол</label><select id="pf_gender"><option value=""></option><option value="М" data-i18n-o="gender_m_o">М</option><option value="Ж" data-i18n-o="gender_f_o">Ж</option></select></div>
 </div>
+<fieldset id="pf_admission_wrap" style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px;display:none"><legend style="padding:0 6px;font-size:.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em" data-i18n="adm_title">Поступление</legend>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px">
+<div><label data-i18n="pat_f_adm_date">Дата поступления</label><input id="pf_adm_date" type="datetime-local"></div>
+<div><label data-i18n="pat_f_adm_status">Состояние при поступлении</label><select id="pf_adm_status"><option value=""></option><option value="stable" data-i18n-o="ps_stable">Стабильный</option><option value="watch" data-i18n-o="ps_watch">Наблюдение</option><option value="serious" data-i18n-o="ps_serious">Тяжёлый</option><option value="critical" data-i18n-o="ps_critical">Критический</option></select></div>
+</div>
+<div><label data-i18n="pat_f_adm_diag">Диагноз при поступлении</label><input id="pf_adm_diag" type="text" data-phk="pat_f_adm_diag_ph" placeholder="Внебольничная пневмония"></div>
+</fieldset>
 <div style="margin-bottom:12px;position:relative"><label data-i18n="pat_f_diag">Диагнозы (через запятую)</label><input id="pf_diagnoses" type="text" placeholder="Гипертония, Диабет II" autocomplete="off"></div>
 <div style="margin-bottom:14px"><label data-i18n="pat_f_allergy">Аллергии (через запятую)</label><input id="pf_allergies" type="text" placeholder="Метформин"></div>
 <details class="pf-more" id="pfMore">
@@ -603,6 +634,6 @@
 <script src="assets/vendor/gsap/TextPlugin.min.js"></script>
 <script src="assets/vendor/anime.umd.min.js"></script>
 <script src="assets/vendor/motion.min.js"></script>
-<script src="app.js?v=42"></script>
+<script src="app.js?v=43"></script>
 </body>
 </html>

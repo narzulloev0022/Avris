@@ -72,3 +72,6 @@ _screenshots/
 
 # stray/abandoned local Flutter attempt — real app lives in ~/AvrisPatientApp
 mobile/
+# graphify artifacts (local only)
+graphify-out/
+.graphify_analysis.json
