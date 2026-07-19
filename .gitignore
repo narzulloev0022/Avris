@@ -69,3 +69,7 @@ build/
 test-results/
 playwright-report/
 _screenshots/
+
+# graphify artifacts (local only)
+graphify-out/
+.graphify_analysis.json
