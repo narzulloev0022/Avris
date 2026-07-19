@@ -121,8 +121,15 @@ def _tail_with_note(items: list, keep: int, label: str) -> tuple:
     return items[-keep:], f"[…опущено {omitted} более ранних записей раздела «{label}»]"
 
 
-def _build_history(db: Session, p: Patient) -> tuple:
-    """Собрать текст истории болезни для Claude + счётчики записей."""
+def _build_history(db: Session, p: Patient,
+                   max_consults: int = MAX_CONSULTS,
+                   max_rounds: int = MAX_ROUNDS,
+                   max_labs: int = MAX_LABS) -> tuple:
+    """Собрать текст истории болезни для Claude + счётчики записей.
+
+    Лимиты параметризованы: эпикриз берёт полные хвосты, pre-visit сводка
+    (patients.py) — короткие.
+    """
     parts = []
 
     # Паспортная часть + текущее состояние
@@ -172,7 +179,7 @@ def _build_history(db: Session, p: Patient) -> tuple:
                 .order_by(Consultation.created_at.asc()).all())
     primary = [c for c in consults if c.visit_type == "primary"]
     rest = [c for c in consults if c.visit_type != "primary"]
-    rest_kept, rest_note = _tail_with_note(rest, MAX_CONSULTS, "записи врача")
+    rest_kept, rest_note = _tail_with_note(rest, max_consults, "записи врача")
     kept = sorted(primary + rest_kept, key=lambda c: c.created_at)
     if kept:
         lines = []
@@ -190,7 +197,7 @@ def _build_history(db: Session, p: Patient) -> tuple:
     rounds = (db.query(NightRound)
               .filter(NightRound.patient_id == p.id)
               .order_by(NightRound.created_at.asc()).all())
-    rounds_kept, rounds_note = _tail_with_note(rounds, MAX_ROUNDS, "ночные обходы")
+    rounds_kept, rounds_note = _tail_with_note(rounds, max_rounds, "ночные обходы")
     if rounds_kept:
         lines = [rounds_note] if rounds_note else []
         for r in rounds_kept:
@@ -209,7 +216,7 @@ def _build_history(db: Session, p: Patient) -> tuple:
     labs = (db.query(LabOrder)
             .filter(LabOrder.patient_id == p.id, LabOrder.status == "received")
             .order_by(LabOrder.received_at.asc()).all())
-    labs_kept, labs_note = _tail_with_note(labs, MAX_LABS, "анализы")
+    labs_kept, labs_note = _tail_with_note(labs, max_labs, "анализы")
     if labs_kept:
         lines = [labs_note] if labs_note else []
         for o in labs_kept:
