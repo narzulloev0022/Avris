@@ -13,7 +13,7 @@
  */
 "use strict";
 
-var SW_VERSION = "v45";
+var SW_VERSION = "v46";
 var SHELL_CACHE = "avris-shell-" + SW_VERSION;
 var STATIC_CACHE = "avris-static-" + SW_VERSION;
 

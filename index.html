@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=44">
+<link rel="stylesheet" href="styles.css?v=45">
 </head>
 <body data-theme="light">
 <div class="login-screen" id="loginScreen">
@@ -481,6 +481,17 @@
 </div>
 </div>
 </div>
+<div class="nr-modal-ov" id="hdModal">
+<div class="nr-modal-card" style="max-width:680px">
+<div class="nr-modal-hdr"><h3 id="hdTitle">Документ</h3><button class="icon-btn" id="hdClose" aria-label="Close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div id="hdMeta" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px"></div>
+<div id="hdBody" style="max-height:52vh;overflow-y:auto"></div>
+<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+<button class="btn ghost" type="button" id="hdPatientBtn" data-i18n="hd_patient">Карточка пациента</button>
+<button class="btn primary" type="button" id="hdPdfBtn">PDF</button>
+</div>
+</div>
+</div>
 <div class="nr-modal-ov" id="ecModal">
 <div class="nr-modal-card" style="max-width:720px">
 <div class="nr-modal-hdr"><h3 id="ecTitle" data-i18n="ec_title">Эпикриз</h3><button class="icon-btn" id="ecClose" aria-label="Close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
@@ -636,6 +647,6 @@
 <script src="assets/vendor/gsap/TextPlugin.min.js"></script>
 <script src="assets/vendor/anime.umd.min.js"></script>
 <script src="assets/vendor/motion.min.js"></script>
-<script src="app.js?v=44"></script>
+<script src="app.js?v=45"></script>
 </body>
 </html>
