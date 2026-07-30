@@ -465,7 +465,10 @@ class PatientPreVisitNote(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
-    note_text = Column(String(300), nullable=False)
+    # 1000: потолок с запасом. Заметка, собранная интервью, идёт
+    # структурой в несколько строк, и упереться в лимит на полуслове
+    # хуже, чем хранить лишние байты.
+    note_text = Column(String(1000), nullable=False)
     seen_by_doctor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     seen_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
@@ -527,3 +530,21 @@ class PatientMessage(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     conversation = relationship("PatientConversation", back_populates="messages")
+
+
+class IntakeUsage(Base):
+    """Дневной счётчик пред-визитных интервью.
+
+    Отдельная таблица, а не строка в ``assistant_usage`` с префиксом в ключе
+    дня: колонка ``day`` там VARCHAR(10) под «YYYY-MM-DD», и «intake:2026-07-30»
+    в неё не влезает. SQLite длину не проверяет и молча стерпел бы, а Postgres
+    в проде упал бы на первом же интервью.
+    """
+    __tablename__ = "intake_usage"
+    __table_args__ = (UniqueConstraint("patient_account_id", "day", name="uq_intake_usage_day"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"),
+                                nullable=False, index=True)
+    day = Column(String(10), nullable=False)
+    count = Column(Integer, nullable=False, default=0)

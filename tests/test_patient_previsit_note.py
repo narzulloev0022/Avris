@@ -89,8 +89,12 @@ class TestCreateUpdate:
 
     def test_over_limit_rejected(self, client):
         h, _ = _patient(client)
+        # Лимит 1000: заметка от AI-интервью идёт структурой в несколько строк,
+        # в прежние 300 символов такая не помещалась.
         assert client.post("/api/patient/pre-visit-note", headers=h,
-                           json={"note_text": "a" * 301}).status_code == 422
+                           json={"note_text": "a" * 1001}).status_code == 422
+        assert client.post("/api/patient/pre-visit-note", headers=h,
+                           json={"note_text": "a" * 1000}).status_code == 200
 
 
 class TestDoctorVisibility:

@@ -78,6 +78,13 @@ def init_db():
                 conn.execute(text("ALTER TABLE users ADD COLUMN soap_edited_count INTEGER NOT NULL DEFAULT 0"))
             if "stt_consent" not in u_existing:
                 conn.execute(text("ALTER TABLE users ADD COLUMN stt_consent BOOLEAN NOT NULL DEFAULT FALSE"))
+    # Заметка выросла с 300 до 1000 символов (интервью собирает структуру из
+    # нескольких строк). В SQLite длина VARCHAR не проверяется, в Postgres —
+    # проверяется, поэтому колонку надо расширить явно.
+    if engine.dialect.name == "postgresql" and "patient_previsit_notes" in insp.get_table_names():
+        with engine.begin() as conn:
+            conn.execute(text(
+                "ALTER TABLE patient_previsit_notes ALTER COLUMN note_text TYPE VARCHAR(1000)"))
     # patient_accounts — consent_version added after the table shipped.
     if "patient_accounts" in insp.get_table_names():
         pa_existing = {c["name"] for c in insp.get_columns("patient_accounts")}
