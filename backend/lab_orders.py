@@ -104,13 +104,20 @@ def _build_public(db: Session, o: LabOrder) -> LabOrderPublic:
     )
 
 
+def _ai_comment_fallback(results: dict) -> str:
+    """Читается пациентом в приложении — только человеческий текст,
+    никаких имён переменных окружения и внутренних деталей."""
+    n = len(results) if isinstance(results, dict) else 0
+    return (
+        f"Получены результаты по {n} показателям. "
+        "Автоматический разбор пока недоступен — обсудите результаты с врачом."
+    )
+
+
 async def _generate_ai_comment(results: dict, patient_context: Optional[dict]) -> str:
     if not ANTHROPIC_API_KEY:
-        n = len(results) if isinstance(results, dict) else 0
-        return (
-            f"Получены результаты по {n} показателям. "
-            "Подключите ANTHROPIC_API_KEY для автоматической клинической интерпретации."
-        )
+        logger.warning("AI comment skipped: ANTHROPIC_API_KEY is not configured")
+        return _ai_comment_fallback(results)
     try:
         system_prompt = (
             "Ты медицинский AI-ассистент. Дай краткий клинический комментарий "
@@ -124,8 +131,7 @@ async def _generate_ai_comment(results: dict, patient_context: Optional[dict]) -
         return await _claude_call(system_prompt, user_msg, max_tokens=400)
     except Exception as e:
         logger.warning("AI comment generation failed: %s", e)
-        n = len(results) if isinstance(results, dict) else 0
-        return f"Получены результаты по {n} показателям. AI-анализ временно недоступен."
+        return _ai_comment_fallback(results)
 
 
 # ---------- Endpoints (auth-gated) ----------

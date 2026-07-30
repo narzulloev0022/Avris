@@ -40,7 +40,8 @@ async def transcribe(
     current_user: User = Depends(get_current_user),
 ):
     if not OPENAI_API_KEY:
-        raise HTTPException(status_code=503, detail="OpenAI Whisper не настроен (OPENAI_API_KEY)")
+        logger.error("Transcription refused: OPENAI_API_KEY is not configured")
+        raise HTTPException(status_code=503, detail="Распознавание речи временно недоступно — попробуйте позже")
 
     audio = await file.read()
     if not audio:
