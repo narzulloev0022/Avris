@@ -338,6 +338,14 @@ class PatientAccount(Base):
     # defensible on its own — you must be able to show WHAT was consented to.
     consent_version = Column(String(32), nullable=True)
     language_pref = Column(String(4), nullable=False, default="ru")
+    # Подписка: тариф — единственный источник правды о правах пациента
+    # (клиентский paywall лишь рисует замки). ``subscription_expires_at`` NULL
+    # у free и у бессрочно выданных вручную; истёкший платный тариф считается
+    # free без фонового джоба — см. patient_subscription.resolve_tier().
+    subscription_tier = Column(String(16), nullable=False, default="free")
+    subscription_expires_at = Column(DateTime, nullable=True)
+    # appstore | googleplay | manual — откуда пришло право (для сверки с IAP).
+    subscription_source = Column(String(32), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 

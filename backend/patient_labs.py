@@ -10,17 +10,21 @@ There is deliberately no patient prescription endpoint: the schema has no
 Prescription entity — prescriptions live in a consultation's SOAP "P" field
 and in patients.medications. Exposing them is a product decision, not a port.
 """
+import json
 from datetime import datetime
 from typing import Any, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from database import get_db
+from llm import _claude_call
 from models import LabFile, LabOrder, PatientAccount, User
 from patient_auth import get_current_patient
+from patient_subscription import FEATURE_LAB_BREAKDOWN, require_feature
 from patient_visits import _linked_patient_ids
+from rate_limit import limiter
 
 router = APIRouter(prefix="/api/patient/labs", tags=["patient"])
 
@@ -122,6 +126,66 @@ def lab_detail(
         received_at=o.received_at,
         files=[LabFileMetaOut.model_validate(f) for f in files],
     )
+
+
+_BREAKDOWN_PROMPT = """Ты — AI-помощник пациента в приложении Avris. Объясни пациенту
+его результаты анализов простым человеческим языком.
+
+ЖЁСТКИЕ ПРАВИЛА:
+- НЕ ставь диагнозы и не предполагай их. Диагноз ставит только врач.
+- НЕ назначай лекарства и не отменяй назначенное врачом.
+- Показатели вне нормы — назови спокойно, без запугивания, и скажи, что
+  это обсуждают с врачом.
+- Если значения указывают на неотложное состояние — скажи обратиться к врачу
+  сегодня, а при резком ухудшении звонить в скорую (в Таджикистане — 103).
+- Обращайся на «вы», без медицинского жаргона; термин неизбежен — поясни в скобках.
+
+СТРУКТУРА ОТВЕТА (без заголовков-разметки, просто абзацы):
+1) Общая картина одним абзацем.
+2) По каждому показателю вне нормы — что он означает простыми словами.
+3) Что делать дальше: к какому врачу, какие вопросы задать на приёме.
+Максимум 250 слов."""
+
+
+class LabBreakdownOut(BaseModel):
+    breakdown: str
+
+
+@router.post("/{oid}/breakdown", response_model=LabBreakdownOut)
+@limiter.limit("10/minute")
+async def lab_breakdown(
+    request: Request,
+    oid: int,
+    current: PatientAccount = Depends(get_current_patient),
+    db: Session = Depends(get_db),
+):
+    """Развёрнутый AI-разбор анализа простым языком — платная фича (Plus+).
+
+    Отличается от бесплатного ``ai_comment`` (2-4 клинические фразы, их пишет
+    система для врача при вводе результатов): здесь объяснение для пациента —
+    что значат отклонения и что делать дальше.
+
+    Вызывается по кнопке, а не при открытии экрана: каждый разбор — деньги.
+    """
+    # Сначала владение, потом оплата: чужой заказ — 404 для любого тарифа,
+    # иначе по коду ответа видно, что анализ существует.
+    o = _owned_order(db, oid, current)
+    require_feature(current, FEATURE_LAB_BREAKDOWN)
+    if not o.results:
+        raise HTTPException(status_code=409, detail="Результаты ещё не готовы")
+
+    tests = ", ".join(o.tests or []) or "анализ"
+    user_msg = (f"Анализ: {tests}\n"
+                f"Результаты: {json.dumps(o.results, ensure_ascii=False)}")
+    if current.chronic_conditions:
+        user_msg += f"\nХронические состояния пациента: {', '.join(current.chronic_conditions)}"
+    if current.allergies:
+        user_msg += f"\nАллергии: {', '.join(current.allergies)}"
+
+    text = (await _claude_call(_BREAKDOWN_PROMPT, user_msg, max_tokens=700) or "").strip()
+    if not text:
+        raise HTTPException(status_code=502, detail="Пустой ответ модели — повторите попытку")
+    return LabBreakdownOut(breakdown=text)
 
 
 @router.get("/{oid}/files/{fid}")

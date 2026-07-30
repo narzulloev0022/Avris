@@ -84,6 +84,15 @@ def init_db():
         with engine.begin() as conn:
             if "consent_version" not in pa_existing:
                 conn.execute(text("ALTER TABLE patient_accounts ADD COLUMN consent_version VARCHAR(32)"))
+            # Подписки: все существующие аккаунты — free (ядро бесплатно всегда).
+            if "subscription_tier" not in pa_existing:
+                conn.execute(text(
+                    "ALTER TABLE patient_accounts ADD COLUMN subscription_tier "
+                    "VARCHAR(16) NOT NULL DEFAULT 'free'"))
+            if "subscription_expires_at" not in pa_existing:
+                conn.execute(text("ALTER TABLE patient_accounts ADD COLUMN subscription_expires_at TIMESTAMP"))
+            if "subscription_source" not in pa_existing:
+                conn.execute(text("ALTER TABLE patient_accounts ADD COLUMN subscription_source VARCHAR(32)"))
     # visit_summaries — prescriptions block added after the table shipped.
     if "visit_summaries" in insp.get_table_names():
         vs_existing = {c["name"] for c in insp.get_columns("visit_summaries")}
