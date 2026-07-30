@@ -12,14 +12,16 @@
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from audit import audit
 from database import get_db
+from llm import _claude_call
 from models import PatientAccount, PatientConversation, PatientMessage
 from patient_auth import get_current_patient
+from rate_limit import limiter
 
 router = APIRouter(prefix="/api/patient/conversations", tags=["patient"])
 
@@ -134,3 +136,56 @@ def delete_conversation(
     audit(db, action="delete", entity="patient_conversation", user_id=None,
           entity_id=cid, meta={"door": "patient"})
     return Response(status_code=204)
+
+
+# ---------- выжимка разговора для врача ----------
+
+_SUMMARY_PROMPT = """Тебе дают разговор пациента с AI-помощником в медицинском приложении.
+Составь короткую заметку для ВРАЧА — то, что полезно знать перед приёмом.
+
+ЖЁСТКИЕ ПРАВИЛА:
+- Только факты СО СЛОВ ПАЦИЕНТА. Ничего не додумывай и не обобщай.
+- НИКАКИХ диагнозов, предположений о причине и рекомендаций по лечению.
+- Не переноси в заметку то, что говорил помощник — только то, что рассказал пациент.
+- Если пациент почти ничего о себе не сообщил, верни пустую строку.
+- Пиши от лица пациента, просто, каждый пункт с новой строки.
+- Максимум 600 символов, 3-5 строк.
+
+Верни ТОЛЬКО текст заметки, без пояснений и markdown."""
+
+
+class ConversationSummaryOut(BaseModel):
+    draft: str
+
+
+@router.post("/{cid}/summary-for-doctor", response_model=ConversationSummaryOut)
+@limiter.limit("10/minute")
+async def summarize_for_doctor(
+    request: Request,
+    cid: int,
+    account: PatientAccount = Depends(get_current_patient),
+    db: Session = Depends(get_db),
+):
+    """Собрать из разговора заметку для врача.
+
+    Обычный разговор о самочувствии содержит половину анамнеза — когда
+    началось, что усиливает, что уже принимал. Всё это пациент уже рассказал
+    один раз, и заставлять его пересказывать врачу с нуля расточительно.
+
+    Черновик НЕ сохраняется и никуда не уходит сам: пациент сначала видит,
+    что именно попадёт к врачу, и подтверждает. Разговор с AI о здоровье —
+    личное, и решать, что из него показать, может только он.
+    """
+    convo = owned_conversation(db, cid, account)
+    said = [m.text.strip() for m in convo.messages if m.role == "user" and m.text.strip()]
+    if not said:
+        raise HTTPException(status_code=409, detail="В разговоре пока нечего собирать")
+
+    user_msg = "Разговор:\n" + "\n".join(
+        f"{'Пациент' if m.role == 'user' else 'Помощник'}: {m.text.strip()}"
+        for m in convo.messages
+    )
+    draft = (await _claude_call(_SUMMARY_PROMPT, user_msg, max_tokens=500) or "").strip()
+    if not draft:
+        raise HTTPException(status_code=409, detail="В разговоре пока нечего собирать")
+    return ConversationSummaryOut(draft=draft[:600])
