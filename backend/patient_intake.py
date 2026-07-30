@@ -31,7 +31,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from llm import _claude_call
-from models import AssistantUsage, PatientAccount
+from models import IntakeUsage, PatientAccount
 from patient_auth import get_current_patient
 from patient_conversations import (KIND_INTAKE, append_turn, owned_conversation,
                                    start_conversation)
@@ -45,9 +45,10 @@ MAX_TURNS = 24
 MAX_MSG_CHARS = 1000
 
 # Кап отдельный от ассистента: интервью — часть ядра (оно ведёт к визиту),
-# а не платная фича, но и жечь его в цикле нельзя.
+# а не платная фича, но и жечь его в цикле нельзя. Считается в своей таблице
+# (IntakeUsage) — префикс в ключе дня не влезал в VARCHAR(10) и уронил бы
+# Postgres в проде.
 DAILY_CAP = int(os.getenv("INTAKE_DAILY_CAP", "12"))
-_USAGE_DAY_PREFIX = "intake:"
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_TRANSCRIBE_URL = "https://api.openai.com/v1/audio/transcriptions"
@@ -93,7 +94,8 @@ _SYSTEM_PROMPT = """Ты помогаешь пациенту подготови�
 }
 Когда интервью завершено: "done": true, а "note" — заметка для врача от лица
 пациента, 3-5 коротких строк, каждая с новой строки, БЕЗ выводов и диагнозов,
-только факты со слов пациента и его вопросы. Максимум 600 символов.
+только факты со слов пациента и его вопросы. Держись 3-5 строк; жёсткий
+потолок — 1000 символов.
 При красных флагах: "done": true, "verdict": "emergency", "note" — те же факты,
 "reply" — призыв немедленно обратиться в скорую."""
 
@@ -119,7 +121,7 @@ class IntakeResponse(BaseModel):
 
 
 def _today_key() -> str:
-    return _USAGE_DAY_PREFIX + datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 
 def _bump_usage(db: Session, account_id: int) -> None:
@@ -127,12 +129,12 @@ def _bump_usage(db: Session, account_id: int) -> None:
     один и тот же счётчик на две разные фичи означал бы, что подготовка к
     приёму съедает лимит вопросов о здоровье."""
     day = _today_key()
-    row = (db.query(AssistantUsage)
-           .filter(AssistantUsage.patient_account_id == account_id,
-                   AssistantUsage.day == day)
+    row = (db.query(IntakeUsage)
+           .filter(IntakeUsage.patient_account_id == account_id,
+                   IntakeUsage.day == day)
            .first())
     if row is None:
-        row = AssistantUsage(patient_account_id=account_id, day=day, count=0)
+        row = IntakeUsage(patient_account_id=account_id, day=day, count=0)
         db.add(row)
     if row.count >= DAILY_CAP:
         raise HTTPException(status_code=429,
@@ -142,9 +144,9 @@ def _bump_usage(db: Session, account_id: int) -> None:
 
 
 def _release(db: Session, account_id: int) -> None:
-    row = (db.query(AssistantUsage)
-           .filter(AssistantUsage.patient_account_id == account_id,
-                   AssistantUsage.day == _today_key())
+    row = (db.query(IntakeUsage)
+           .filter(IntakeUsage.patient_account_id == account_id,
+                   IntakeUsage.day == _today_key())
            .first())
     if row is not None and row.count > 0:
         row.count -= 1
@@ -167,7 +169,7 @@ def _parse(raw: str) -> IntakeResponse:
                     reply=str(obj["reply"]).strip(),
                     done=bool(obj.get("done")),
                     verdict="emergency" if obj.get("verdict") == "emergency" else "ok",
-                    note=note[:600] if note else None,
+                    note=note[:1000] if note else None,
                 )
         except (ValueError, TypeError):
             pass

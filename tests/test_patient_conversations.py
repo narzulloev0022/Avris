@@ -231,3 +231,47 @@ class TestSummaryForDoctor:
         cid = _ask(client, h1, "Моё").json()["conversation_id"]
         r = client.post(f"/api/patient/conversations/{cid}/summary-for-doctor", headers=h2)
         assert r.status_code == 404
+
+
+class TestIntakeNoteFits:
+    """Заметку, собранную интервью, должно быть возможно сохранить.
+
+    Раньше не получалось: интервью отдаёт до 600 символов, а поле заметки
+    принимало 300 — пациент проходил разговор до конца и упирался в 422 ровно
+    на кнопке «Сохранить».
+    """
+
+    def test_long_note_is_accepted(self, client):
+        h = _auth(client, "+992908000040")
+        note = ("Кашель третью неделю, ночью сильнее. " * 30)[:980]
+        r = client.post("/api/patient/pre-visit-note", json={"note_text": note}, headers=h)
+        assert r.status_code == 200, r.text
+        assert client.get("/api/patient/pre-visit-note", headers=h).json()["note"] is not None
+
+    def test_over_limit_is_still_rejected(self, client):
+        h = _auth(client, "+992908000041")
+        r = client.post("/api/patient/pre-visit-note", json={"note_text": "х" * 1200}, headers=h)
+        assert r.status_code == 422
+
+
+class TestIntakeCounterIsolation:
+    """Счётчик интервью живёт в своей таблице: ключ «intake:YYYY-MM-DD» не
+    влезал в VARCHAR(10) и уронил бы Postgres в проде."""
+
+    def test_day_key_fits_the_column(self, client, monkeypatch):
+        async def _fake(system_prompt, user_msg, max_tokens=1024):
+            return '{"reply": "Когда началось?", "done": false, "verdict": "ok", "note": null}'
+
+        monkeypatch.setattr(intake_module, "_claude_call", _fake)
+        h = _auth(client, "+992908000042")
+        assert client.post("/api/patient/intake", json={"messages": []}, headers=h).status_code == 200
+
+        from models import IntakeUsage
+        import database
+        db = database.SessionLocal()
+        try:
+            row = db.query(IntakeUsage).first()
+            assert row is not None
+            assert len(row.day) == 10, f"ключ дня должен быть YYYY-MM-DD, а не {row.day!r}"
+        finally:
+            db.close()

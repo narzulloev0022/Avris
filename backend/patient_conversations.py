@@ -149,7 +149,7 @@ _SUMMARY_PROMPT = """Тебе дают разговор пациента с AI-�
 - Не переноси в заметку то, что говорил помощник — только то, что рассказал пациент.
 - Если пациент почти ничего о себе не сообщил, верни пустую строку.
 - Пиши от лица пациента, просто, каждый пункт с новой строки.
-- Максимум 600 символов, 3-5 строк.
+- Держись 3-5 строк; жёсткий потолок — 1000 символов.
 
 Верни ТОЛЬКО текст заметки, без пояснений и markdown."""
 
@@ -188,4 +188,4 @@ async def summarize_for_doctor(
     draft = (await _claude_call(_SUMMARY_PROMPT, user_msg, max_tokens=500) or "").strip()
     if not draft:
         raise HTTPException(status_code=409, detail="В разговоре пока нечего собирать")
-    return ConversationSummaryOut(draft=draft[:600])
+    return ConversationSummaryOut(draft=draft[:1000])

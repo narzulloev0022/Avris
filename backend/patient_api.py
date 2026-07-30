@@ -141,7 +141,7 @@ def give_consent(
 # ---------- pre-visit note ----------
 
 class PreVisitNoteBody(BaseModel):
-    note_text: str = Field(min_length=1, max_length=300)
+    note_text: str = Field(min_length=1, max_length=1000)
 
     @field_validator("note_text")
     @classmethod
