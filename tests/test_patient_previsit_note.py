@@ -150,3 +150,54 @@ class TestSeenDoesNotBlockNew:
         unseen = [x for x in rows if x.seen_at is None]
         assert len(seen) == 1 and seen[0].note_text == "заметка к визиту 1"
         assert len(unseen) == 1 and unseen[0].note_text == "заметка к визиту 2"
+
+
+class TestNoteReadAndDelete:
+    """Пациент пишет заметку дома, а открывает приложение уже в клинике —
+    он должен видеть, что написал, и мочь передумать."""
+
+    def test_get_returns_null_when_no_note(self, client):
+        h, _ = _patient(client, "+992907000001")
+        r = client.get("/api/patient/pre-visit-note", headers=h)
+        assert r.status_code == 200
+        assert r.json()["note"] is None
+
+    def test_get_returns_active_note(self, client):
+        h, _ = _patient(client, "+992907000002")
+        client.post("/api/patient/pre-visit-note", headers=h,
+                    json={"note_text": "Кашель третью неделю, ночью хуже"})
+        body = client.get("/api/patient/pre-visit-note", headers=h).json()
+        assert body["note"]["note_text"] == "Кашель третью неделю, ночью хуже"
+
+    def test_seen_note_is_not_returned(self, client, db_session):
+        """Прочитанная врачом заметка — история: перед следующим приёмом поле
+        должно быть пустым, иначе пациент решит, что врач её ещё увидит."""
+        from models import PatientAccount, PatientPreVisitNote
+        from datetime import datetime
+        phone = "+992907000003"
+        h, _ = _patient(client, phone)
+        client.post("/api/patient/pre-visit-note", headers=h, json={"note_text": "Болит спина"})
+        acc = db_session.query(PatientAccount).filter(PatientAccount.phone == phone).first()
+        note = db_session.query(PatientPreVisitNote).filter(
+            PatientPreVisitNote.patient_account_id == acc.id).first()
+        note.seen_at = datetime.utcnow()
+        note.seen_by_doctor_id = 1
+        db_session.commit()
+        assert client.get("/api/patient/pre-visit-note", headers=h).json()["note"] is None
+
+    def test_delete_removes_active_note(self, client):
+        h, _ = _patient(client, "+992907000004")
+        client.post("/api/patient/pre-visit-note", headers=h, json={"note_text": "Передумал"})
+        assert client.delete("/api/patient/pre-visit-note", headers=h).status_code == 204
+        assert client.get("/api/patient/pre-visit-note", headers=h).json()["note"] is None
+
+    def test_delete_without_note_is_ok(self, client):
+        h, _ = _patient(client, "+992907000005")
+        assert client.delete("/api/patient/pre-visit-note", headers=h).status_code == 204
+
+    def test_note_is_self_scoped(self, client):
+        h1, _ = _patient(client, "+992907000006")
+        h2, _ = _patient(client, "+992907000007")
+        client.post("/api/patient/pre-visit-note", headers=h1, json={"note_text": "Моя заметка"})
+        # Чужую заметку не видно: id в путях нет вообще, скоуп — владелец токена.
+        assert client.get("/api/patient/pre-visit-note", headers=h2).json()["note"] is None
