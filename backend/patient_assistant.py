@@ -2,11 +2,13 @@
 
 Ассистент информационный: НИКОГДА не ставит диагнозы и не назначает лечение,
 при красных флагах направляет в неотложку. История диалога живёт на клиенте
-(stateless сервер): приложение шлёт последние сообщения. Серверный дневной кап
-(ASSISTANT_DAILY_CAP) — предохранитель затрат, тарифную границу Free держит
-клиентский paywall.
+(stateless сервер): приложение шлёт последние сообщения.
+
+Дневной лимит держит СЕРВЕР и он тарифный: free — 3 вопроса (канон
+Monetization.md), платные — fair-use потолок. Раньше кап был общий на всех
+(ASSISTANT_DAILY_CAP=20), то есть бесплатный пользователь получал в 6 раз
+больше обещанного, а тарифную границу «рисовал» только клиент.
 """
-import os
 from datetime import datetime, timezone
 from typing import List, Optional
 
@@ -18,11 +20,11 @@ from database import get_db
 from llm import _claude_call
 from models import AssistantUsage, PatientAccount
 from patient_auth import get_current_patient
+from patient_subscription import FREE, assistant_daily_cap, resolve_tier
 from rate_limit import limiter
 
 router = APIRouter(prefix="/api/patient/assistant", tags=["patient"])
 
-DAILY_CAP = int(os.getenv("ASSISTANT_DAILY_CAP", "20"))
 MAX_HISTORY = 20
 MAX_MSG_CHARS = 2000
 
@@ -59,25 +61,57 @@ class AssistantRequest(BaseModel):
 
 class AssistantResponse(BaseModel):
     reply: str
-    remaining: Optional[int] = None  # до серверного капа (не тарифного)
+    remaining: Optional[int] = None  # остаток дневного лимита текущего тарифа
+    tier: Optional[str] = None       # чтобы клиент не гадал, чей это лимит
 
 
-def _bump_usage(db: Session, account_id: int) -> int:
-    """Инкремент дневного счётчика; вернуть остаток. 429 при превышении капа."""
+def _usage_row(db: Session, account_id: int) -> Optional[AssistantUsage]:
     day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    row = (db.query(AssistantUsage)
-           .filter(AssistantUsage.patient_account_id == account_id,
-                   AssistantUsage.day == day)
-           .first())
+    return (db.query(AssistantUsage)
+            .filter(AssistantUsage.patient_account_id == account_id,
+                    AssistantUsage.day == day)
+            .first())
+
+
+def _reserve(db: Session, account: PatientAccount) -> int:
+    """Занять слот ДО вызова модели; вернуть остаток. 429 при исчерпании.
+
+    Слот занимается до, а не после ответа: вызов Claude длится секунды, и
+    параллельные запросы одного аккаунта успевали проскочить проверку все
+    разом — free получал больше своих трёх вопросов. Если модель не ответит,
+    слот возвращает [_release], так что упавший запрос ничего не стоит
+    пациенту.
+
+    Лимит берётся из тарифа на каждый запрос: подписка могла истечь между
+    вопросами, и тогда остаток честно пересчитывается по free.
+    """
+    cap = assistant_daily_cap(account)
+    row = _usage_row(db, account.id)
     if row is None:
-        row = AssistantUsage(patient_account_id=account_id, day=day, count=0)
+        row = AssistantUsage(patient_account_id=account.id,
+                             day=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+                             count=0)
         db.add(row)
-    if row.count >= DAILY_CAP:
-        raise HTTPException(status_code=429,
-                            detail="Дневной лимит AI-помощника исчерпан — попробуйте завтра")
+    if row.count >= cap:
+        # Free упёрся в тарифную границу — ему есть куда расти, платному
+        # остаётся только подождать сутки.
+        if resolve_tier(account) == FREE:
+            detail = ("Бесплатный лимит AI-помощника на сегодня исчерпан — "
+                      "оформите Plus, чтобы спрашивать без ограничений")
+        else:
+            detail = "Дневной лимит AI-помощника исчерпан — попробуйте завтра"
+        raise HTTPException(status_code=429, detail=detail)
     row.count += 1
     db.commit()
-    return DAILY_CAP - row.count
+    return max(0, cap - row.count)
+
+
+def _release(db: Session, account_id: int) -> None:
+    """Вернуть слот, если модель так и не ответила."""
+    row = _usage_row(db, account_id)
+    if row is not None and row.count > 0:
+        row.count -= 1
+        db.commit()
 
 
 @router.post("", response_model=AssistantResponse)
@@ -91,7 +125,7 @@ async def assistant_chat(
     if payload.messages[-1].role != "user":
         raise HTTPException(status_code=422, detail="Последнее сообщение должно быть от пациента")
 
-    remaining = _bump_usage(db, account.id)
+    remaining = _reserve(db, account)
 
     lang_name = _LANG_NAME.get(payload.language, "русском")
     convo = "\n".join(
@@ -101,8 +135,12 @@ async def assistant_chat(
     user_msg = (f"Язык ответа: {lang_name}.\n"
                 f"{'Имя пациента: ' + account.full_name if account.full_name else ''}\n\n"
                 f"Диалог:\n{convo}\n\nПомощник:")
-    text = await _claude_call(_SYSTEM_PROMPT, user_msg, max_tokens=700)
-    reply = (text or "").strip()
-    if not reply:
-        raise HTTPException(status_code=502, detail="Пустой ответ модели — повторите попытку")
-    return AssistantResponse(reply=reply, remaining=remaining)
+    try:
+        text = await _claude_call(_SYSTEM_PROMPT, user_msg, max_tokens=700)
+        reply = (text or "").strip()
+        if not reply:
+            raise HTTPException(status_code=502, detail="Пустой ответ модели — повторите попытку")
+    except Exception:
+        _release(db, account.id)
+        raise
+    return AssistantResponse(reply=reply, remaining=remaining, tier=resolve_tier(account))

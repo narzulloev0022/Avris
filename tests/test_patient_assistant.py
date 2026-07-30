@@ -7,6 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 import patient_assistant as pa_module
+import patient_subscription as ps_module
 
 DEV_OTP = os.environ["PATIENT_DEV_OTP"]
 
@@ -58,7 +59,9 @@ def test_happy_path_and_prompt_guardrails(client, fake_claude):
     assert r.status_code == 200, r.text
     body = r.json()
     assert "головная боль" in body["reply"]
-    assert body["remaining"] == pa_module.DAILY_CAP - 1
+    # Новый аккаунт — free: кап 3 вопроса в день (канон Monetization.md).
+    assert body["tier"] == "free"
+    assert body["remaining"] == ps_module.TIERS["free"].assistant_daily - 1
 
     # Гардрейлы в системном промпте
     sys_p = fake_claude["system"]
@@ -89,8 +92,8 @@ def test_last_message_must_be_user(client, fake_claude):
     assert r.status_code == 422
 
 
-def test_daily_cap(client, fake_claude, monkeypatch):
-    monkeypatch.setattr(pa_module, "DAILY_CAP", 3)
+def test_free_daily_cap_is_three(client, fake_claude):
+    """Free упирается ровно в тарифные 3 вопроса — без патча капа."""
     h = _auth(client, "+992905000004")
     for i in range(3):
         r = _chat(client, h, [{"role": "user", "text": f"Вопрос {i}"}])
@@ -98,10 +101,12 @@ def test_daily_cap(client, fake_claude, monkeypatch):
         assert r.json()["remaining"] == 3 - i - 1
     r = _chat(client, h, [{"role": "user", "text": "Ещё вопрос"}])
     assert r.status_code == 429
+    # Free зовут в Plus, а не просто «приходите завтра».
+    assert "Plus" in r.json()["detail"]
 
 
 def test_cap_is_per_account(client, fake_claude, monkeypatch):
-    monkeypatch.setattr(pa_module, "DAILY_CAP", 1)
+    monkeypatch.setattr(ps_module.TIERS["free"], "assistant_daily", 1)
     h1 = _auth(client, "+992905000005")
     h2 = _auth(client, "+992905000006")
     assert _chat(client, h1, [{"role": "user", "text": "Вопрос"}]).status_code == 200
