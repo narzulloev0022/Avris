@@ -195,3 +195,39 @@ class TestIntakeInterview:
 
     def test_requires_auth(self, client):
         assert client.post("/api/patient/intake", json={"messages": []}).status_code in (401, 403)
+
+
+class TestSummaryForDoctor:
+    """Обычный разговор о самочувствии — половина анамнеза. Собрать его для
+    врача можно, но только с ведома пациента."""
+
+    @pytest.fixture()
+    def fake_summary(self, monkeypatch):
+        import patient_conversations as pc_module
+
+        async def _fake(system_prompt, user_msg, max_tokens=1024):
+            assert "Пациент:" in user_msg
+            return "Кашель третью неделю, ночью сильнее.\nПринимал сироп.\nВопрос про прививку"
+
+        monkeypatch.setattr(pc_module, "_claude_call", _fake)
+
+    def test_draft_is_built_from_the_conversation(self, client, fake_assistant, fake_summary):
+        h = _auth(client, "+992908000030")
+        cid = _ask(client, h, "Кашель третью неделю").json()["conversation_id"]
+        r = client.post(f"/api/patient/conversations/{cid}/summary-for-doctor", headers=h)
+        assert r.status_code == 200, r.text
+        assert "Кашель третью неделю" in r.json()["draft"]
+
+    def test_draft_is_not_saved_anywhere(self, client, fake_assistant, fake_summary):
+        """Черновик не уходит врачу сам — пациент сначала подтверждает."""
+        h = _auth(client, "+992908000031")
+        cid = _ask(client, h, "Болит живот").json()["conversation_id"]
+        client.post(f"/api/patient/conversations/{cid}/summary-for-doctor", headers=h)
+        assert client.get("/api/patient/pre-visit-note", headers=h).json()["note"] is None
+
+    def test_foreign_conversation_is_404(self, client, fake_assistant, fake_summary):
+        h1 = _auth(client, "+992908000032")
+        h2 = _auth(client, "+992908000033")
+        cid = _ask(client, h1, "Моё").json()["conversation_id"]
+        r = client.post(f"/api/patient/conversations/{cid}/summary-for-doctor", headers=h2)
+        assert r.status_code == 404
