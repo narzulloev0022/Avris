@@ -108,13 +108,26 @@ def _styles():
     }
 
 
+# Надстрочные цифры (×10⁹/л в лабораторных единицах) отсутствуют в наших TTF и
+# печатались квадратом. Переводим их в reportlab-разметку <super> — вставка
+# ПОСЛЕ экранирования, иначе теги сами станут текстом.
+_SUPERSCRIPT_DIGITS = {
+    "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4",
+    "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9",
+}
+
+
 def _esc(s) -> str:
     """Escape a string for reportlab Paragraph (handles None and HTML chars)."""
     if s is None:
         return ""
     s = str(s)
-    return (s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-            .replace("\n", "<br/>"))
+    s = (s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+         .replace("\n", "<br/>"))
+    for char, digit in _SUPERSCRIPT_DIGITS.items():
+        if char in s:
+            s = s.replace(char, f"<super>{digit}</super>")
+    return s
 
 
 def _brand_block(styles, lang: Optional[str] = None):
@@ -530,6 +543,165 @@ def render_lab_order_pdf(order, patient, doctor) -> bytes:
             story.append(Paragraph("Тесты не выбраны", styles["body"]))
         story.append(Spacer(0, 0.4 * cm))
 
+    story.append(Spacer(0, 0.4 * cm))
+    story.append(_footer(styles))
+
+    doc.build(story)
+    return buf.getvalue()
+
+
+# ---------- Patient-facing export ----------
+
+def _format_date_only(d) -> str:
+    if not d:
+        return "—"
+    try:
+        return d.strftime("%d.%m.%Y")
+    except Exception:
+        return str(d)
+
+
+# В БД пол лежит кодом ('female'/'male') — в PDF он печатался как есть.
+_GENDER_RU = {"female": "женский", "male": "мужской", "other": "другой",
+              "ж": "женский", "м": "мужской"}
+
+
+def _gender_ru(value) -> str:
+    if not value:
+        return ""
+    return _GENDER_RU.get(str(value).strip().lower(), str(value))
+
+
+def render_patient_record_pdf(account, visits, labs) -> bytes:
+    """Медкарта пациента одним файлом — платная фича Plus («Экспорт в PDF»).
+
+    Это выгрузка ДЛЯ ПАЦИЕНТА (взять с собой к другому врачу, приложить к
+    страховке), а не документ строгой формы: приёмы показываются
+    человеческими сводками, которые пациент видит в приложении, а не сырым
+    SOAP. Врачебные PDF (консультация/эпикриз) остаются отдельными формами.
+
+    ``visits`` — список кортежей (consultation, doctor_name, summary|None),
+    ``labs`` — список (order, doctor_name); порядок задаёт вызывающий.
+    """
+    styles = _styles()
+    buf = BytesIO()
+    doc = SimpleDocTemplate(
+        buf, pagesize=A4,
+        leftMargin=2 * cm, rightMargin=2 * cm,
+        topMargin=2 * cm, bottomMargin=2 * cm,
+        title="Медицинская карта Avris",
+        author="Avris AI",
+    )
+
+    story = [
+        _brand_block(styles),
+        Paragraph("Hyperion Labs · Медицинская карта пациента", styles["subtitle"]),
+        _hr(ACCENT),
+        Spacer(0, 0.5 * cm),
+        Paragraph("Медицинская карта", styles["h1"]),
+        Paragraph(f"Avris ID: {_esc(account.avris_patient_id)} · выгружено "
+                  f"{_format_dt(datetime.utcnow())}", styles["subtitle"]),
+    ]
+
+    # ---- Профиль
+    meta = [("Пациент", account.full_name or "—")]
+    sub = []
+    if account.date_of_birth:
+        sub.append("д.р. " + _format_date_only(account.date_of_birth))
+    if account.gender:
+        sub.append(_gender_ru(account.gender))
+    if account.blood_type:
+        sub.append("группа крови " + account.blood_type)
+    if sub:
+        meta.append(("", " · ".join(sub)))
+    body = []
+    if account.height:
+        body.append(f"рост {account.height:g} см")
+    if account.weight:
+        body.append(f"вес {account.weight:g} кг")
+    if body:
+        meta.append(("Антропометрия", " · ".join(body)))
+    if account.allergies:
+        meta.append(("Аллергии", ", ".join(account.allergies)))
+    if account.chronic_conditions:
+        meta.append(("Хронические", ", ".join(account.chronic_conditions)))
+    if account.medications:
+        meta.append(("Принимает", ", ".join(account.medications)))
+    story.append(_meta_table(meta))
+    story.append(Spacer(0, 0.4 * cm))
+    story.append(_hr())
+    story.append(Spacer(0, 0.4 * cm))
+
+    # ---- Приёмы
+    story.append(Paragraph(f"ПРИЁМЫ · {len(visits)}", styles["h2"]))
+    story.append(Spacer(0, 0.2 * cm))
+    if not visits:
+        story.append(Paragraph("Приёмов пока нет", styles["body"]))
+        story.append(Spacer(0, 0.3 * cm))
+    for consultation, doctor_name, summary in visits:
+        block = [
+            Paragraph(f"{_format_dt(consultation.created_at)} · "
+                      f"{_esc(doctor_name or 'Врач')}", styles["soap_label"]),
+        ]
+        if summary is not None and summary.summary:
+            block.append(Paragraph(_esc(summary.summary), styles["soap_body"]))
+            if summary.prescriptions:
+                block.append(Paragraph("Назначения", styles["label"]))
+                block.append(Paragraph(_esc(summary.prescriptions), styles["soap_body"]))
+        else:
+            # Сводка ещё готовится — честно говорим, а не оставляем пустое место.
+            block.append(Paragraph("Сводка визита пока не готова", styles["soap_body"]))
+        story.append(KeepTogether(block))
+
+    story.append(_hr())
+    story.append(Spacer(0, 0.4 * cm))
+
+    # ---- Анализы
+    story.append(Paragraph(f"АНАЛИЗЫ · {len(labs)}", styles["h2"]))
+    story.append(Spacer(0, 0.2 * cm))
+    if not labs:
+        story.append(Paragraph("Анализов пока нет", styles["body"]))
+    for order, doctor_name in labs:
+        block = [
+            Paragraph(f"{_format_dt(order.created_at)} · "
+                      f"{_esc(', '.join(order.tests or []) or 'Анализ')}", styles["soap_label"]),
+        ]
+        results = order.results if isinstance(order.results, dict) else None
+        if results:
+            rows = []
+            for name, value in results.items():
+                if isinstance(value, dict):
+                    shown = " ".join(
+                        str(value.get(k, "")).strip() for k in ("value", "unit")
+                    ).strip()
+                    ref = str(value.get("range", "") or "").strip()
+                else:
+                    shown, ref = str(value), ""
+                rows.append([
+                    Paragraph(_esc(name), styles["body"]),
+                    Paragraph(_esc(shown), styles["body"]),
+                    Paragraph(_esc(ref), styles["body"]),
+                ])
+            tbl = Table(rows, colWidths=[8 * cm, 5 * cm, 4 * cm])
+            tbl.setStyle(TableStyle([
+                ("LINEBELOW", (0, 0), (-1, -1), 0.25, BORDER),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                ("TOPPADDING", (0, 0), (-1, -1), 5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ]))
+            block.append(tbl)
+        else:
+            block.append(Paragraph("Результаты ещё не готовы", styles["soap_body"]))
+        story.append(KeepTogether(block))
+        story.append(Spacer(0, 0.3 * cm))
+
+    story.append(Spacer(0, 0.4 * cm))
+    story.append(Paragraph(
+        "<i>Выгрузка из приложения Avris для личного использования. Не заменяет "
+        "медицинские документы клиники и не является заключением врача.</i>",
+        styles["body"]))
     story.append(Spacer(0, 0.4 * cm))
     story.append(_footer(styles))
 
