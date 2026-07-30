@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 from audit import audit
 from database import get_db
-from models import PatientAccount, PatientPreVisitNote
+from models import PatientAccount, PatientLink, PatientPreVisitNote
 from patient_auth import PatientAccountOut, get_current_patient
 from rate_limit import limiter
 
@@ -136,6 +136,62 @@ def give_consent(
         audit(db, action="consent", entity="patient_account", user_id=None,
               entity_id=current.id, meta={"door": "patient", "version": current.consent_version})
     return PatientProfileOut.model_validate(current)
+
+
+@router.post("/consent/revoke", response_model=PatientProfileOut)
+@limiter.limit("5/minute")
+def revoke_consent(
+    request: Request,
+    current: PatientAccount = Depends(get_current_patient),
+    db: Session = Depends(get_db),
+):
+    """Отозвать согласие на доступ врачей.
+
+    Обнулить один флаг мало: связи с врачами, созданные РАНЬШЕ, продолжали бы
+    работать, и «отзыв» не отзывал бы ничего. Поэтому связи разрываются здесь
+    же — после отзыва ни один врач не видит профиль, визиты и анализы, пока
+    пациент не свяжется заново.
+
+    Сами приёмы и анализы у врача остаются: это его медицинская документация
+    о состоявшемся приёме, стирать её пациент не вправе.
+    """
+    links = db.query(PatientLink).filter(
+        PatientLink.patient_account_id == current.id).all()
+    removed = len(links)
+    for link in links:
+        db.delete(link)
+    current.consent_doctors_at = None
+    current.consent_version = None
+    db.commit()
+    db.refresh(current)
+    audit(db, action="consent_revoke", entity="patient_account", user_id=None,
+          entity_id=current.id, meta={"door": "patient", "links_removed": removed})
+    return PatientProfileOut.model_validate(current)
+
+
+@router.delete("/account", status_code=204)
+@limiter.limit("3/minute")
+def delete_account(
+    request: Request,
+    current: PatientAccount = Depends(get_current_patient),
+    db: Session = Depends(get_db),
+):
+    """Удалить аккаунт пациента со всем, что к нему привязано.
+
+    Уходит каскадом: связи с врачами, разговоры с AI и их сообщения,
+    пред-визитные заметки, сводки визитов, счётчики. Восстановления нет —
+    именно это и обещает экран.
+
+    Что НЕ удаляется: записи приёмов и анализы в кабинете врача. Это его
+    медицинская документация о состоявшемся приёме; пациент вправе закрыть к
+    ней доступ (отзыв согласия), но не стереть её у врача.
+    """
+    account_id = current.id
+    db.delete(current)
+    db.commit()
+    audit(db, action="delete", entity="patient_account", user_id=None,
+          entity_id=account_id, meta={"door": "patient"})
+    return Response(status_code=204)
 
 
 # ---------- pre-visit note ----------
