@@ -486,3 +486,44 @@ class WaitlistEntry(Base):
     role = Column(String(16), nullable=False, default="doctor")   # doctor|clinic|investor
     lang = Column(String(4), nullable=False, default="ru")
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class PatientConversation(Base):
+    """Разговор пациента с AI — ассистент или пред-визитное интервью.
+
+    Раньше диалог жил только на клиенте: закрыл приложение — разговора нет.
+    Для медицинского продукта это потеря, а не мелочь: пациент описал симптомы
+    и не может к ним вернуться, а следующий разговор начинается с чистого
+    листа, хотя половина уже была рассказана.
+
+    ``kind`` разделяет два потока: assistant — вопросы о здоровье, intake —
+    подготовка к приёму, из которой рождается заметка врачу.
+    """
+    __tablename__ = "patient_conversations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"),
+                                nullable=False, index=True)
+    kind = Column(String(16), nullable=False, default="assistant")  # assistant | intake
+    # Заголовок для списка — первые слова пациента, как в чат-интерфейсах.
+    title = Column(String(120), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    messages = relationship("PatientMessage", back_populates="conversation",
+                            cascade="all, delete-orphan", order_by="PatientMessage.id")
+
+
+class PatientMessage(Base):
+    """Реплика в разговоре. Содержит слова пациента о своём здоровье, то есть
+    PHI — живёт под тем же скоупом владельца, что и остальная медкарта."""
+    __tablename__ = "patient_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(Integer, ForeignKey("patient_conversations.id", ondelete="CASCADE"),
+                             nullable=False, index=True)
+    role = Column(String(16), nullable=False)  # user | assistant
+    text = Column(Text, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    conversation = relationship("PatientConversation", back_populates="messages")
