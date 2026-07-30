@@ -113,7 +113,9 @@ class ParsePatientResponse(BaseModel):
 
 async def _claude_call(system_prompt: str, user_msg: str, max_tokens: int = 1024) -> str:
     if not ANTHROPIC_API_KEY:
-        raise HTTPException(status_code=503, detail="Anthropic API не настроен (ANTHROPIC_API_KEY)")
+        # detail доходит до пациента в приложении — конфигурация остаётся в логах
+        logger.error("Claude call refused: ANTHROPIC_API_KEY is not configured")
+        raise HTTPException(status_code=503, detail="Сервис AI временно недоступен — попробуйте позже")
     headers = {
         "x-api-key": ANTHROPIC_API_KEY,
         "anthropic-version": ANTHROPIC_VERSION,
