@@ -11,7 +11,7 @@ when linking. It never moves once set; linking (T5) must refuse while NULL.
 from datetime import date, datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
 
@@ -157,6 +157,13 @@ class PreVisitNoteOut(BaseModel):
     created_at: datetime
 
 
+class PreVisitNoteStateOut(BaseModel):
+    """Активная заметка или её отсутствие. Пациент пишет заметку дома, а
+    открывает приложение снова уже в клинике — он должен видеть, что именно
+    написал и дошло ли это до врача."""
+    note: Optional[PreVisitNoteOut] = None
+
+
 @router.post("/pre-visit-note", response_model=PreVisitNoteOut)
 @limiter.limit("20/minute")
 def upsert_pre_visit_note(
@@ -186,3 +193,43 @@ def upsert_pre_visit_note(
     audit(db, action="upsert", entity="patient_previsit_note", user_id=None,
           entity_id=note.id, meta={"door": "patient"})
     return PreVisitNoteOut(note_text=note.note_text, created_at=note.created_at)
+
+
+@router.get("/pre-visit-note", response_model=PreVisitNoteStateOut)
+def get_pre_visit_note(
+    current: PatientAccount = Depends(get_current_patient),
+    db: Session = Depends(get_db),
+):
+    """Активная (ещё не показанная врачу) заметка пациента.
+
+    Прочитанная врачом заметка сюда не попадает: она уже сыграла свою роль и
+    стала историей, а пациенту важно знать, что перед СЛЕДУЮЩИМ приёмом поле
+    снова пустое.
+    """
+    note = db.query(PatientPreVisitNote).filter(
+        PatientPreVisitNote.patient_account_id == current.id,
+        PatientPreVisitNote.seen_at.is_(None),
+    ).first()
+    if note is None:
+        return PreVisitNoteStateOut()
+    return PreVisitNoteStateOut(
+        note=PreVisitNoteOut(note_text=note.note_text, created_at=note.created_at))
+
+
+@router.delete("/pre-visit-note", status_code=204)
+def delete_pre_visit_note(
+    current: PatientAccount = Depends(get_current_patient),
+    db: Session = Depends(get_db),
+):
+    """Передумал — заметка не уйдёт врачу. Удаляем только активную: то, что
+    врач уже прочитал, стереть нельзя, это часть приёма."""
+    note = db.query(PatientPreVisitNote).filter(
+        PatientPreVisitNote.patient_account_id == current.id,
+        PatientPreVisitNote.seen_at.is_(None),
+    ).first()
+    if note is not None:
+        db.delete(note)
+        db.commit()
+        audit(db, action="delete", entity="patient_previsit_note", user_id=None,
+              entity_id=note.id, meta={"door": "patient"})
+    return Response(status_code=204)
