@@ -1,0 +1,197 @@
+"""История разговоров пациента с AI и пред-визитное интервью.
+
+Разговор — это слова пациента о своём здоровье, то есть PHI: он обязан быть
+виден только владельцу и обязан переживать закрытие приложения.
+"""
+import os
+
+os.environ.setdefault("PATIENT_DEV_OTP", "424242")
+
+import pytest
+from fastapi.testclient import TestClient
+
+import patient_assistant as pa_module
+import patient_intake as intake_module
+
+DEV_OTP = os.environ["PATIENT_DEV_OTP"]
+
+
+@pytest.fixture()
+def client(db_session):
+    from rate_limit import limiter
+    limiter.enabled = False
+    import main
+    with TestClient(main.app) as c:
+        yield c
+
+
+def _auth(client, phone):
+    client.post("/api/patient/auth/request-otp", json={"contact": phone})
+    r = client.post("/api/patient/auth/verify-otp", json={"contact": phone, "code": DEV_OTP})
+    assert r.status_code == 200, r.text
+    return {"Authorization": f"Bearer {r.json()['access_token']}"}
+
+
+@pytest.fixture()
+def fake_assistant(monkeypatch):
+    async def _fake(system_prompt, user_msg, max_tokens=1024):
+        return "Расскажите подробнее, когда это началось?"
+
+    monkeypatch.setattr(pa_module, "_claude_call", _fake)
+
+
+def _ask(client, headers, text, conversation_id=None):
+    body = {"messages": [{"role": "user", "text": text}], "language": "ru"}
+    if conversation_id is not None:
+        body["conversation_id"] = conversation_id
+    return client.post("/api/patient/assistant", json=body, headers=headers)
+
+
+class TestConversationHistory:
+    def test_assistant_reply_starts_a_conversation(self, client, fake_assistant):
+        h = _auth(client, "+992908000001")
+        r = _ask(client, h, "Болит голова второй день")
+        assert r.status_code == 200, r.text
+        cid = r.json()["conversation_id"]
+        assert cid is not None
+
+        detail = client.get(f"/api/patient/conversations/{cid}", headers=h).json()
+        assert [m["role"] for m in detail["messages"]] == ["user", "assistant"]
+        assert detail["messages"][0]["text"] == "Болит голова второй день"
+
+    def test_title_comes_from_the_first_patient_message(self, client, fake_assistant):
+        h = _auth(client, "+992908000002")
+        cid = _ask(client, h, "Болит голова второй день").json()["conversation_id"]
+        rows = client.get("/api/patient/conversations", headers=h).json()
+        assert rows[0]["id"] == cid
+        assert rows[0]["title"] == "Болит голова второй день"
+
+    def test_long_title_is_cut_on_a_word(self, client, fake_assistant):
+        h = _auth(client, "+992908000003")
+        long_text = ("Кашель не проходит уже третью неделю особенно сильно "
+                     "по ночам и мешает спать всей семье")
+        _ask(client, h, long_text)
+        title = client.get("/api/patient/conversations", headers=h).json()[0]["title"]
+        assert title.endswith("…")
+        assert len(title) <= 61
+        # Обрубков посреди слова быть не должно.
+        assert not title[:-1].endswith(" ")
+        assert long_text.startswith(title[:-1].rstrip("…"))
+
+    def test_second_turn_continues_the_same_conversation(self, client, fake_assistant):
+        h = _auth(client, "+992908000004")
+        cid = _ask(client, h, "Первый вопрос").json()["conversation_id"]
+        again = _ask(client, h, "Второй вопрос", conversation_id=cid).json()["conversation_id"]
+        assert again == cid
+        detail = client.get(f"/api/patient/conversations/{cid}", headers=h).json()
+        assert len(detail["messages"]) == 4
+
+    def test_failed_model_call_leaves_no_dangling_conversation(self, client, monkeypatch):
+        """Обрыв не должен оставлять в истории вопрос без ответа."""
+        from fastapi import HTTPException
+
+        async def _boom(system_prompt, user_msg, max_tokens=1024):
+            raise HTTPException(status_code=503, detail="Сервис AI временно недоступен")
+
+        monkeypatch.setattr(pa_module, "_claude_call", _boom)
+        h = _auth(client, "+992908000005")
+        assert _ask(client, h, "Вопрос").status_code == 503
+        assert client.get("/api/patient/conversations", headers=h).json() == []
+
+    def test_conversations_are_private(self, client, fake_assistant):
+        h1 = _auth(client, "+992908000006")
+        h2 = _auth(client, "+992908000007")
+        cid = _ask(client, h1, "Моя жалоба").json()["conversation_id"]
+        # Чужой разговор — 404, а не 403: существование чужих не подтверждаем.
+        assert client.get(f"/api/patient/conversations/{cid}", headers=h2).status_code == 404
+        assert client.get("/api/patient/conversations", headers=h2).json() == []
+
+    def test_patient_can_delete_own_conversation(self, client, fake_assistant):
+        h = _auth(client, "+992908000008")
+        cid = _ask(client, h, "Сотри это").json()["conversation_id"]
+        assert client.delete(f"/api/patient/conversations/{cid}", headers=h).status_code == 204
+        assert client.get("/api/patient/conversations", headers=h).json() == []
+
+    def test_stranger_cannot_delete(self, client, fake_assistant):
+        h1 = _auth(client, "+992908000009")
+        h2 = _auth(client, "+992908000010")
+        cid = _ask(client, h1, "Моё").json()["conversation_id"]
+        assert client.delete(f"/api/patient/conversations/{cid}", headers=h2).status_code == 404
+        assert client.get(f"/api/patient/conversations/{cid}", headers=h1).status_code == 200
+
+
+class TestIntakeInterview:
+    """AI-интервью, из которого рождается заметка врачу."""
+
+    @pytest.fixture()
+    def fake_question(self, monkeypatch):
+        async def _fake(system_prompt, user_msg, max_tokens=1024):
+            return '{"reply": "Когда это началось?", "done": false, "verdict": "ok", "note": null}'
+
+        monkeypatch.setattr(intake_module, "_claude_call", _fake)
+
+    @pytest.fixture()
+    def fake_finish(self, monkeypatch):
+        async def _fake(system_prompt, user_msg, max_tokens=1024):
+            return ('{"reply": "Спасибо, этого достаточно", "done": true, "verdict": "ok",'
+                    ' "note": "Кашель 3 недели, ночью сильнее.\\nТемпературы нет.\\n'
+                    'Вопрос: можно ли делать прививку"}')
+
+        monkeypatch.setattr(intake_module, "_claude_call", _fake)
+
+    def test_empty_start_asks_first_question(self, client, fake_question):
+        h = _auth(client, "+992908000020")
+        r = client.post("/api/patient/intake", json={"messages": [], "language": "ru"}, headers=h)
+        assert r.status_code == 200, r.text
+        body = r.json()
+        assert body["done"] is False
+        assert body["conversation_id"] is not None
+
+    def test_interview_lands_in_its_own_history(self, client, fake_question):
+        h = _auth(client, "+992908000021")
+        client.post("/api/patient/intake",
+                    json={"messages": [{"role": "user", "text": "Болит горло"}], "language": "ru"},
+                    headers=h)
+        # Подготовки к приёму — отдельная история от вопросов о здоровье.
+        assert client.get("/api/patient/conversations?kind=intake", headers=h).json() != []
+        assert client.get("/api/patient/conversations?kind=assistant", headers=h).json() == []
+
+    def test_finished_interview_returns_a_note(self, client, fake_finish):
+        h = _auth(client, "+992908000022")
+        r = client.post("/api/patient/intake",
+                        json={"messages": [{"role": "user", "text": "Это всё"}], "language": "ru"},
+                        headers=h)
+        body = r.json()
+        assert body["done"] is True
+        assert "Кашель 3 недели" in body["note"]
+
+    def test_broken_json_becomes_a_plain_question(self, client, monkeypatch):
+        """Сломанный формат ответа модели не должен обрывать разговор."""
+        async def _plain(system_prompt, user_msg, max_tokens=1024):
+            return "А когда это началось?"
+
+        monkeypatch.setattr(intake_module, "_claude_call", _plain)
+        h = _auth(client, "+992908000023")
+        body = client.post("/api/patient/intake", json={"messages": [], "language": "ru"},
+                           headers=h).json()
+        assert body["reply"] == "А когда это началось?"
+        assert body["done"] is False
+
+    def test_daily_cap(self, client, fake_question, monkeypatch):
+        monkeypatch.setattr(intake_module, "DAILY_CAP", 2)
+        h = _auth(client, "+992908000024")
+        for _ in range(2):
+            assert client.post("/api/patient/intake", json={"messages": []}, headers=h).status_code == 200
+        assert client.post("/api/patient/intake", json={"messages": []}, headers=h).status_code == 429
+
+    def test_intake_cap_does_not_eat_assistant_limit(self, client, fake_question, fake_assistant):
+        """Подготовка к приёму и вопросы о здоровье считаются раздельно —
+        иначе интервью съедало бы бесплатные вопросы пациента."""
+        h = _auth(client, "+992908000025")
+        client.post("/api/patient/intake", json={"messages": []}, headers=h)
+        sub = client.get("/api/patient/subscription", headers=h).json()
+        assert sub["assistant_used_today"] == 0
+        assert sub["assistant_remaining_today"] == 3
+
+    def test_requires_auth(self, client):
+        assert client.post("/api/patient/intake", json={"messages": []}).status_code in (401, 403)

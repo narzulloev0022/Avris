@@ -1,8 +1,10 @@
 """AI-ассистент пациента — чат с Claude поверх жёстких медицинских гардрейлов.
 
 Ассистент информационный: НИКОГДА не ставит диагнозы и не назначает лечение,
-при красных флагах направляет в неотложку. История диалога живёт на клиенте
-(stateless сервер): приложение шлёт последние сообщения.
+при красных флагах направляет в неотложку. Контекст модели по-прежнему шлёт
+клиент (последние сообщения), но сам разговор сохраняется на сервере — см.
+patient_conversations.py: пациент должен иметь возможность вернуться к тому,
+что рассказал о своём здоровье.
 
 Дневной лимит держит СЕРВЕР и он тарифный: free — 3 вопроса (канон
 Monetization.md), платные — fair-use потолок. Раньше кап был общий на всех
@@ -20,6 +22,8 @@ from database import get_db
 from llm import _claude_call
 from models import AssistantUsage, PatientAccount
 from patient_auth import get_current_patient
+from patient_conversations import (KIND_ASSISTANT, append_turn, owned_conversation,
+                                   start_conversation)
 from patient_subscription import FREE, assistant_daily_cap, resolve_tier
 from rate_limit import limiter
 
@@ -57,12 +61,15 @@ class AssistantMessage(BaseModel):
 class AssistantRequest(BaseModel):
     messages: List[AssistantMessage] = Field(min_length=1, max_length=MAX_HISTORY)
     language: str = "ru"
+    # Продолжаем существующий разговор; null — начать новый.
+    conversation_id: Optional[int] = None
 
 
 class AssistantResponse(BaseModel):
     reply: str
     remaining: Optional[int] = None  # остаток дневного лимита текущего тарифа
     tier: Optional[str] = None       # чтобы клиент не гадал, чей это лимит
+    conversation_id: Optional[int] = None
 
 
 def _usage_row(db: Session, account_id: int) -> Optional[AssistantUsage]:
@@ -143,4 +150,14 @@ async def assistant_chat(
     except Exception:
         _release(db, account.id)
         raise
-    return AssistantResponse(reply=reply, remaining=remaining, tier=resolve_tier(account))
+
+    # Разговор сохраняем ПОСЛЕ успешного ответа: оборванный запрос не должен
+    # оставлять в истории вопрос пациента, на который никто не ответил.
+    stored = (owned_conversation(db, payload.conversation_id, account)
+              if payload.conversation_id else start_conversation(db, account, KIND_ASSISTANT))
+    append_turn(db, stored, "user", payload.messages[-1].text.strip())
+    append_turn(db, stored, "assistant", reply)
+    db.commit()
+
+    return AssistantResponse(reply=reply, remaining=remaining, tier=resolve_tier(account),
+                             conversation_id=stored.id)
