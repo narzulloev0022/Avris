@@ -129,6 +129,40 @@ class TestSummaryGeneration:
         assert client.get(f"/api/patient/visits/{cid}", headers=h).json()["summary"] is None
 
 
+class TestSummaryRetry:
+    """Сводка не должна застревать в «готовится» навсегда."""
+
+    def test_failed_summary_is_retried_when_the_patient_opens_the_visit(
+            self, client, doctor_headers, mock_claude):
+        import patient_visits
+        patient_visits._last_attempt.clear()
+
+        # Первая попытка — сразу после приёма — падает.
+        mock_claude["reply"] = RuntimeError("503 no key")
+        h, pid = _linked_patient(client, doctor_headers)
+        cid = _save_consultation(client, doctor_headers, pid)
+        assert client.get(f"/api/patient/visits/{cid}", headers=h).json()["summary"] is None
+
+        # Ключ появился — следующее открытие визита собирает сводку.
+        mock_claude["reply"] = GOOD_SUMMARY
+        patient_visits._last_attempt.clear()  # обходим демпфер, как сделало бы время
+        client.get(f"/api/patient/visits/{cid}", headers=h)
+        assert client.get(f"/api/patient/visits/{cid}", headers=h).json()["summary"] == GOOD_SUMMARY
+
+    def test_repeated_opens_do_not_hammer_the_model(self, client, doctor_headers, mock_claude):
+        import patient_visits
+        patient_visits._last_attempt.clear()
+
+        mock_claude["reply"] = RuntimeError("503 no key")
+        h, pid = _linked_patient(client, doctor_headers)
+        cid = _save_consultation(client, doctor_headers, pid)
+        before = mock_claude["calls"]
+        for _ in range(5):
+            client.get(f"/api/patient/visits/{cid}", headers=h)
+        # Одна попытка на окно, а не по вызову модели на каждое открытие.
+        assert mock_claude["calls"] - before <= 1
+
+
 class TestPrescriptions:
     def test_prescriptions_extracted_as_separate_block(self, client, doctor_headers, mock_claude):
         mock_claude["reply"] = json.dumps({
