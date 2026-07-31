@@ -1,8 +1,16 @@
 """Shared slowapi limiter — imported by main.py and every router that needs it.
 
 Auth-aware key function: when the request carries a valid Bearer token we
-bucket by user_id (so legitimate doctors don't share quota with anonymous
-clients on the same NAT'd IP). Otherwise we fall back to the source IP.
+bucket by the identity in it (so legitimate users don't share quota with
+anonymous clients on the same NAT'd IP). Otherwise we fall back to the source
+IP.
+
+Обе двери, а не только врачебная. Пациентские токены несут ``aud="patient"``,
+и врачебный ``decode_token`` их отвергает — раньше каждый запрос из
+приложения попадал в общий IP-бакет. В Таджикистане мобильные операторы сидят
+на CGNAT: тысячи абонентов делят один публичный адрес, и десяток пациентов
+выбирал бы лимит ассистента на всех остальных. Приложение выглядело бы
+сломанным ровно тогда, когда им начали пользоваться.
 
 Storage: in-memory by default (per-instance quotas — acceptable degradation).
 Set RATELIMIT_STORAGE_URL or REDIS_URL to share quotas across instances
@@ -28,6 +36,16 @@ def _auth_aware_key(request: Request) -> str:
             uid = decode_token(token)
             if uid is not None:
                 return f"user:{uid}"
+        except Exception:
+            pass
+        # Пациентская дверь — своё пространство идентичности и свой префикс:
+        # id пациента и id врача совпадают запросто, а бакет у них общим быть
+        # не должен.
+        try:
+            from patient_auth import decode_patient_token
+            pid = decode_patient_token(token)
+            if pid is not None:
+                return f"patient:{pid}"
         except Exception:
             pass
     # Behind Cloudflare the socket peer is a CF edge node, which would make
