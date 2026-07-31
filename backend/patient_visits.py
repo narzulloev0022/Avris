@@ -16,7 +16,7 @@ import re
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -28,6 +28,22 @@ from patient_auth import get_current_patient
 log = logging.getLogger("avris.patient_visits")
 
 router = APIRouter(prefix="/api/patient/visits", tags=["patient"])
+
+# Когда последний раз пробовали собрать сводку по визиту. Генерация фоновая и
+# «best-effort»: упал Claude или не было ключа — сводки нет, и раньше её не
+# пробовали собрать больше НИКОГДА. Пациент при этом видел «Сводка готовится»
+# вечно. Теперь открытие визита запускает повтор, а этот демпфер не даёт
+# превратить пролистывание списка в поток вызовов модели.
+_RETRY_COOLDOWN_SECONDS = 600
+_last_attempt: dict = {}
+
+
+def _should_retry(consultation_id: int, now: datetime) -> bool:
+    last = _last_attempt.get(consultation_id)
+    if last is not None and (now - last).total_seconds() < _RETRY_COOLDOWN_SECONDS:
+        return False
+    _last_attempt[consultation_id] = now
+    return True
 
 # Probabilistic-diagnosis phrasing that must never reach a patient.
 _FORBIDDEN = re.compile(
@@ -196,6 +212,7 @@ def list_visits(
 @router.get("/{consultation_id}", response_model=VisitDetailOut)
 def visit_detail(
     consultation_id: int,
+    background_tasks: BackgroundTasks,
     current: PatientAccount = Depends(get_current_patient),
     db: Session = Depends(get_db),
 ):
@@ -210,6 +227,11 @@ def visit_detail(
     summary = db.query(VisitSummary).filter(
         VisitSummary.consultation_id == consultation_id
     ).first()
+    # Сводки нет — пробуем собрать её снова. Первая попытка была фоновой сразу
+    # после приёма и могла не удаться; без повтора визит навсегда оставался бы
+    # в состоянии «готовится».
+    if summary is None and _should_retry(consultation_id, datetime.utcnow()):
+        background_tasks.add_task(generate_visit_summary, consultation_id)
     return VisitDetailOut(
         consultation_id=consultation.id,
         date=consultation.created_at,
