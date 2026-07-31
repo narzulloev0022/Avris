@@ -1,0 +1,5 @@
+.env*
+*.db
+*.sqlite
+scratchpad/
+demo-live.db
