@@ -218,7 +218,16 @@ def _find_account(db: Session, kind: str, contact: str) -> Optional[PatientAccou
 # ---------- endpoints ----------
 
 @router.post("/request-otp")
-@limiter.limit("5/minute")
+# Лимит на IP, а не на человека: до входа токена ещё нет. Мобильные операторы
+# Таджикистана сидят на CGNAT, поэтому «5 в минуту» означало пять регистраций
+# в минуту на ВСЮ сеть оператора — в клинике, где приложение ставят подряд
+# нескольким пациентам, шестой упирался бы в 429.
+#
+# Настоящая защита от перебора и SMS-бомбёжки живёт не здесь, а на контакте:
+# повторная отправка не чаще RESEND_COOLDOWN_SECONDS, пять попыток на код и
+# TTL 15 минут. Этот лимит — только грубый предохранитель от потока с одного
+# адреса, и ему незачем быть таким узким.
+@limiter.limit("20/minute")
 def request_otp(request: Request, body: RequestOtpBody, db: Session = Depends(get_db)):
     kind, contact = _normalize_contact(body.contact)
 
@@ -243,7 +252,9 @@ def request_otp(request: Request, body: RequestOtpBody, db: Session = Depends(ge
 
 
 @router.post("/verify-otp", response_model=PatientTokenResponse)
-@limiter.limit("10/minute")
+# Тоже на IP и тоже общий для абонентов оператора. Подбор кода режет счётчик
+# попыток на самом коде (MAX_OTP_ATTEMPTS), а не этот лимит.
+@limiter.limit("40/minute")
 def verify_otp(request: Request, body: VerifyOtpBody, db: Session = Depends(get_db)):
     kind, contact = _normalize_contact(body.contact)
     _check_code(db, OTP_PURPOSE, contact, body.code)
