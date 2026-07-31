@@ -17,7 +17,9 @@ from sqlalchemy.orm import Session
 
 from audit import audit
 from database import get_db
-from models import PatientAccount, PatientLink, PatientPreVisitNote
+from models import (AssistantUsage, IntakeUsage, PatientAccount, PatientConversation,
+                    PatientLink, PatientLinkCode, PatientMessage, PatientPreVisitNote,
+                    PatientRefreshToken, VisitSummary)
 from patient_auth import PatientAccountOut, get_current_patient
 from rate_limit import limiter
 
@@ -195,6 +197,27 @@ def delete_account(
     ней доступ (отзыв согласия), но не стереть её у врача.
     """
     account_id = current.id
+
+    # Удаляем детей руками, а не полагаемся на ondelete="CASCADE".
+    #
+    # Каскад в FK — это каскад БАЗЫ, а SQLite по умолчанию внешние ключи вовсе
+    # не проверяет (PRAGMA foreign_keys = 0). Проверено: после db.delete(account)
+    # пред-визитная заметка оставалась в таблице. То есть экран обещал «стереть
+    # всё без возможности восстановления», а разговоры с AI, заметки и сводки
+    # визитов оставались лежать. Явные удаления работают на любой базе.
+    conversation_ids = [
+        cid for (cid,) in db.query(PatientConversation.id)
+        .filter(PatientConversation.patient_account_id == account_id)
+    ]
+    if conversation_ids:
+        db.query(PatientMessage).filter(
+            PatientMessage.conversation_id.in_(conversation_ids)
+        ).delete(synchronize_session=False)
+    for model in (PatientConversation, PatientPreVisitNote, VisitSummary, PatientLink,
+                  PatientLinkCode, PatientRefreshToken, AssistantUsage, IntakeUsage):
+        db.query(model).filter(model.patient_account_id == account_id).delete(
+            synchronize_session=False)
+
     db.delete(current)
     db.commit()
     audit(db, action="delete", entity="patient_account", user_id=None,
