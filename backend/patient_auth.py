@@ -27,7 +27,6 @@ from audit import audit
 from auth import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     ALGORITHM,
-    REFRESH_TOKEN_EXPIRE_MINUTES,
     RESEND_COOLDOWN_SECONDS,
     SECRET_KEY,
     _check_code,
@@ -46,6 +45,16 @@ PATIENT_AUDIENCE = "patient"
 OTP_PURPOSE = "patient_otp"
 OTP_TTL_MINUTES = 15
 PATIENT_DEV_OTP = os.getenv("PATIENT_DEV_OTP", "")
+
+# Свой срок жизни refresh-токена, отдельный от врачебных семи дней.
+#
+# Врач открывает кабинет каждый день, пациент — раз в несколько месяцев, когда
+# заболел. С общим сроком в неделю приложение почти всегда встречало бы его
+# требованием кода из SMS: медкарта, которую нельзя открыть без сети и без
+# сообщения, перестаёт быть медкартой. За «телефон попал в чужие руки»
+# отвечает блокировка по Face ID в самом приложении, а не короткий токен.
+PATIENT_REFRESH_TOKEN_EXPIRE_MINUTES = int(
+    os.getenv("PATIENT_REFRESH_TOKEN_EXPIRE_MINUTES", str(60 * 24 * 90)))
 
 _PHONE_RE = re.compile(r"^\+?\d{7,15}$")
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -69,7 +78,7 @@ def create_patient_refresh_token(account_id: int, db: Session) -> str:
         PatientRefreshToken.expires_at < datetime.utcnow()
     ).delete()
     jti = str(uuid.uuid4())
-    expire = datetime.utcnow() + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.utcnow() + timedelta(minutes=PATIENT_REFRESH_TOKEN_EXPIRE_MINUTES)
     db.add(PatientRefreshToken(jti=jti, patient_account_id=account_id, expires_at=expire))
     db.commit()
     payload = {"sub": str(account_id), "exp": expire, "type": "refresh",
