@@ -10,6 +10,7 @@ There is deliberately no patient prescription endpoint: the schema has no
 Prescription entity — prescriptions live in a consultation's SOAP "P" field
 and in patients.medications. Exposing them is a product decision, not a port.
 """
+import hashlib
 import json
 from datetime import datetime
 from typing import Any, List, Optional
@@ -151,6 +152,16 @@ class LabBreakdownOut(BaseModel):
     breakdown: str
 
 
+def _results_key(results: Any) -> str:
+    """Отпечаток результатов анализа.
+
+    Разбор кэшируется под него: перезалили результаты — ключ другой, и разбор
+    соберётся заново. Иначе пациент читал бы объяснение к старым цифрам.
+    """
+    payload = json.dumps(results, ensure_ascii=False, sort_keys=True, default=str)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 @router.post("/{oid}/breakdown", response_model=LabBreakdownOut)
 @limiter.limit("10/minute")
 async def lab_breakdown(
@@ -174,6 +185,13 @@ async def lab_breakdown(
     if not o.results:
         raise HTTPException(status_code=409, detail="Результаты ещё не готовы")
 
+    # Готовый разбор отдаём как есть. Результаты анализа не меняются, а раньше
+    # каждое открытие карточки было новым оплаченным вызовом модели: пациент
+    # вернулся посмотреть — платформа заплатила снова.
+    key = _results_key(o.results)
+    if o.patient_breakdown and o.patient_breakdown_key == key:
+        return LabBreakdownOut(breakdown=o.patient_breakdown)
+
     tests = ", ".join(o.tests or []) or "анализ"
     user_msg = (f"Анализ: {tests}\n"
                 f"Результаты: {json.dumps(o.results, ensure_ascii=False)}")
@@ -185,6 +203,9 @@ async def lab_breakdown(
     text = (await _claude_call(_BREAKDOWN_PROMPT, user_msg, max_tokens=700) or "").strip()
     if not text:
         raise HTTPException(status_code=502, detail="Пустой ответ модели — повторите попытку")
+    o.patient_breakdown = text
+    o.patient_breakdown_key = key
+    db.commit()
     return LabBreakdownOut(breakdown=text)
 
 

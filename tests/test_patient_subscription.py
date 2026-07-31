@@ -192,6 +192,56 @@ class TestFeatureGate:
         db_session.commit()
         assert client.post(f"/api/patient/labs/{oid}/breakdown", headers=h).status_code == 402
 
+    def test_breakdown_is_cached_and_not_paid_for_twice(self, client, db_session, doctor,
+                                                        monkeypatch):
+        """Повторное открытие карточки не должно стоить ещё одного вызова модели.
+
+        Результаты анализа не меняются — а раньше каждый заход пациента в свой
+        же анализ был новым оплаченным разбором.
+        """
+        calls = []
+
+        async def _counting(system_prompt, user_msg, max_tokens=1024):
+            calls.append(1)
+            return "Показатели в норме. Обсудите с врачом."
+
+        monkeypatch.setattr(labs_module, "_claude_call", _counting)
+
+        phone = "+992906000030"
+        h, oid = self._linked_lab(client, db_session, doctor, phone)
+        _set_tier(db_session, phone, "plus")
+
+        first = client.post(f"/api/patient/labs/{oid}/breakdown", headers=h)
+        second = client.post(f"/api/patient/labs/{oid}/breakdown", headers=h)
+        assert first.status_code == second.status_code == 200
+        assert first.json()["breakdown"] == second.json()["breakdown"]
+        assert len(calls) == 1, "второй разбор должен приходить из кэша"
+
+    def test_new_results_invalidate_the_cached_breakdown(self, client, db_session, doctor,
+                                                        monkeypatch):
+        """Перезалили результаты — старое объяснение к ним уже не относится."""
+        calls = []
+
+        async def _counting(system_prompt, user_msg, max_tokens=1024):
+            calls.append(1)
+            return f"Разбор {len(calls)}"
+
+        monkeypatch.setattr(labs_module, "_claude_call", _counting)
+
+        phone = "+992906000031"
+        h, oid = self._linked_lab(client, db_session, doctor, phone)
+        _set_tier(db_session, phone, "plus")
+        client.post(f"/api/patient/labs/{oid}/breakdown", headers=h)
+
+        from models import LabOrder
+        order = db_session.query(LabOrder).filter(LabOrder.id == oid).first()
+        order.results = {"Гемоглобин": {"value": "90", "unit": "г/л"}}
+        db_session.commit()
+
+        again = client.post(f"/api/patient/labs/{oid}/breakdown", headers=h)
+        assert again.status_code == 200
+        assert len(calls) == 2, "изменившиеся результаты должны пересобрать разбор"
+
     def test_breakdown_of_foreign_lab_is_404(self, client, db_session, doctor, fake_claude):
         _, oid = self._linked_lab(client, db_session, doctor, "+992906000023")
         stranger = "+992906000024"

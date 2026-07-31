@@ -152,6 +152,12 @@ class LabOrder(Base):
     ai_comment = Column(Text, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     received_at = Column(DateTime, nullable=True)
+    # Платный AI-разбор для пациента. Кэшируется здесь, а не пересчитывается на
+    # каждое открытие карточки: результаты анализа не меняются, а каждый вызов
+    # модели — деньги. ``_key`` — отпечаток результатов: перезалили результаты,
+    # значит разбор устарел и будет собран заново.
+    patient_breakdown = Column(Text, nullable=True)
+    patient_breakdown_key = Column(String(64), nullable=True)
 
     patient = relationship("Patient", back_populates="lab_orders")
     doctor = relationship("User", back_populates="lab_orders")
