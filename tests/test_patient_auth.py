@@ -92,6 +92,28 @@ class TestTokenIsolation:
         assert r.status_code == 401
 
 
+class TestRefreshLifetime:
+    """Пациент открывает приложение раз в несколько месяцев, а не каждый день."""
+
+    def test_patient_session_outlives_the_doctor_one(self):
+        import auth
+        import patient_auth
+        assert (patient_auth.PATIENT_REFRESH_TOKEN_EXPIRE_MINUTES
+                > auth.REFRESH_TOKEN_EXPIRE_MINUTES), (
+            "с врачебной неделей приложение почти всегда встречало бы пациента "
+            "требованием кода из SMS")
+        assert patient_auth.PATIENT_REFRESH_TOKEN_EXPIRE_MINUTES >= 60 * 24 * 30
+
+    def test_issued_token_really_carries_the_long_expiry(self, client, db_session):
+        from datetime import datetime, timedelta
+        from models import PatientRefreshToken
+        _login_patient(client)
+        row = (db_session.query(PatientRefreshToken)
+               .order_by(PatientRefreshToken.id.desc()).first())
+        assert row is not None
+        assert row.expires_at > datetime.utcnow() + timedelta(days=29)
+
+
 class TestRefreshRotation:
     def test_refresh_rotates_and_revokes_old(self, client):
         data = _login_patient(client)
