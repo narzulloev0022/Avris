@@ -193,6 +193,29 @@ class TestIntakeInterview:
         assert sub["assistant_used_today"] == 0
         assert sub["assistant_remaining_today"] == 3
 
+    def test_long_interview_keeps_going(self, client, fake_question):
+        """Разговорчивый пациент не должен упираться в стену.
+
+        Раньше 25-е сообщение отвергалось с 422, и интервью вставало намертво:
+        пациент видел «не получилось» ровно за то, что подробно рассказывал.
+        """
+        h = _auth(client, "+992908000026")
+        messages = [{"role": "user" if i % 2 == 0 else "assistant", "text": f"реплика {i}"}
+                    for i in range(39)]
+        messages.append({"role": "user", "text": "и ещё вот что"})
+        r = client.post("/api/patient/intake",
+                        json={"messages": messages, "language": "ru"}, headers=h)
+        assert r.status_code == 200, r.text
+
+    def test_long_interview_keeps_the_first_complaint(self):
+        """Урезаем середину, а не начало: первая жалоба — то, ради чего всё и
+        затевалось, и модель должна видеть её до конца интервью."""
+        msgs = [intake_module.IntakeMessage(role="user", text=f"m{i}") for i in range(60)]
+        ctx = intake_module._context(msgs)
+        assert len(ctx) == intake_module.MAX_TURNS
+        assert ctx[0].text == "m0"
+        assert ctx[-1].text == "m59"
+
     def test_requires_auth(self, client):
         assert client.post("/api/patient/intake", json={"messages": []}).status_code in (401, 403)
 

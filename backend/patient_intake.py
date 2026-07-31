@@ -41,7 +41,11 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/patient/intake", tags=["patient"])
 
+# Сколько реплик уходит модели. Не то же самое, что потолок запроса: длинный
+# разговор урезается (см. _context), а не отвергается.
 MAX_TURNS = 24
+# Жёсткий потолок запроса — защита от мусорного тела, а не рабочий предел.
+MAX_MESSAGES = 200
 MAX_MSG_CHARS = 1000
 
 # Кап отдельный от ассистента: интервью — часть ядра (оно ведёт к визиту),
@@ -106,7 +110,7 @@ class IntakeMessage(BaseModel):
 
 
 class IntakeRequest(BaseModel):
-    messages: List[IntakeMessage] = Field(default_factory=list, max_length=MAX_TURNS)
+    messages: List[IntakeMessage] = Field(default_factory=list, max_length=MAX_MESSAGES)
     language: str = "ru"
     # Продолжаем существующий разговор; null — начать новый.
     conversation_id: Optional[int] = None
@@ -153,6 +157,23 @@ def _release(db: Session, account_id: int) -> None:
         db.commit()
 
 
+def _context(messages: List[IntakeMessage]) -> List[IntakeMessage]:
+    """Что уходит модели из длинного разговора.
+
+    Раньше список был ограничен на входе, и 25-е сообщение отвергалось с 422:
+    интервью вставало намертво, а пациент видел только «не получилось» — при
+    том, что он как раз добросовестно всё рассказывал.
+
+    Урезаем середину, а не хвост: первые реплики — это главная жалоба, ради
+    которой всё и затевалось, и терять их нельзя. Последние нужны, чтобы
+    модель не переспрашивала то, что только что услышала.
+    """
+    if len(messages) <= MAX_TURNS:
+        return messages
+    head = messages[:2]
+    return head + messages[-(MAX_TURNS - len(head)):]
+
+
 def _parse(raw: str) -> IntakeResponse:
     """Терпимый разбор ответа модели.
 
@@ -197,7 +218,7 @@ async def intake_turn(
     if payload.messages:
         convo = "\n".join(
             f"{'Пациент' if m.role == 'user' else 'Помощник'}: {m.text.strip()}"
-            for m in payload.messages
+            for m in _context(payload.messages)
         )
     else:
         convo = "(разговор ещё не начался — задай первый вопрос)"
