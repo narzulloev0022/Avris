@@ -100,6 +100,15 @@ def init_db():
                 conn.execute(text("ALTER TABLE patient_accounts ADD COLUMN subscription_expires_at TIMESTAMP"))
             if "subscription_source" not in pa_existing:
                 conn.execute(text("ALTER TABLE patient_accounts ADD COLUMN subscription_source VARCHAR(32)"))
+    # lab_orders — кэш платного AI-разбора для пациента.
+    if "lab_orders" in insp.get_table_names():
+        lo_existing = {c["name"] for c in insp.get_columns("lab_orders")}
+        with engine.begin() as conn:
+            if "patient_breakdown" not in lo_existing:
+                conn.execute(text("ALTER TABLE lab_orders ADD COLUMN patient_breakdown TEXT"))
+            if "patient_breakdown_key" not in lo_existing:
+                conn.execute(text(
+                    "ALTER TABLE lab_orders ADD COLUMN patient_breakdown_key VARCHAR(64)"))
     # visit_summaries — prescriptions block added after the table shipped.
     if "visit_summaries" in insp.get_table_names():
         vs_existing = {c["name"] for c in insp.get_columns("visit_summaries")}
