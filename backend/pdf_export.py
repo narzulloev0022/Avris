@@ -1,7 +1,8 @@
 """PDF generation for consultations and lab orders. Pure-Python via reportlab."""
 import os
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from io import BytesIO
 from typing import List, Optional
 
@@ -198,6 +199,23 @@ def _footer(styles):
     )
 
 
+# Часовой пояс, в котором печатаются даты в документах.
+#
+# В БД все отметки времени — наивный UTC. Печатать их как есть значит
+# сдвинуть каждый приём на пять часов назад, а у записей после 19:00 —
+# ещё и на день: осмотр вечера 18 июля в выписке становится осмотром 18-го
+# утром, а осмотр в 02:00 — вчерашним. Документ, который пациент несёт
+# другому врачу или в страховую, обязан показывать местное время приёма.
+_DOC_TZ = ZoneInfo(os.getenv("CLINIC_TIMEZONE", "Asia/Dushanbe"))
+
+
+def _to_local(dt: datetime) -> datetime:
+    """Наивный UTC из БД → местное время клиники."""
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(_DOC_TZ)
+
+
 def _format_dt(dt) -> str:
     if not dt:
         return "—"
@@ -207,7 +225,7 @@ def _format_dt(dt) -> str:
         except ValueError:
             return dt
     try:
-        return dt.strftime("%d.%m.%Y, %H:%M")
+        return _to_local(dt).strftime("%d.%m.%Y, %H:%M")
     except Exception:
         return str(dt)
 
