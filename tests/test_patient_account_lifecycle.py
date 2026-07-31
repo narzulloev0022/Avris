@@ -59,8 +59,13 @@ class TestRevokeConsent:
         assert r.json()["consent_doctors_at"] is None
 
     def test_revoke_breaks_existing_links(self, client, doctor, db_session):
-        """Главное: связи, созданные ДО отзыва, должны разорваться — иначе
-        отзыв не отзывает ничего."""
+        """Главное: связи, созданные ДО отзыва, должны перестать работать —
+        иначе отзыв не отзывает ничего.
+
+        Проверяем поведение, а не способ хранения: строка связи остаётся
+        (погашенной), чтобы повторная привязка не расщепила историю приёмов
+        на две карточки.
+        """
         from models import PatientAccount, PatientLink
         phone = "+992909000002"
         h = _patient(client, phone)
@@ -68,12 +73,40 @@ class TestRevokeConsent:
 
         acc = db_session.query(PatientAccount).filter(PatientAccount.phone == phone).first()
         assert db_session.query(PatientLink).filter(
-            PatientLink.patient_account_id == acc.id).count() == 1
+            PatientLink.patient_account_id == acc.id,
+            PatientLink.revoked_at.is_(None)).count() == 1
 
         client.post("/api/patient/consent/revoke", headers=h)
         db_session.expire_all()
+        # Действующих связей не осталось.
         assert db_session.query(PatientLink).filter(
-            PatientLink.patient_account_id == acc.id).count() == 0
+            PatientLink.patient_account_id == acc.id,
+            PatientLink.revoked_at.is_(None)).count() == 0
+        # И через них ничего не читается.
+        assert client.get("/api/patient/visits", headers=h).json() == []
+        assert client.get("/api/patient/labs", headers=h).json() == []
+
+    def test_relink_after_revoke_reuses_the_same_card(self, client, doctor, db_session):
+        """Повторная привязка не должна заводить врачу второго такого же
+        пациента: иначе история приёмов расщепляется надвое."""
+        from models import Patient, PatientAccount, PatientLink
+        doc_headers, _ = doctor
+        phone = "+992909000010"
+        h = _patient(client, phone)
+        first_id = _link(client, doctor, h)
+        acc = db_session.query(PatientAccount).filter(PatientAccount.phone == phone).first()
+        cards_before = db_session.query(Patient).count()
+
+        client.post("/api/patient/consent/revoke", headers=h)
+        client.post("/api/patient/consent", headers=h)
+        second_id = _link(client, doctor, h)
+
+        db_session.expire_all()
+        assert second_id == first_id, "карточка должна быть прежней"
+        assert db_session.query(Patient).count() == cards_before, "дубля быть не должно"
+        assert db_session.query(PatientLink).filter(
+            PatientLink.patient_account_id == acc.id,
+            PatientLink.revoked_at.is_(None)).count() == 1
 
     def test_patient_can_consent_again_after_revoke(self, client):
         h = _patient(client, "+992909000003")

@@ -100,6 +100,12 @@ def init_db():
                 conn.execute(text("ALTER TABLE patient_accounts ADD COLUMN subscription_expires_at TIMESTAMP"))
             if "subscription_source" not in pa_existing:
                 conn.execute(text("ALTER TABLE patient_accounts ADD COLUMN subscription_source VARCHAR(32)"))
+    # patient_links — отзыв согласия гасит связь вместо удаления.
+    if "patient_links" in insp.get_table_names():
+        pl_existing = {c["name"] for c in insp.get_columns("patient_links")}
+        with engine.begin() as conn:
+            if "revoked_at" not in pl_existing:
+                conn.execute(text("ALTER TABLE patient_links ADD COLUMN revoked_at TIMESTAMP"))
     # lab_orders — кэш платного AI-разбора для пациента.
     if "lab_orders" in insp.get_table_names():
         lo_existing = {c["name"] for c in insp.get_columns("lab_orders")}

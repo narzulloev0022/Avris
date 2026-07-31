@@ -154,12 +154,20 @@ def revoke_consent(
 
     Сами приёмы и анализы у врача остаются: это его медицинская документация
     о состоявшемся приёме, стирать её пациент не вправе.
+
+    Связь гасится, а не удаляется: удалённая строка означала, что повторная
+    привязка заведёт врачу ВТОРУЮ карточку того же человека и расщепит историю
+    приёмов надвое. Погашенная связь невидима для всех читающих путей и
+    оживает на прежней карточке, если пациент вернёт согласие.
     """
+    now = datetime.utcnow()
     links = db.query(PatientLink).filter(
-        PatientLink.patient_account_id == current.id).all()
+        PatientLink.patient_account_id == current.id,
+        PatientLink.revoked_at.is_(None),
+    ).all()
     removed = len(links)
     for link in links:
-        db.delete(link)
+        link.revoked_at = now
     current.consent_doctors_at = None
     current.consent_version = None
     db.commit()
