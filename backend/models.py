@@ -374,6 +374,11 @@ class PatientLink(Base):
     doctor_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     method = Column(String(8), nullable=False, default="qr")  # qr|name
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    # Отзыв согласия гасит связь, но не стирает её. Раньше строка удалялась, и
+    # повторная привязка заводила врачу ВТОРУЮ карточку того же человека:
+    # история приёмов расщеплялась надвое. Теперь связь оживает на прежней
+    # карточке. Все читающие пути обязаны фильтровать по revoked_at IS NULL.
+    revoked_at = Column(DateTime, nullable=True, index=True)
 
     account = relationship("PatientAccount", back_populates="links")
 

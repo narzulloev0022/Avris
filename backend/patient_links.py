@@ -199,6 +199,16 @@ def _link(db: Session, doctor: User, account: PatientAccount, method: str) -> Li
         PatientLink.doctor_id == doctor.id,
     ).first()
     if existing:
+        # Связь могла быть погашена отзывом согласия. Оживляем ту же строку —
+        # значит, врач получает прежнюю карточку со всей историей приёмов, а
+        # не пустой дубль рядом с ней.
+        if existing.revoked_at is not None:
+            existing.revoked_at = None
+            existing.method = method
+            db.commit()
+            audit(db, action="relink", entity="patient_link", user_id=doctor.id,
+                  entity_id=existing.id,
+                  meta={"method": method, "patient_id": existing.patient_id})
         patient = db.query(Patient).filter(Patient.id == existing.patient_id).first()
         return LinkResultOut(created=False, link_id=existing.id,
                              patient=LinkedPatientOut.model_validate(patient))

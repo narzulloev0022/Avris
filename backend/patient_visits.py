@@ -95,7 +95,8 @@ async def generate_visit_summary(consultation_id: int) -> None:
         if not consultation or consultation.patient_id is None:
             return
         link = db.query(PatientLink).filter(
-            PatientLink.patient_id == consultation.patient_id
+            PatientLink.patient_id == consultation.patient_id,
+            PatientLink.revoked_at.is_(None),
         ).first()
         if not link:
             return  # обычный пациент кабинета, без приложения
@@ -177,8 +178,14 @@ class VisitDetailOut(BaseModel):
 
 
 def _linked_patient_ids(db: Session, account_id: int) -> List[int]:
+    """Карточки, которые пациент вправе читать прямо сейчас.
+
+    Погашенные отзывом согласия связи сюда не попадают — иначе «отзыв» ничего
+    не отзывал бы.
+    """
     return [l.patient_id for l in db.query(PatientLink).filter(
-        PatientLink.patient_account_id == account_id
+        PatientLink.patient_account_id == account_id,
+        PatientLink.revoked_at.is_(None),
     ).all()]
 
 
