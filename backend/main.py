@@ -76,6 +76,7 @@ from patient_links import patient_router as patient_links_patient_router, doctor
 from patient_visits import router as patient_visits_router
 from patient_labs import router as patient_labs_router
 from patient_glucose import router as patient_glucose_router
+from patient_health import router as patient_health_router
 from patient_insights import router as patient_insights_router
 from patient_monitoring import CHECK_INTERVAL_SECONDS as _MONITOR_INTERVAL
 from patient_monitoring import router as patient_monitoring_router
@@ -219,6 +220,7 @@ app.include_router(patient_nutrition_router)
 app.include_router(patient_insights_router)
 app.include_router(patient_glucose_router)
 app.include_router(patient_monitoring_router)
+app.include_router(patient_health_router)
 app.include_router(patient_assistant_router)
 app.include_router(patient_subscription_router)
 app.include_router(patient_conversations_router)
