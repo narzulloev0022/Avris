@@ -141,6 +141,51 @@ async def _claude_call(system_prompt: str, user_msg: str, max_tokens: int = 1024
     return "".join(p.get("text", "") for p in parts if p.get("type") == "text").strip()
 
 
+async def _claude_vision_call(system_prompt: str, user_msg: str, image_b64: str,
+                              media_type: str, max_tokens: int = 800) -> str:
+    """Тот же вызов Claude, но с картинкой в сообщении.
+
+    Отдельная функция, а не флаг в ``_claude_call``: у зрения своя цена и свои
+    ограничения на размер, и смешивать их с текстовыми вызовами — способ
+    однажды случайно отправить фото туда, где его не ждут.
+    """
+    if not ANTHROPIC_API_KEY:
+        logger.error("Claude vision call refused: ANTHROPIC_API_KEY is not configured")
+        raise HTTPException(status_code=503, detail="Сервис AI временно недоступен — попробуйте позже")
+    headers = {
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": ANTHROPIC_VERSION,
+        "content-type": "application/json",
+    }
+    body = {
+        "model": ANTHROPIC_MODEL,
+        "max_tokens": max_tokens,
+        "system": system_prompt,
+        "messages": [{
+            "role": "user",
+            "content": [
+                {"type": "image", "source": {"type": "base64",
+                                             "media_type": media_type,
+                                             "data": image_b64}},
+                {"type": "text", "text": user_msg},
+            ],
+        }],
+    }
+    async with httpx.AsyncClient(timeout=120) as client:
+        try:
+            r = await client.post(ANTHROPIC_URL, headers=headers, json=body)
+        except httpx.HTTPError as e:
+            logger.error("Anthropic vision request failed: %s", e)
+            raise HTTPException(status_code=502, detail="Claude недоступен")
+    if r.status_code != 200:
+        # Тело не логируем: в нём может быть отражено содержимое фото.
+        logger.warning("Anthropic vision %d", r.status_code)
+        raise HTTPException(status_code=r.status_code, detail=f"Ошибка Claude ({r.status_code})")
+    j = r.json()
+    parts = j.get("content", []) or []
+    return "".join(p.get("text", "") for p in parts if p.get("type") == "text").strip()
+
+
 def _validate_icd10(raw) -> Optional[str]:
     """Claude occasionally invents ICD-10 codes. Keep a code only when it exists
     in the curated reference (icd10_data). A subcode falls back to its known

@@ -559,3 +559,44 @@ class IntakeUsage(Base):
                                 nullable=False, index=True)
     day = Column(String(10), nullable=False)
     count = Column(Integer, nullable=False, default=0)
+
+
+class NutritionEntry(Base):
+    """Приём пищи в дневнике питания (тариф Pro).
+
+    Само фото НЕ храним: оно уходит в модель и забывается. Снимок еды — это
+    место, время и обстоятельства жизни человека; хранить его ради трёх цифр
+    калорийности не за чем. В базе остаётся только разбор.
+    """
+    __tablename__ = "nutrition_entries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"),
+                                nullable=False, index=True)
+    eaten_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+    title = Column(String(200), nullable=False)
+    # [{"name": "Плов", "grams": 250, "kcal": 520}, ...] — как разобрала модель
+    items = Column(JSON, nullable=False, default=list)
+    kcal = Column(Integer, nullable=False, default=0)
+    protein_g = Column(Float, nullable=True)
+    fat_g = Column(Float, nullable=True)
+    carbs_g = Column(Float, nullable=True)
+    # photo | manual — по фото цифры оценочные, вручную их уточняет человек
+    source = Column(String(16), nullable=False, default="photo")
+    # low | medium | high — насколько модель уверена в оценке порции
+    confidence = Column(String(8), nullable=True)
+    note = Column(Text, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class NutritionUsage(Base):
+    """Дневной счётчик разборов фото. Отдельная таблица — по той же причине,
+    что и intake_usage: ключ дня фиксированной длины."""
+    __tablename__ = "nutrition_usage"
+    __table_args__ = (UniqueConstraint("patient_account_id", "day", name="uq_nutrition_usage_day"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"),
+                                nullable=False, index=True)
+    day = Column(String(10), nullable=False)
+    count = Column(Integer, nullable=False, default=0)
