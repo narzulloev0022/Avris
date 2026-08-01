@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from audit import audit
 from database import get_db
+from http_files import content_disposition
 from models import LabOrder, LabFile, User, Patient
 from auth import get_current_user
 from llm import _claude_call, ANTHROPIC_API_KEY
@@ -375,11 +376,10 @@ def download_file(
     rec = db.query(LabFile).filter(LabFile.id == fid, LabFile.lab_order_id == oid).first()
     if not rec:
         raise HTTPException(404, "Файл не найден")
-    safe_name = rec.filename.replace('"', "")
     return Response(
         content=rec.data,
         media_type=rec.content_type or "application/octet-stream",
-        headers={"Content-Disposition": f'inline; filename="{safe_name}"'},
+        headers={"Content-Disposition": content_disposition(rec.filename)},
     )
 
 
