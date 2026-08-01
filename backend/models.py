@@ -651,3 +651,48 @@ class GlucoseReading(Base):
     context = Column(String(16), nullable=False, default="random")
     note = Column(Text, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class HealthAlert(Base):
+    """Находка мониторинга — то, на что стоит обратить внимание врачу.
+
+    Не диагноз и не назначение: правило смотрит на данные, которые пациент
+    сам внёс (сахар, анализы), и говорит «покажите это врачу». Никаких
+    выводов о причине и тем более о лечении здесь не появляется.
+
+    ``dedup_key`` держит одно и то же наблюдение единственным: без него
+    каждая проверка плодила бы копию одной тревоги, и приложение превратилось
+    бы в источник шума, который перестают читать — включая тот единственный
+    раз, когда читать было нужно.
+    """
+    __tablename__ = "health_alerts"
+    __table_args__ = (UniqueConstraint("patient_account_id", "dedup_key",
+                                       name="uq_health_alert_dedup"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"),
+                                nullable=False, index=True)
+    # glucose_low | glucose_high_streak | glucose_silent | lab_out_of_range
+    kind = Column(String(32), nullable=False)
+    # info | attention | urgent — влияет только на подачу, не на смысл
+    severity = Column(String(16), nullable=False, default="info")
+    dedup_key = Column(String(120), nullable=False)
+    # Числа для подстановки в текст на клиенте: {"mmol": 3.4, "test": "Гемоглобин"}
+    details = Column(JSON, nullable=False, default=dict)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+    acknowledged_at = Column(DateTime, nullable=True)
+
+
+class MonitoringRun(Base):
+    """Когда мониторинг последний раз смотрел данные этого пациента.
+
+    Нужна не для отчётности: пациент должен видеть, что проверка идёт, и
+    когда она была. «Мы следим» без даты последней проверки — обещание,
+    которое нечем подтвердить.
+    """
+    __tablename__ = "monitoring_runs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"),
+                                nullable=False, unique=True, index=True)
+    checked_at = Column(DateTime, nullable=False, default=datetime.utcnow)

@@ -1,8 +1,9 @@
+import asyncio
 import json
 import logging
 import os
+from contextlib import asynccontextmanager, suppress
 from pathlib import Path
-from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -76,6 +77,9 @@ from patient_visits import router as patient_visits_router
 from patient_labs import router as patient_labs_router
 from patient_glucose import router as patient_glucose_router
 from patient_insights import router as patient_insights_router
+from patient_monitoring import CHECK_INTERVAL_SECONDS as _MONITOR_INTERVAL
+from patient_monitoring import router as patient_monitoring_router
+from patient_monitoring import run_all as run_monitoring
 from patient_nutrition import router as patient_nutrition_router
 from patient_assistant import router as patient_assistant_router
 from patient_conversations import router as patient_conversations_router
@@ -90,6 +94,12 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 INDEX_HTML = PROJECT_ROOT / "index.html"
 
 
+def monitoring_interval() -> int:
+    """Пауза между обходами мониторинга. Отдельной функцией, чтобы тест мог
+    сократить её, не трогая продовое значение."""
+    return _MONITOR_INTERVAL
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Отчёты об ошибках — до всего остального, чтобы падение на старте тоже
@@ -97,7 +107,31 @@ async def lifespan(app: FastAPI):
     if init_sentry():
         logging.getLogger("avris").info("Sentry enabled")
     init_db()
-    yield
+
+    # Мониторинг показателей: обход раз в CHECK_INTERVAL_SECONDS прямо в
+    # процессе приложения. Отдельный планировщик здесь был бы лишней
+    # движущейся частью — обход занимает секунды и не держит соединений.
+    # Задача снимается при остановке, иначе перезапуск копил бы обходы.
+    monitor = asyncio.create_task(_monitoring_loop())
+    try:
+        yield
+    finally:
+        monitor.cancel()
+        with suppress(asyncio.CancelledError):
+            await monitor
+
+
+async def _monitoring_loop():
+    while True:
+        # Первый сон до первой проверки: на старте сервера база ещё может
+        # мигрироваться, а находки никуда не убегут.
+        await asyncio.sleep(monitoring_interval())
+        try:
+            created = await asyncio.to_thread(run_monitoring)
+            if created:
+                logging.getLogger("avris").info("monitoring: %s new alerts", created)
+        except Exception:
+            logging.getLogger("avris").exception("monitoring sweep failed")
 
 
 # Схема API в проде закрыта. /docs, /redoc и /openapi.json отдавали полную
@@ -184,6 +218,7 @@ app.include_router(patient_labs_router)
 app.include_router(patient_nutrition_router)
 app.include_router(patient_insights_router)
 app.include_router(patient_glucose_router)
+app.include_router(patient_monitoring_router)
 app.include_router(patient_assistant_router)
 app.include_router(patient_subscription_router)
 app.include_router(patient_conversations_router)
