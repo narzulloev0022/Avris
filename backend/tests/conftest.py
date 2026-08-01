@@ -16,6 +16,9 @@ os.environ["RESEND_API_KEY"] = ""
 os.environ["OPENAI_API_KEY"] = ""
 os.environ["ANTHROPIC_API_KEY"] = ""
 os.environ["RATELIMIT_STORAGE_URL"] = "memory://"
+# Пустой DSN обязателен: иначе load_dotenv() подхватит боевой из .env, и
+# прогон тестов начнёт слать ошибки в настоящий проект Sentry.
+os.environ["SENTRY_DSN"] = ""
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
