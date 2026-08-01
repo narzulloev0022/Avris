@@ -79,7 +79,9 @@ def export_medical_record(
         )
 
     pdf = pdf_export.render_patient_record_pdf(current, visits, labs)
-    stamp = datetime.utcnow().strftime("%Y-%m-%d")
+    # Дата в имени файла — местная, как и все даты внутри документа. По UTC
+    # выгрузка, сделанная ночью в Душанбе, называлась вчерашним числом.
+    stamp = pdf_export._to_local(datetime.utcnow()).strftime("%Y-%m-%d")
     name = f"avris-{_translit(current.full_name or 'patient')}-{stamp}.pdf"
     return Response(
         content=pdf,
