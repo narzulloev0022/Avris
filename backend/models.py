@@ -600,3 +600,32 @@ class NutritionUsage(Base):
                                 nullable=False, index=True)
     day = Column(String(10), nullable=False)
     count = Column(Integer, nullable=False, default=0)
+
+
+class VisitInsight(Base):
+    """Продольный разбор истории визитов (тариф Plus).
+
+    Отличается от VisitSummary принципиально: сводка пересказывает ОДИН приём
+    и бесплатна, а инсайт смотрит на историю целиком — что повторяется от
+    визита к визиту, что уже назначали, о чём спросить врача в следующий раз.
+    Пересказ одного приёма продать нельзя, картину за полгода — можно.
+
+    ``source_key`` — отпечаток исходников (визиты + анализы). Совпал — отдаём
+    сохранённое: история не изменилась, платить за тот же ответ второй раз
+    пациент не должен.
+    """
+    __tablename__ = "visit_insights"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"),
+                                nullable=False, index=True)
+    source_key = Column(String(64), nullable=False)
+    # Абзац: что происходило и что меняется со временем.
+    picture = Column(Text, nullable=False)
+    # ["…", …] — на что обратить внимание; НЕ диагнозы и НЕ назначения.
+    watch = Column(JSON, nullable=False, default=list)
+    # ["…", …] — вопросы, которые стоит задать врачу на следующем приёме.
+    questions = Column(JSON, nullable=False, default=list)
+    # Сколько визитов легло в основу — пациент видит, на чём построен разбор.
+    visits_used = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
