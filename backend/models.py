@@ -629,3 +629,25 @@ class VisitInsight(Base):
     # Сколько визитов легло в основу — пациент видит, на чём построен разбор.
     visits_used = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class GlucoseReading(Base):
+    """Измерение сахара крови (тариф Pro, «Диабет-контроль»).
+
+    Единицы — ммоль/л: так меряют в Таджикистане и СНГ. Пересчёт в мг/дл не
+    храним, чтобы не появилось двух источников правды об одном числе.
+
+    ``context`` важнее, чем кажется: 9 ммоль/л натощак и 9 через два часа
+    после еды — разные события, и без пометки статистика врёт.
+    """
+    __tablename__ = "glucose_readings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"),
+                                nullable=False, index=True)
+    taken_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+    mmol = Column(Float, nullable=False)
+    # fasting | before_meal | after_meal | bedtime | random
+    context = Column(String(16), nullable=False, default="random")
+    note = Column(Text, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
