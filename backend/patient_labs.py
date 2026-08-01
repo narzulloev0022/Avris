@@ -20,6 +20,7 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from database import get_db
+from http_files import content_disposition
 from llm import _claude_call
 from models import LabFile, LabOrder, PatientAccount, User
 from patient_auth import get_current_patient
@@ -220,9 +221,8 @@ def download_lab_file(
     rec = db.query(LabFile).filter(LabFile.id == fid, LabFile.lab_order_id == oid).first()
     if not rec:
         raise HTTPException(status_code=404, detail="Файл не найден")
-    safe_name = rec.filename.replace('"', "")
     return Response(
         content=rec.data,
         media_type=rec.content_type or "application/octet-stream",
-        headers={"Content-Disposition": f'inline; filename="{safe_name}"'},
+        headers={"Content-Disposition": content_disposition(rec.filename)},
     )
