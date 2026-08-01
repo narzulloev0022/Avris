@@ -45,6 +45,7 @@ if _secret == "dev-secret-change-me" and os.getenv("RAILWAY_ENVIRONMENT"):
     )
 
 from database import init_db
+from observability import init_sentry
 from auth import router as auth_router
 from stt import router as stt_router
 from llm import router as llm_router
@@ -78,6 +79,10 @@ INDEX_HTML = PROJECT_ROOT / "index.html"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Отчёты об ошибках — до всего остального, чтобы падение на старте тоже
+    # было видно. Без SENTRY_DSN это no-op.
+    if init_sentry():
+        logging.getLogger("avris").info("Sentry enabled")
     init_db()
     yield
 

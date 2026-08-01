@@ -128,3 +128,21 @@ Avris/
 **Proprietary · Hyperion Labs © 2026.** All rights reserved.
 
 Avris AI is closed-source pilot software for licensed clinical partners. Contact narzulloev0022@mail.ru for licensing or pilot inquiries.
+
+### Отчёты об ошибках (Sentry)
+
+Включается переменной окружения; без неё SDK не поднимается:
+
+```
+SENTRY_DSN=https://<key>@<org>.ingest.sentry.io/<project>
+SENTRY_ENV=production
+```
+
+Наружу уходит исключение, стек и метод с путём без идентификаторов
+(`/api/patient/labs/{id}`). НЕ уходит: тело и строка запроса, заголовки,
+cookies, пользователь, хлебные крошки и **локальные переменные кадров стека** —
+последнее проверено на перехваченном конверте: с ними уезжал Bearer-токен
+пациента целиком. Настройка — `backend/observability.py`.
+
+Правило для кода: не класть данные пациента в текст исключения — сообщение
+уходит как есть.
