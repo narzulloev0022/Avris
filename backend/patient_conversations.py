@@ -158,6 +158,23 @@ class ConversationSummaryOut(BaseModel):
     draft: str
 
 
+def _clip_to_note_limit(text: str, limit: int = 1000) -> str:
+    """Подрезать черновик под лимит поля заметки, не обрывая на полуслове.
+
+    Заметку читает врач перед приёмом. Жёсткий срез по символу оставлял её
+    оборванной посреди фразы — ровно там, где пациент мог сказать главное.
+    """
+    if len(text) <= limit:
+        return text
+    cut = text[:limit]
+    for sep in (". ", "! ", "? ", "\n"):
+        idx = cut.rfind(sep)
+        if idx > limit * 0.6:
+            return cut[:idx + 1].strip()
+    idx = cut.rfind(" ")
+    return (cut[:idx] if idx > limit * 0.6 else cut).strip()
+
+
 @router.post("/{cid}/summary-for-doctor", response_model=ConversationSummaryOut)
 @limiter.limit("10/minute")
 async def summarize_for_doctor(
@@ -188,4 +205,4 @@ async def summarize_for_doctor(
     draft = (await _claude_call(_SUMMARY_PROMPT, user_msg, max_tokens=500) or "").strip()
     if not draft:
         raise HTTPException(status_code=409, detail="В разговоре пока нечего собирать")
-    return ConversationSummaryOut(draft=draft[:1000])
+    return ConversationSummaryOut(draft=_clip_to_note_limit(draft))
