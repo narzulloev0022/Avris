@@ -14,9 +14,15 @@ from slowapi.errors import RateLimitExceeded
 
 load_dotenv()
 
-# Structured logs for aggregators (Railway, Cloud Run): LOG_JSON=1 switches
-# app loggers to one-JSON-object-per-line. Uvicorn's own access log keeps its
-# format — this covers everything logged via logging.getLogger(...) in the app.
+# Логи приложения настраиваем ВСЕГДА, а не только под LOG_JSON=1.
+#
+# Раньше basicConfig стоял внутри условия, и в проде (где LOG_JSON не задан)
+# корневой логгер оставался без обработчика: всё, что код пишет через
+# logging.getLogger(...).info(), исчезало бесследно. В Railway не было видно
+# ни «Sentry enabled», ни предупреждений вроде «сводка визита отброшена:
+# запрещённая формулировка». Наружу пробивались только логи uvicorn.
+#
+# LOG_JSON=1 по-прежнему переключает формат на JSON для агрегаторов.
 if os.getenv("LOG_JSON") == "1":
     class _JsonFormatter(logging.Formatter):
         def format(self, record):
@@ -32,7 +38,11 @@ if os.getenv("LOG_JSON") == "1":
 
     _handler = logging.StreamHandler()
     _handler.setFormatter(_JsonFormatter())
-    logging.basicConfig(level=logging.INFO, handlers=[_handler], force=True)
+else:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(levelname)s:     %(name)s: %(message)s"))
+
+logging.basicConfig(level=logging.INFO, handlers=[_handler], force=True)
 
 # Refuse to boot in production with a default/missing SECRET_KEY — the
 # default value is public knowledge from the source tree, so any deploy
