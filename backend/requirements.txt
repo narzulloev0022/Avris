@@ -13,3 +13,4 @@ httpx==0.28.1
 resend==2.29.0
 reportlab==4.5.0
 slowapi==0.1.9
+sentry-sdk[fastapi]==2.20.0
