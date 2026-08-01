@@ -87,11 +87,21 @@ async def lifespan(app: FastAPI):
     yield
 
 
+# Схема API в проде закрыта. /docs, /redoc и /openapi.json отдавали полную
+# карту сервиса — сотню эндпоинтов с именами полей и схемами, включая
+# админские и пациентские. Само по себе это не дыра, но это подробная
+# инструкция для того, кто будет искать дыру. Открыть на время отладки:
+# API_DOCS=1 в окружении.
+_DOCS_OPEN = os.getenv("API_DOCS", "").strip() in {"1", "true", "yes"}
+
 app = FastAPI(
     title="Avris AI Backend",
     version="0.1.0",
     description="Hyperion Labs · Avris AI — голосовая платформа медицинской документации",
     lifespan=lifespan,
+    docs_url="/docs" if _DOCS_OPEN else None,
+    redoc_url="/redoc" if _DOCS_OPEN else None,
+    openapi_url="/openapi.json" if _DOCS_OPEN else None,
 )
 
 # Rate limiting — slowapi reads the limiter off app.state on each request and

@@ -5,13 +5,15 @@ from io import BytesIO
 from typing import List, Optional, Any
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from fastapi import (APIRouter, Depends, File, Form, HTTPException, Query, Request,
+                     UploadFile, status)
 from fastapi.responses import StreamingResponse, Response
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from audit import audit
 from database import get_db
+from rate_limit import limiter
 from http_files import content_disposition
 from models import LabOrder, LabFile, User, Patient
 from auth import get_current_user
@@ -227,7 +229,11 @@ def lab_order_pdf(
 # ---------- Public endpoints (lab portal — no auth) ----------
 
 @router.get("/by-token/{qr_token}", response_model=LabOrderPublic)
-def get_by_token(qr_token: str, db: Session = Depends(get_db)):
+# Публичные эндпоинты портала защищены только знанием токена. Токен —
+# uuid4, подобрать нельзя, но утёкшая ссылка не должна давать возможность
+# долбить сервер или залить гигабайты файлов.
+@limiter.limit("60/minute")
+def get_by_token(request: Request, qr_token: str, db: Session = Depends(get_db)):
     o = db.query(LabOrder).filter(LabOrder.qr_token == qr_token).first()
     if not o:
         raise HTTPException(status_code=404, detail="Направление не найдено")
@@ -235,7 +241,9 @@ def get_by_token(qr_token: str, db: Session = Depends(get_db)):
 
 
 @router.put("/by-token/{qr_token}/results", response_model=LabOrderResponse)
+@limiter.limit("20/minute")
 async def upload_results_by_token(
+    request: Request,
     qr_token: str,
     payload: LabOrderResultsRequest,
     db: Session = Depends(get_db),
@@ -290,7 +298,9 @@ def _ext_ok(name: str) -> bool:
 
 
 @router.post("/by-token/{qr_token}/files", response_model=LabFileMeta)
+@limiter.limit("20/minute")
 async def upload_file_by_token(
+    request: Request,
     qr_token: str,
     result_type: str = Form(...),
     file: UploadFile = File(...),
@@ -351,7 +361,8 @@ def list_files(
 
 
 @router.get("/by-token/{qr_token}/files", response_model=List[LabFileMeta])
-def list_files_by_token(qr_token: str, db: Session = Depends(get_db)):
+@limiter.limit("60/minute")
+def list_files_by_token(request: Request, qr_token: str, db: Session = Depends(get_db)):
     """Lab tech sees what was already uploaded for this order."""
     o = db.query(LabOrder).filter(LabOrder.qr_token == qr_token).first()
     if not o:
