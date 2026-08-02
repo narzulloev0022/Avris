@@ -719,6 +719,36 @@ class HealthAlert(Base):
     notified_at = Column(DateTime, nullable=True)
 
 
+class PatientCheckin(Base):
+    """Как пациент чувствует себя сегодня — его собственными словами.
+
+    Единственное на главной, что человек делает сам и регулярно: всё
+    остальное там либо чтение, либо реакция на событие. Между приёмами врач
+    не знает о пациенте ничего — а «третий день слабость» это ровно то, что
+    он спрашивает первым.
+
+    Это не измерение и не оценка, которую ставим мы: шкала субъективная и
+    принадлежит человеку. Поэтому никаких выводов из неё сервер не делает —
+    ни находок мониторинга, ни средних «баллов самочувствия».
+
+    Одна отметка в день: дневник, который можно вести десять раз в сутки,
+    перестают вести совсем. Повторная отметка меняет сегодняшнюю.
+    """
+    __tablename__ = "patient_checkins"
+    __table_args__ = (UniqueConstraint("patient_account_id", "day",
+                                       name="uq_patient_checkin_day"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"),
+                                nullable=False, index=True)
+    day = Column(Date, nullable=False, index=True)
+    # 1 плохо · 2 так себе · 3 нормально · 4 хорошо · 5 отлично
+    level = Column(Integer, nullable=False)
+    note = Column(String(280), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 class PatientDevice(Base):
     """Носимое устройство пациента — источник измерений.
 
