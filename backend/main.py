@@ -84,6 +84,7 @@ from patient_monitoring import run_all as run_monitoring
 from patient_nutrition import router as patient_nutrition_router
 from patient_assistant import router as patient_assistant_router
 from patient_conversations import router as patient_conversations_router
+from patient_devices import router as patient_devices_router
 from patient_intake import router as patient_intake_router
 from patient_subscription import router as patient_subscription_router
 from patient_export import router as patient_export_router
@@ -224,6 +225,7 @@ app.include_router(patient_health_router)
 app.include_router(patient_assistant_router)
 app.include_router(patient_subscription_router)
 app.include_router(patient_conversations_router)
+app.include_router(patient_devices_router)
 app.include_router(patient_intake_router)
 app.include_router(patient_export_router)
 app.include_router(epicrises_router)
