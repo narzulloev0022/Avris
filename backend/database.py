@@ -40,6 +40,11 @@ def init_db():
                 conn.execute(text("ALTER TABLE waitlist ADD COLUMN full_name VARCHAR(120)"))
             if "phone" not in existing_wl:
                 conn.execute(text("ALTER TABLE waitlist ADD COLUMN phone VARCHAR(32)"))
+    if "health_alerts" in insp.get_table_names():
+        existing_ha = {c["name"] for c in insp.get_columns("health_alerts")}
+        with engine.begin() as conn:
+            if "notified_at" not in existing_ha:
+                conn.execute(text("ALTER TABLE health_alerts ADD COLUMN notified_at TIMESTAMP"))
     if "patients" in insp.get_table_names():
         existing = {c["name"] for c in insp.get_columns("patients")}
         with engine.begin() as conn:

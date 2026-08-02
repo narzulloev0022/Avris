@@ -8,7 +8,7 @@
 мониторинг по отдельности только чтобы показать три числа.
 """
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -29,6 +29,20 @@ router = APIRouter(prefix="/api/patient/health", tags=["patient"])
 GLUCOSE_FRESH_HOURS = 36
 
 
+class TopAlertOut(BaseModel):
+    """Самая важная активная находка — та, что поедет на главную.
+
+    Счётчик «2 находки» на главной ничего не сообщает: чтобы узнать, что
+    именно заметили, надо провалиться на два экрана вглубь. Поэтому сводка
+    несёт саму находку — текст соберёт клиент, как и на экране мониторинга.
+    """
+    id: int
+    kind: str
+    severity: str
+    details: Dict[str, Any] = {}
+    created_at: datetime
+
+
 class HealthSummaryOut(BaseModel):
     """Каждое поле необязательно: чего пациент не ведёт, того на главной и нет.
 
@@ -39,6 +53,7 @@ class HealthSummaryOut(BaseModel):
     glucose_mmol: Optional[float] = None
     glucose_mark: Optional[str] = None
     active_alerts: int = 0
+    top_alert: Optional[TopAlertOut] = None
     has_nutrition: bool = False
     has_diabetes: bool = False
     has_monitoring: bool = False
@@ -79,8 +94,18 @@ def health_summary(
             out.glucose_mark = classify(last.mmol, last.context)
 
     if out.has_monitoring:
-        out.active_alerts = (db.query(HealthAlert)
-                             .filter(HealthAlert.patient_account_id == current.id,
-                                     HealthAlert.acknowledged_at.is_(None))
-                             .count())
+        active = (db.query(HealthAlert)
+                  .filter(HealthAlert.patient_account_id == current.id,
+                          HealthAlert.acknowledged_at.is_(None))
+                  .all())
+        out.active_alerts = len(active)
+        if active:
+            # Сначала по срочности, потом по свежести: две находки на главной
+            # не поместятся, и показать надо ту, ради которой стоит идти к
+            # врачу, а не ту, что просто пришла последней.
+            rank = {"urgent": 0, "attention": 1, "info": 2}
+            top = sorted(active, key=lambda a: (rank.get(a.severity, 3), -a.created_at.timestamp()))[0]
+            out.top_alert = TopAlertOut(
+                id=top.id, kind=top.kind, severity=top.severity,
+                details=dict(top.details or {}), created_at=top.created_at)
     return out
