@@ -8,7 +8,7 @@
 мониторинг по отдельности только чтобы показать три числа.
 """
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -16,8 +16,8 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import (GlucoseReading, HealthAlert, MonitoringDigest, NutritionEntry,
-                    PatientAccount)
+from models import (DeviceMeasurement, GlucoseReading, HealthAlert, MonitoringDigest,
+                    NutritionEntry, PatientAccount)
 from patient_auth import get_current_patient
 from patient_glucose import classify, summarize
 from patient_subscription import (FEATURE_DIABETES, FEATURE_MONITORING,
@@ -33,6 +33,9 @@ GLUCOSE_FRESH_HOURS = 36
 # экране диабет-контроля: две разные цифры под одним названием хуже, чем
 # отсутствие цифры.
 IN_RANGE_DAYS = 14
+
+# Сколько точек в мини-графике: больше на ширине плитки уже неразличимо.
+SPARK_POINTS = 12
 
 
 class TopAlertOut(BaseModel):
@@ -62,6 +65,10 @@ class HealthSummaryOut(BaseModel):
     # метрика диабета со своей опубликованной целью — в отличие от «балла
     # здоровья», её есть чем подкрепить. None — измерений слишком мало.
     in_range_percent: Optional[int] = None
+    # Короткие ряды для мини-графиков на главной. Число без хода — подпись:
+    # «6.4» не говорит, лучше стало или хуже. Считаем здесь, чтобы главная не
+    # ходила за рядом по каждому показателю отдельно.
+    sparks: Dict[str, List[float]] = {}
     active_alerts: int = 0
     top_alert: Optional[TopAlertOut] = None
     # Одна спокойная фраза обо всех находках сразу, написанная моделью.
@@ -113,6 +120,27 @@ def health_summary(
         out.in_range_percent = summarize(
             [{"mmol": r.mmol, "context": r.context, "taken_at": r.taken_at} for r in period]
         )["in_range_percent"]
+
+    # Ряды: сахар из дневника, остальное с устройств. Двенадцать точек —
+    # столько, сколько различимо на ширине плитки.
+    glucose_spark = (db.query(GlucoseReading.mmol)
+                     .filter(GlucoseReading.patient_account_id == current.id,
+                             GlucoseReading.taken_at >= now - timedelta(days=IN_RANGE_DAYS))
+                     .order_by(GlucoseReading.taken_at.desc())
+                     .limit(SPARK_POINTS)
+                     .all())
+    if len(glucose_spark) >= 2:
+        out.sparks["glucose"] = [float(v[0]) for v in reversed(glucose_spark)]
+    for kind in ("heart_rate", "sleep", "steps"):
+        rows = (db.query(DeviceMeasurement.value)
+                .filter(DeviceMeasurement.patient_account_id == current.id,
+                        DeviceMeasurement.kind == kind,
+                        DeviceMeasurement.taken_at >= now - timedelta(days=IN_RANGE_DAYS))
+                .order_by(DeviceMeasurement.taken_at.desc())
+                .limit(SPARK_POINTS)
+                .all())
+        if len(rows) >= 2:
+            out.sparks[kind] = [float(v[0]) for v in reversed(rows)]
 
     if out.has_monitoring:
         active = (db.query(HealthAlert)
