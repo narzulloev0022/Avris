@@ -13,6 +13,8 @@ from database import SessionLocal
 from models import (GlucoseReading, HealthAlert, LabOrder, MonitoringRun, Patient,
                     PatientAccount, PatientLink, User)
 from patient_auth import create_patient_access_token
+import patient_monitoring
+from patient_glucose import HIGH_STREAK
 from patient_monitoring import evaluate, out_of_range, run_for_account
 
 
@@ -264,3 +266,116 @@ def test_cannot_acknowledge_someone_elses_alert(client):
         db.close()
     assert client.post(f"/api/patient/monitoring/{alert_id}/ack",
                        headers=headers).status_code == 404
+
+
+# ---------- доставка находки ----------
+
+def _pro_with_email(db, phone, email):
+    account = PatientAccount(phone=phone, email=email, avris_patient_id=f"AV-NTF-{phone[-4:]}",
+                             full_name="Доставка Проба", subscription_tier="pro",
+                             subscription_expires_at=datetime.utcnow() + timedelta(days=30))
+    db.add(account)
+    db.commit()
+    db.refresh(account)
+    return account
+
+
+def test_urgent_finding_calls_the_patient_by_email(monkeypatch):
+    """Срочную находку недостаточно положить в базу — за ней надо позвать."""
+    sent = []
+    monkeypatch.setattr(patient_monitoring, "send_patient_alert_email",
+                        lambda to, name="": sent.append(to) or True)
+    db = SessionLocal()
+    try:
+        account = _pro_with_email(db, "+992942000001", "kto@example.com")
+        now = datetime.utcnow()
+        db.add(GlucoseReading(patient_account_id=account.id, mmol=2.9,
+                              context="fasting", taken_at=now - timedelta(hours=2)))
+        db.commit()
+        patient_monitoring.run_for_account(db, account, now)
+
+        assert sent == ["kto@example.com"]
+        alert = db.query(HealthAlert).filter(
+            HealthAlert.patient_account_id == account.id,
+            HealthAlert.kind == "glucose_low").first()
+        assert alert.severity == "urgent"
+        assert alert.notified_at is not None
+    finally:
+        db.close()
+
+
+def test_non_urgent_finding_does_not_write(monkeypatch):
+    """«Сдайте анализ вовремя» письмом не будит: право звать тратится на срочное."""
+    sent = []
+    monkeypatch.setattr(patient_monitoring, "send_patient_alert_email",
+                        lambda to, name="": sent.append(to) or True)
+    db = SessionLocal()
+    try:
+        account = _pro_with_email(db, "+992942000002", "tihо@example.com")
+        now = datetime.utcnow()
+        for i in range(HIGH_STREAK):
+            db.add(GlucoseReading(patient_account_id=account.id, mmol=13.0,
+                                  context="fasting", taken_at=now - timedelta(hours=i + 1)))
+        db.commit()
+        patient_monitoring.run_for_account(db, account, now)
+        assert sent == []
+    finally:
+        db.close()
+
+
+def test_second_urgent_finding_within_a_day_is_silent(monkeypatch):
+    """Три находки подряд — не три письма."""
+    sent = []
+    monkeypatch.setattr(patient_monitoring, "send_patient_alert_email",
+                        lambda to, name="": sent.append(to) or True)
+    db = SessionLocal()
+    try:
+        account = _pro_with_email(db, "+992942000003", "odin@example.com")
+        now = datetime.utcnow()
+        db.add(GlucoseReading(patient_account_id=account.id, mmol=2.8,
+                              context="fasting", taken_at=now - timedelta(hours=3)))
+        db.commit()
+        patient_monitoring.run_for_account(db, account, now)
+
+        db.add(GlucoseReading(patient_account_id=account.id, mmol=2.7,
+                              context="after_meal", taken_at=now - timedelta(hours=1)))
+        db.commit()
+        patient_monitoring.run_for_account(db, account, now + timedelta(hours=1))
+        assert len(sent) == 1
+    finally:
+        db.close()
+
+
+def test_failed_delivery_leaves_the_finding_unstamped(monkeypatch):
+    """Письмо не ушло — штампа нет, следующая проверка попробует снова."""
+    monkeypatch.setattr(patient_monitoring, "send_patient_alert_email",
+                        lambda to, name="": False)
+    db = SessionLocal()
+    try:
+        account = _pro_with_email(db, "+992942000004", "молчит@example.com")
+        now = datetime.utcnow()
+        db.add(GlucoseReading(patient_account_id=account.id, mmol=2.5,
+                              context="fasting", taken_at=now - timedelta(hours=1)))
+        db.commit()
+        patient_monitoring.run_for_account(db, account, now)
+        alert = db.query(HealthAlert).filter(
+            HealthAlert.patient_account_id == account.id).first()
+        assert alert.notified_at is None
+    finally:
+        db.close()
+
+
+def test_patient_without_email_is_not_a_crash(monkeypatch):
+    """Вход по телефону — почты может не быть вовсе."""
+    monkeypatch.setattr(patient_monitoring, "send_patient_alert_email",
+                        lambda to, name="": True)
+    db = SessionLocal()
+    try:
+        account = _pro_with_email(db, "+992942000005", None)
+        now = datetime.utcnow()
+        db.add(GlucoseReading(patient_account_id=account.id, mmol=2.6,
+                              context="fasting", taken_at=now - timedelta(hours=1)))
+        db.commit()
+        assert patient_monitoring.run_for_account(db, account, now) >= 1
+    finally:
+        db.close()

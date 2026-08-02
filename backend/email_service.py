@@ -171,3 +171,24 @@ def send_call_doctor_email(to: str, doctor_name: str, patient_name: str,
     """
     html = _render_plain("🚨 Срочный вызов", body, doctor_name)
     return _send_via_resend(to, f"🚨 Avris AI — срочный вызов: {patient_name}", html, "Call doctor", to)
+
+
+def send_patient_alert_email(to_email: str, full_name: str = "") -> bool:
+    """Письмо пациенту: мониторинг что-то заметил.
+
+    Намеренно без медицинского содержания — ни показателя, ни значения, ни
+    слова «сахар». Почта не наш канал для медданных: письмо лежит на чужом
+    сервере, приходит на общий семейный ящик и показывается уведомлением на
+    заблокированном экране. Задача письма ровно одна — довести человека до
+    приложения, где находка защищена входом.
+    """
+    body = """
+      <p>Avris заметил кое-что в ваших измерениях и готов показать это вам.</p>
+      <p>Откройте приложение — заметка ждёт в разделе «Здоровье → Мониторинг».
+         Она не заменяет осмотр и не ставит диагноз: это повод показать данные врачу.</p>
+      <p style="margin-top:18px"><a href="https://theavris.ai" style="background:#4AA391;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:600;display:inline-block">Открыть Avris</a></p>
+      <p style="color:#8a98a8;font-size:.9em;margin-top:18px">Если вам плохо прямо сейчас — не ждите приёма, обратитесь за помощью.</p>
+    """
+    html = _render_plain("Есть что показать врачу", body, full_name)
+    return _send_via_resend(to_email, "Avris — есть что показать врачу", html,
+                            "Patient alert", to_email)

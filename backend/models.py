@@ -713,6 +713,10 @@ class HealthAlert(Base):
     details = Column(JSON, nullable=False, default=dict)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
     acknowledged_at = Column(DateTime, nullable=True)
+    # Когда о находке сообщили вне приложения (письмо). NULL — ещё не
+    # сообщали. Отдельно от created_at: находка живёт в базе всегда, а
+    # позвать человека можно ровно один раз.
+    notified_at = Column(DateTime, nullable=True)
 
 
 class MonitoringRun(Base):

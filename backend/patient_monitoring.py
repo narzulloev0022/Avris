@@ -26,6 +26,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from database import SessionLocal, get_db
+from email_service import send_patient_alert_email
 from models import (GlucoseReading, HealthAlert, LabOrder, MonitoringRun,
                     PatientAccount, PatientLink)
 from patient_auth import get_current_patient
@@ -179,10 +180,49 @@ def evaluate(db: Session, account: PatientAccount, now: datetime) -> List[dict]:
     return found
 
 
+def _notify(db: Session, account: PatientAccount, fresh: List[HealthAlert],
+            now: datetime) -> None:
+    """Позвать пациента в приложение, если находка срочная.
+
+    Почему только ``urgent``: письмо о каждой находке — это рассылка, а
+    рассылку перестают открывать. Право разбудить человека надо тратить на
+    низкий сахар, а не на «сдайте анализ вовремя».
+
+    Почему письмо, а не пуш: пуш требует сертификата Apple, которого пока
+    нет. Письмо — единственный канал, который у платформы уже работает, и
+    он лучше, чем не сообщить вовсе. Содержания в письме нет: медданные
+    остаются за входом в приложение (см. send_patient_alert_email).
+    """
+    urgent = [a for a in fresh if a.severity == "urgent"]
+    if not urgent or not account.email:
+        return
+    # Не чаще одного письма в сутки: три находки подряд не должны
+    # превращаться в три письма.
+    recent = (db.query(HealthAlert)
+              .filter(HealthAlert.patient_account_id == account.id,
+                      HealthAlert.notified_at.isnot(None),
+                      HealthAlert.notified_at >= now - timedelta(days=1))
+              .first())
+    if recent is not None:
+        return
+    try:
+        sent = send_patient_alert_email(account.email, account.full_name or "")
+    except Exception:  # почта не должна ронять обход
+        log.exception("alert email failed for account %s", account.id)
+        return
+    if not sent:
+        # Не проставляем штамп: пусть следующая проверка попробует снова.
+        return
+    for alert in urgent:
+        alert.notified_at = now
+    db.commit()
+
+
 def run_for_account(db: Session, account: PatientAccount, now: Optional[datetime] = None) -> int:
     """Проверить пациента и сохранить новые находки. Возвращает их число."""
     now = now or datetime.utcnow()
     created = 0
+    fresh: List[HealthAlert] = []
     for item in evaluate(db, account, now):
         alert = HealthAlert(
             patient_account_id=account.id,
@@ -196,9 +236,12 @@ def run_for_account(db: Session, account: PatientAccount, now: Optional[datetime
         try:
             db.commit()
             created += 1
+            fresh.append(alert)
         except IntegrityError:
             # Такая находка уже есть — ровно то, ради чего нужен dedup_key.
             db.rollback()
+
+    _notify(db, account, fresh, now)
 
     run = (db.query(MonitoringRun)
            .filter(MonitoringRun.patient_account_id == account.id).first())
