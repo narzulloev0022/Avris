@@ -719,6 +719,45 @@ class HealthAlert(Base):
     notified_at = Column(DateTime, nullable=True)
 
 
+class PatientGoals(Base):
+    """Дневные цели пациента: шаги, вода, калории.
+
+    Цель ставит человек, а не приложение. Это не формальность: как только
+    знаменатель придумываем мы, «осталось 300 ккал» превращается в требование
+    от программы, которая о человеке ничего не знает. Своя цель — наоборот,
+    единственное, что делает счётчик осмысленным: без неё «8412 шагов» это
+    ни много ни мало.
+
+    NULL — цель не поставлена, и остаток мы не показываем.
+    """
+    __tablename__ = "patient_goals"
+
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"),
+                                primary_key=True)
+    steps = Column(Integer, nullable=True)
+    water_glasses = Column(Integer, nullable=True)
+    kcal = Column(Integer, nullable=True)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class WaterIntake(Base):
+    """Стаканы воды за день.
+
+    Храним счётчик на день, а не отдельные записи: человеку важно «сколько
+    сегодня», а не в котором часу был третий стакан. Одна строка на день —
+    и тап по стакану остаётся мгновенным.
+    """
+    __tablename__ = "water_intake"
+    __table_args__ = (UniqueConstraint("patient_account_id", "day", name="uq_water_day"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"),
+                                nullable=False, index=True)
+    day = Column(Date, nullable=False, index=True)
+    glasses = Column(Integer, nullable=False, default=0)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 class PatientCheckin(Base):
     """Как пациент чувствует себя сегодня — его собственными словами.
 
