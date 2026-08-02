@@ -24,6 +24,7 @@ from http_files import content_disposition
 from llm import _claude_call
 from models import LabFile, LabOrder, PatientAccount, User
 from patient_auth import get_current_patient
+from patient_monitoring import out_of_range as _out_of_range
 from patient_subscription import FEATURE_LAB_BREAKDOWN, require_feature
 from patient_visits import _linked_patient_ids
 from rate_limit import limiter
@@ -52,6 +53,10 @@ class LabListItem(BaseModel):
     doctor_name: Optional[str] = None
     file_count: int
     received_at: Optional[datetime] = None
+    # Ответ на «всё ли хорошо» до открытия анализа: в списке результатов нет,
+    # а вопрос у пациента именно этот.
+    in_range: int = 0
+    out_of_range: int = 0
 
 
 class LabDetailOut(BaseModel):
@@ -81,6 +86,26 @@ def _owned_order(db: Session, oid: int, account: PatientAccount) -> LabOrder:
 
 # ---------- endpoints ----------
 
+def _verdict_counts(results) -> dict:
+    """Сколько значений в норме лаборатории, а сколько вне неё.
+
+    Считается здесь, а не на клиенте: список должен отвечать на вопрос «всё
+    ли хорошо» до открытия анализа, а результаты в список не едут — их там
+    десятки. Разбор нормы тот же самый, что у мониторинга: любую строку,
+    которую не удалось прочесть однозначно, оба считают неизвестной.
+    """
+    in_range = out_of_range = 0
+    for cell in (results or {}).values():
+        if not isinstance(cell, dict):
+            continue
+        verdict = _out_of_range(cell.get("value", ""), cell.get("range"))
+        if verdict is True:
+            out_of_range += 1
+        elif verdict is False:
+            in_range += 1
+    return {"in_range": in_range, "out_of_range": out_of_range}
+
+
 @router.get("", response_model=List[LabListItem])
 def list_labs(
     current: PatientAccount = Depends(get_current_patient),
@@ -103,6 +128,7 @@ def list_labs(
             id=o.id, date=o.created_at, status=o.status, tests=o.tests or [],
             doctor_name=doctor.full_name if doctor else None,
             file_count=file_count, received_at=o.received_at,
+            **_verdict_counts(o.results),
         ))
     return items
 
