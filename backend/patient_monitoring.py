@@ -15,6 +15,7 @@
 и том же, перестают читать — включая тот единственный раз, когда прочитать
 было нужно.
 """
+import asyncio
 import logging
 import re
 from datetime import datetime, timedelta
@@ -27,11 +28,13 @@ from sqlalchemy.orm import Session
 
 from database import SessionLocal, get_db
 from email_service import send_patient_alert_email
-from models import (GlucoseReading, HealthAlert, LabOrder, MonitoringRun,
-                    PatientAccount, PatientLink)
+from llm import _claude_call
+from models import (GlucoseReading, HealthAlert, LabOrder, MonitoringDigest,
+                    MonitoringRun, PatientAccount, PatientLink)
 from patient_auth import get_current_patient
 from patient_glucose import HIGH_STREAK, LOW_MMOL, VERY_LOW_MMOL, classify
 from patient_subscription import FEATURE_MONITORING, PRO, has_feature, resolve_tier
+from patient_visits import _FORBIDDEN
 
 log = logging.getLogger("avris.patient_monitoring")
 
@@ -271,7 +274,10 @@ def run_all() -> int:
             if not has_feature(account, FEATURE_MONITORING):
                 continue  # тариф мог истечь между запросом и проверкой
             try:
-                total += run_for_account(db, account)
+                created = run_for_account(db, account)
+                total += created
+                if created:
+                    asyncio.run(build_digest(db, account))
             except Exception:  # одна карта не должна ронять обход
                 log.exception("monitoring failed for account %s", account.id)
                 db.rollback()
@@ -300,7 +306,7 @@ class MonitoringOut(BaseModel):
 # ---------- Endpoints ----------
 
 @router.get("", response_model=MonitoringOut)
-def get_monitoring(
+async def get_monitoring(
     current: PatientAccount = Depends(get_current_patient),
     db: Session = Depends(get_db),
 ):
@@ -314,6 +320,9 @@ def get_monitoring(
     if not has_feature(current, FEATURE_MONITORING):
         raise HTTPException(status_code=402, detail="Функция доступна на тарифе Pro")
     run_for_account(db, current)
+    # Фраза для главной пересобирается здесь, а не в /health/summary: главная
+    # не должна ждать модель ради одной карточки.
+    await build_digest(db, current)
 
     since = datetime.utcnow() - timedelta(days=ALERT_TTL_DAYS)
     rows = (db.query(HealthAlert)
@@ -332,7 +341,7 @@ def get_monitoring(
 
 
 @router.post("/{alert_id}/ack", status_code=204)
-def acknowledge(
+async def acknowledge(
     alert_id: int,
     current: PatientAccount = Depends(get_current_patient),
     db: Session = Depends(get_db),
@@ -349,8 +358,108 @@ def acknowledge(
     if row.acknowledged_at is None:
         row.acknowledged_at = datetime.utcnow()
         db.commit()
+        # Набор находок изменился — старая фраза описывает то, что пациент
+        # уже прочитал.
+        await build_digest(db, current)
 
 
 def tier_allows_monitoring(account: PatientAccount) -> bool:
     """Отдельная функция, чтобы условие «Pro и не истёк» не расползлось копиями."""
     return resolve_tier(account) == PRO and has_feature(account, FEATURE_MONITORING)
+
+
+# ---------- фраза для главной ----------
+
+# Правило формулирует сухо и по одной находке за раз. На главной такой текст
+# читается как тревога, а число в нём бесполезно: сделать с ним в этот момент
+# нечего, кроме как испугаться. Модель пересказывает весь набор одной фразой.
+_DIGEST_PROMPT = """Ты — помощник клиники. Тебе дают список того, что автоматическая проверка
+заметила в данных пациента (измерения сахара, результаты анализов, которые он внёс сам).
+
+Напиши ОДНУ спокойную фразу для пациента — её увидят на главном экране приложения.
+
+Строго:
+- одно-два предложения, не длиннее 200 символов;
+- никаких чисел с единицами измерения (не пиши «2.8 ммоль/л», «13 ммоль/л»);
+- никакого диагноза, никаких причин, никаких советов по лечению, дозам и питанию;
+- не пугай и не успокаивай: просто скажи, что заметили, и что это стоит показать врачу;
+- обращение на «вы», обычные слова, без медицинских терминов;
+- ответь только текстом фразы, без кавычек и пояснений.
+"""
+
+# Числа с десятичной частью и единицы измерения на главной не нужны — ровно
+# то, из-за чего карточка и выглядела пугающей.
+_DIGEST_NUMBERS = re.compile(r"\d+[.,]\d|ммоль|mmol|ммол")
+
+
+def _digest_key(alerts: List[HealthAlert]) -> str:
+    return ",".join(str(a.id) for a in sorted(alerts, key=lambda a: a.id))
+
+
+def _digest_facts(alerts: List[HealthAlert]) -> str:
+    lines = []
+    for a in alerts:
+        d = a.details or {}
+        if a.kind == "glucose_low":
+            lines.append(f"измерение сахара оказалось низким ({d.get('mmol')} ммоль/л)")
+        elif a.kind == "glucose_high_streak":
+            lines.append(f"{d.get('count', 3)} измерения сахара подряд оказались высокими")
+        elif a.kind == "glucose_silent":
+            lines.append(f"дневник сахара не пополнялся {d.get('days', 0)} дней")
+        elif a.kind == "lab_out_of_range":
+            tests = ", ".join(str(t) for t in (d.get("tests") or []))
+            lines.append(f"в результатах анализа вне нормы лаборатории: {tests}")
+    return "\n".join(f"- {line}" for line in lines)
+
+
+async def build_digest(db: Session, account: PatientAccount) -> Optional[str]:
+    """Собрать (или взять из кэша) фразу об активных находках.
+
+    None — фразы нет: модель недоступна, ответ не прошёл проверку или
+    находок не осталось. Клиент в этом случае показывает текст правила:
+    молчание хуже сухой формулировки.
+    """
+    active = (db.query(HealthAlert)
+              .filter(HealthAlert.patient_account_id == account.id,
+                      HealthAlert.acknowledged_at.is_(None))
+              .all())
+    row = (db.query(MonitoringDigest)
+           .filter(MonitoringDigest.patient_id == account.id).first())
+    if not active:
+        if row is not None:
+            db.delete(row)
+            db.commit()
+        return None
+
+    key = _digest_key(active)
+    if row is not None and row.source_key == key:
+        return row.text
+
+    language = {"ru": "русском", "tj": "таджикском", "en": "английском"}.get(
+        account.language_pref, "русском")
+    try:
+        raw = await _claude_call(
+            _DIGEST_PROMPT,
+            f"Язык ответа: {language}.\nЧто заметила проверка:\n{_digest_facts(active)}",
+            max_tokens=200,
+        )
+    except Exception:
+        log.exception("monitoring digest failed for account %s", account.id)
+        return row.text if row is not None else None
+
+    text = " ".join((raw or "").split()).strip('"«» ')
+    # Проверки не про стиль: длинный текст не поместится в карточку, а
+    # запрещённые обороты — это диагноз, которого правило не ставило.
+    if not text or len(text) > 240 or _DIGEST_NUMBERS.search(text) or _FORBIDDEN.search(text):
+        log.warning("monitoring digest rejected for account %s", account.id)
+        return row.text if row is not None else None
+
+    if row is None:
+        row = MonitoringDigest(patient_id=account.id, source_key=key, text=text)
+        db.add(row)
+    else:
+        row.source_key = key
+        row.text = text
+        row.created_at = datetime.utcnow()
+    db.commit()
+    return text

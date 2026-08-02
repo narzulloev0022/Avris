@@ -5,13 +5,14 @@
 же, перестают читать — включая тот единственный раз, когда прочитать было
 нужно. Поэтому дедупликация проверяется наравне с самими правилами.
 """
+import asyncio
 from datetime import datetime, timedelta
 
 import pytest
 
 from database import SessionLocal
-from models import (GlucoseReading, HealthAlert, LabOrder, MonitoringRun, Patient,
-                    PatientAccount, PatientLink, User)
+from models import (GlucoseReading, HealthAlert, LabOrder, MonitoringDigest,
+                    MonitoringRun, Patient, PatientAccount, PatientLink, User)
 from patient_auth import create_patient_access_token
 import patient_monitoring
 from patient_glucose import HIGH_STREAK
@@ -377,5 +378,117 @@ def test_patient_without_email_is_not_a_crash(monkeypatch):
                               context="fasting", taken_at=now - timedelta(hours=1)))
         db.commit()
         assert patient_monitoring.run_for_account(db, account, now) >= 1
+    finally:
+        db.close()
+
+
+# ---------- фраза для главной ----------
+
+async def _fake_call(system, user, max_tokens=1024):
+    _fake_call.seen.append(user)
+    return _fake_call.answer
+
+
+def _digest_account(db, phone):
+    account = PatientAccount(phone=phone, avris_patient_id=f"AV-DIG-{phone[-4:]}",
+                             full_name="Фраза Проба", subscription_tier="pro",
+                             subscription_expires_at=datetime.utcnow() + timedelta(days=30))
+    db.add(account)
+    db.commit()
+    db.refresh(account)
+    return account
+
+
+def _with_low(db, account, mmol=2.7):
+    now = datetime.utcnow()
+    db.add(GlucoseReading(patient_account_id=account.id, mmol=mmol,
+                          context="fasting", taken_at=now - timedelta(hours=1)))
+    db.commit()
+    run_for_account(db, account, now)
+
+
+def test_digest_is_written_and_cached(monkeypatch):
+    """Второй раз на том же наборе находок модель не зовём — это деньги."""
+    _fake_call.seen, _fake_call.answer = [], "Недавно сахар опускался ниже обычного. Стоит показать дневник врачу."
+    monkeypatch.setattr(patient_monitoring, "_claude_call", _fake_call)
+    db = SessionLocal()
+    try:
+        account = _digest_account(db, "+992943000001")
+        _with_low(db, account)
+
+        first = asyncio.run(patient_monitoring.build_digest(db, account))
+        second = asyncio.run(patient_monitoring.build_digest(db, account))
+        assert first == _fake_call.answer
+        assert second == first
+        assert len(_fake_call.seen) == 1
+        # В модель уезжают сухие факты, а не готовая формулировка.
+        assert "низк" in _fake_call.seen[0].lower()
+    finally:
+        db.close()
+
+
+def test_digest_with_numbers_is_rejected(monkeypatch):
+    """Цифра с единицами на главной — ровно то, из-за чего карточка пугала."""
+    _fake_call.seen, _fake_call.answer = [], "Сахар опускался до 2.8 ммоль/л — покажите врачу."
+    monkeypatch.setattr(patient_monitoring, "_claude_call", _fake_call)
+    db = SessionLocal()
+    try:
+        account = _digest_account(db, "+992943000002")
+        _with_low(db, account)
+        assert asyncio.run(patient_monitoring.build_digest(db, account)) is None
+    finally:
+        db.close()
+
+
+def test_digest_with_diagnosis_is_rejected(monkeypatch):
+    """Правило диагноза не ставило — не должна и фраза о нём."""
+    _fake_call.seen, _fake_call.answer = [], "Похоже, у вас гипогликемия — обратитесь к врачу."
+    monkeypatch.setattr(patient_monitoring, "_claude_call", _fake_call)
+    db = SessionLocal()
+    try:
+        account = _digest_account(db, "+992943000003")
+        _with_low(db, account)
+        assert asyncio.run(patient_monitoring.build_digest(db, account)) is None
+    finally:
+        db.close()
+
+
+def test_model_failure_keeps_the_old_phrase(monkeypatch):
+    """Модель отвалилась — показываем прежнюю фразу, а не пустоту."""
+    _fake_call.seen, _fake_call.answer = [], "Недавно сахар опускался ниже обычного."
+    monkeypatch.setattr(patient_monitoring, "_claude_call", _fake_call)
+    db = SessionLocal()
+    try:
+        account = _digest_account(db, "+992943000004")
+        _with_low(db, account)
+        kept = asyncio.run(patient_monitoring.build_digest(db, account))
+
+        async def boom(*a, **k):
+            raise RuntimeError("сеть")
+
+        monkeypatch.setattr(patient_monitoring, "_claude_call", boom)
+        _with_low(db, account, mmol=2.6)  # набор изменился — кэш устарел
+        assert asyncio.run(patient_monitoring.build_digest(db, account)) == kept
+    finally:
+        db.close()
+
+
+def test_digest_disappears_with_the_last_finding(monkeypatch):
+    """Прочитали всё — фразе не о чем говорить."""
+    _fake_call.seen, _fake_call.answer = [], "Недавно сахар опускался ниже обычного."
+    monkeypatch.setattr(patient_monitoring, "_claude_call", _fake_call)
+    db = SessionLocal()
+    try:
+        account = _digest_account(db, "+992943000005")
+        _with_low(db, account)
+        assert asyncio.run(patient_monitoring.build_digest(db, account)) is not None
+
+        for a in db.query(HealthAlert).filter(
+                HealthAlert.patient_account_id == account.id).all():
+            a.acknowledged_at = datetime.utcnow()
+        db.commit()
+        assert asyncio.run(patient_monitoring.build_digest(db, account)) is None
+        assert db.query(MonitoringDigest).filter(
+            MonitoringDigest.patient_id == account.id).count() == 0
     finally:
         db.close()
