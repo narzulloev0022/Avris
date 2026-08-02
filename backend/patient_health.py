@@ -19,7 +19,7 @@ from database import get_db
 from models import (GlucoseReading, HealthAlert, MonitoringDigest, NutritionEntry,
                     PatientAccount)
 from patient_auth import get_current_patient
-from patient_glucose import classify
+from patient_glucose import classify, summarize
 from patient_subscription import (FEATURE_DIABETES, FEATURE_MONITORING,
                                   FEATURE_NUTRITION, has_feature)
 
@@ -28,6 +28,11 @@ router = APIRouter(prefix="/api/patient/health", tags=["patient"])
 # Насколько давним может быть измерение, чтобы его ещё имело смысл показывать
 # как «сейчас». Позавчерашний сахар на главной — не состояние, а архив.
 GLUCOSE_FRESH_HOURS = 36
+
+# За какой срок считаем «время в цели». Две недели — тот же период, что и на
+# экране диабет-контроля: две разные цифры под одним названием хуже, чем
+# отсутствие цифры.
+IN_RANGE_DAYS = 14
 
 
 class TopAlertOut(BaseModel):
@@ -53,6 +58,10 @@ class HealthSummaryOut(BaseModel):
     kcal_today: Optional[int] = None
     glucose_mmol: Optional[float] = None
     glucose_mark: Optional[str] = None
+    # Доля измерений в целевом диапазоне за две недели. Международно принятая
+    # метрика диабета со своей опубликованной целью — в отличие от «балла
+    # здоровья», её есть чем подкрепить. None — измерений слишком мало.
+    in_range_percent: Optional[int] = None
     active_alerts: int = 0
     top_alert: Optional[TopAlertOut] = None
     # Одна спокойная фраза обо всех находках сразу, написанная моделью.
@@ -96,6 +105,14 @@ def health_summary(
         if last:
             out.glucose_mmol = last.mmol
             out.glucose_mark = classify(last.mmol, last.context)
+        period = (db.query(GlucoseReading)
+                  .filter(GlucoseReading.patient_account_id == current.id,
+                          GlucoseReading.taken_at >= now - timedelta(days=IN_RANGE_DAYS))
+                  .order_by(GlucoseReading.taken_at.desc())
+                  .all())
+        out.in_range_percent = summarize(
+            [{"mmol": r.mmol, "context": r.context, "taken_at": r.taken_at} for r in period]
+        )["in_range_percent"]
 
     if out.has_monitoring:
         active = (db.query(HealthAlert)
