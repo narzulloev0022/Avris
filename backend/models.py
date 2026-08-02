@@ -719,6 +719,87 @@ class HealthAlert(Base):
     notified_at = Column(DateTime, nullable=True)
 
 
+class PatientDevice(Base):
+    """Носимое устройство пациента — источник измерений.
+
+    Вендор-нейтрально с первого дня: свой браслет Avris, чужой трекер и
+    выгрузка из Apple Health / Health Connect пишут в одну таблицу через один
+    протокол. Иначе каждый новый источник тянул бы за собой свою модель, свои
+    эндпоинты и свою правду о том, что такое «пульс».
+
+    ``secret_hash`` — хэш токена устройства. Браслет живёт своей жизнью и шлёт
+    измерения сам, без входа пациента; давать ему пациентский токен нельзя —
+    им можно прочитать всю медкарту. Токен устройства умеет ровно одно:
+    писать измерения в свою же строку.
+    """
+    __tablename__ = "patient_devices"
+    __table_args__ = (UniqueConstraint("patient_account_id", "external_id",
+                                       name="uq_patient_device_external"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"),
+                                nullable=False, index=True)
+    # avris_band | apple_health | health_connect | other
+    vendor = Column(String(32), nullable=False, default="other")
+    model = Column(String(64), nullable=True)
+    # Имя, которое видит пациент. По умолчанию — модель.
+    name = Column(String(64), nullable=True)
+    # Серийный номер или UUID экземпляра: по нему устройство узнаётся при
+    # повторной привязке и не заводит второй строки.
+    external_id = Column(String(128), nullable=False, index=True)
+    secret_hash = Column(String(64), nullable=False)
+    paired_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    last_sync_at = Column(DateTime, nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+
+    account = relationship("PatientAccount")
+
+
+class DevicePairCode(Base):
+    """Одноразовый код привязки устройства.
+
+    Тот же приём, что и с кодом для врача: код короткоживущий, источник
+    правды — строка в базе, а не то, что показано на экране. Устройство
+    предъявляет код один раз и получает собственный токен.
+    """
+    __tablename__ = "device_pair_codes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(8), unique=True, index=True, nullable=False)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"),
+                                nullable=False, index=True)
+    expires_at = Column(DateTime, nullable=False)
+    used_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+class DeviceMeasurement(Base):
+    """Одно измерение от устройства.
+
+    Одна таблица на все виды измерений, а не колонка на каждый: браслеты
+    отличаются набором датчиков, и новый показатель не должен требовать
+    миграции. Что считать допустимым значением — решает реестр METRICS в
+    patient_devices.py, а не эта таблица.
+
+    Уникальность (устройство, вид, время) — чтобы повторная синхронизация не
+    плодила копии: браслет, потерявший связь, дошлёт тот же час заново.
+    """
+    __tablename__ = "device_measurements"
+    __table_args__ = (UniqueConstraint("device_id", "kind", "taken_at",
+                                       name="uq_device_measurement"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"),
+                                nullable=False, index=True)
+    device_id = Column(Integer, ForeignKey("patient_devices.id", ondelete="CASCADE"),
+                       nullable=False, index=True)
+    kind = Column(String(32), nullable=False, index=True)
+    value = Column(Float, nullable=False)
+    unit = Column(String(16), nullable=False)
+    taken_at = Column(DateTime, nullable=False, index=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 class MonitoringDigest(Base):
     """Одна спокойная фраза обо всех активных находках сразу.
 
