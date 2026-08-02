@@ -166,6 +166,10 @@ class VisitListItem(BaseModel):
     date: datetime
     doctor_name: Optional[str] = None
     summary_status: str  # ready|pending
+    # Начало сводки прямо в списке: строка «Сводка готова» сообщала о работе
+    # приложения, а не о приёме — чтобы узнать, что было, надо было открыть.
+    preview: Optional[str] = None
+    has_prescriptions: bool = False
 
 
 class VisitDetailOut(BaseModel):
@@ -189,6 +193,22 @@ def _linked_patient_ids(db: Session, account_id: int) -> List[int]:
     ).all()]
 
 
+# Столько влезает в две строки карточки списка; остальное — по нажатию.
+PREVIEW_CHARS = 160
+
+
+def _preview(text: Optional[str]) -> Optional[str]:
+    """Начало сводки для списка. Режем по слову: обрубок посреди слова
+    выглядит поломкой, а не сокращением."""
+    clean = " ".join((text or "").split())
+    if not clean:
+        return None
+    if len(clean) <= PREVIEW_CHARS:
+        return clean
+    cut = clean[:PREVIEW_CHARS].rsplit(" ", 1)[0]
+    return f"{cut}…"
+
+
 @router.get("", response_model=List[VisitListItem])
 def list_visits(
     current: PatientAccount = Depends(get_current_patient),
@@ -198,7 +218,7 @@ def list_visits(
     if not patient_ids:
         return []
     rows = (
-        db.query(Consultation, User.full_name, VisitSummary.id)
+        db.query(Consultation, User.full_name, VisitSummary)
         .join(User, User.id == Consultation.doctor_id)
         .outerjoin(VisitSummary, VisitSummary.consultation_id == Consultation.id)
         .filter(Consultation.patient_id.in_(patient_ids))
@@ -210,9 +230,11 @@ def list_visits(
             consultation_id=c.id,
             date=c.created_at,
             doctor_name=doctor_name,
-            summary_status="ready" if summary_id else "pending",
+            summary_status="ready" if summary else "pending",
+            preview=_preview(summary.summary if summary else None),
+            has_prescriptions=bool(summary and (summary.prescriptions or "").strip()),
         )
-        for c, doctor_name, summary_id in rows
+        for c, doctor_name, summary in rows
     ]
 
 
