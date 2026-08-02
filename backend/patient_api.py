@@ -11,15 +11,15 @@ when linking. It never moves once set; linking (T5) must refuse while NULL.
 from datetime import date, datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
 
 from audit import audit
 from database import get_db
-from models import (AssistantUsage, IntakeUsage, PatientAccount, PatientConversation,
-                    PatientLink, PatientLinkCode, PatientMessage, PatientPreVisitNote,
-                    PatientRefreshToken, VisitSummary)
+from models import (AssistantUsage, IntakeUsage, PatientAccount, PatientAvatar,
+                    PatientConversation, PatientLink, PatientLinkCode, PatientMessage,
+                    PatientPreVisitNote, PatientRefreshToken, VisitSummary)
 from patient_auth import PatientAccountOut, get_current_patient
 from rate_limit import limiter
 
@@ -41,6 +41,9 @@ class PatientProfileOut(PatientAccountOut):
     chronic_conditions: List[str] = []
     allergies: List[str] = []
     medications: List[str] = []
+    # Штамп фото профиля: None — фото нет. Само фото отдаётся отдельным
+    # запросом, чтобы профиль оставался лёгким.
+    avatar_updated_at: Optional[datetime] = None
 
 
 class PatientProfileUpdate(BaseModel):
@@ -113,6 +116,83 @@ def update_profile(
     # PHI-free: field names only, never values.
     audit(db, action="update", entity="patient_account", user_id=None,
           entity_id=current.id, meta={"door": "patient", "fields": sorted(changed)})
+    return PatientProfileOut.model_validate(current)
+
+
+# ---------- фото профиля ----------
+
+# Клиент ужимает фото перед отправкой; лимит здесь — предохранитель от
+# «сырых» 12-мегапиксельных снимков, а не рабочий размер.
+MAX_AVATAR_BYTES = 2 * 1024 * 1024
+ALLOWED_AVATAR_TYPES = {"image/jpeg", "image/jpg", "image/png", "image/heic", "image/webp"}
+
+
+@router.put("/profile/avatar", response_model=PatientProfileOut)
+@limiter.limit("10/minute")
+async def set_avatar(
+    request: Request,
+    file: UploadFile = File(...),
+    current: PatientAccount = Depends(get_current_patient),
+    db: Session = Depends(get_db),
+):
+    """Загрузить или заменить фото профиля."""
+    content_type = (file.content_type or "").lower()
+    if content_type not in ALLOWED_AVATAR_TYPES:
+        raise HTTPException(status_code=415, detail="Поддерживаются только фотографии")
+    data = await file.read()
+    if not data:
+        raise HTTPException(status_code=400, detail="Пустой файл")
+    if len(data) > MAX_AVATAR_BYTES:
+        raise HTTPException(status_code=413, detail="Фото слишком большое")
+
+    row = current.avatar
+    if row is None:
+        row = PatientAvatar(patient_id=current.id)
+        db.add(row)
+    row.content_type = "image/jpeg" if content_type == "image/jpg" else content_type
+    row.size_bytes = len(data)
+    row.data = data
+    row.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(current)
+    # PHI-free: только факт и размер, никогда не содержимое.
+    audit(db, action="update", entity="patient_avatar", user_id=None,
+          entity_id=current.id, meta={"door": "patient", "size": len(data)})
+    return PatientProfileOut.model_validate(current)
+
+
+@router.get("/profile/avatar")
+def get_avatar(current: PatientAccount = Depends(get_current_patient)):
+    """Отдать фото. 404 — фото нет; клиент рисует заглушку."""
+    row = current.avatar
+    if row is None:
+        raise HTTPException(status_code=404, detail="Фото не загружено")
+    return Response(
+        content=row.data,
+        media_type=row.content_type,
+        headers={
+            # Медданные не должны оседать в общих кэшах; ETag по штампу
+            # позволяет клиенту переспрашивать дёшево.
+            "Cache-Control": "private, max-age=0, must-revalidate",
+            "ETag": f'"{int(row.updated_at.timestamp())}"',
+        },
+    )
+
+
+@router.delete("/profile/avatar", response_model=PatientProfileOut)
+@limiter.limit("10/minute")
+def delete_avatar(
+    request: Request,
+    current: PatientAccount = Depends(get_current_patient),
+    db: Session = Depends(get_db),
+):
+    """Убрать фото. Идемпотентно: удалять нечего — это не ошибка."""
+    if current.avatar is not None:
+        db.delete(current.avatar)
+        db.commit()
+        db.refresh(current)
+        audit(db, action="delete", entity="patient_avatar", user_id=None,
+              entity_id=current.id, meta={"door": "patient"})
     return PatientProfileOut.model_validate(current)
 
 

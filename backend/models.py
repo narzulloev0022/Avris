@@ -356,6 +356,38 @@ class PatientAccount(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     links = relationship("PatientLink", back_populates="account", cascade="all, delete-orphan")
+    avatar = relationship("PatientAvatar", back_populates="account", uselist=False,
+                          cascade="all, delete-orphan")
+
+    @property
+    def avatar_updated_at(self):
+        """Когда фото менялось в последний раз; None — фото нет.
+
+        Клиенту нужен именно этот штамп, а не флаг «есть/нет»: по нему он
+        обновляет свой кэш, когда пациент сменил фото на другом устройстве.
+        """
+        return self.avatar.updated_at if self.avatar else None
+
+
+class PatientAvatar(Base):
+    """Фото профиля пациента.
+
+    Отдельная таблица, а не колонка в ``patient_accounts``: аккаунт читается
+    почти в каждом запросе, и тащить с ним сотни килобайт картинки — плата
+    за то, что нужно одному экрану. Бинарь в БД повторяет ``LabFile``: своего
+    файлового хранилища у платформы пока нет, а класть медданные в чужое
+    облако мы не будем.
+    """
+    __tablename__ = "patient_avatars"
+
+    patient_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"),
+                        primary_key=True)
+    content_type = Column(String(64), nullable=False)
+    size_bytes = Column(Integer, nullable=False)
+    data = Column(LargeBinary, nullable=False)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    account = relationship("PatientAccount", back_populates="avatar")
 
 
 class PatientLink(Base):
