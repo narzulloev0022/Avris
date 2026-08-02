@@ -719,6 +719,27 @@ class HealthAlert(Base):
     notified_at = Column(DateTime, nullable=True)
 
 
+class MonitoringDigest(Base):
+    """Одна спокойная фраза обо всех активных находках сразу.
+
+    Правило говорит сухо и по одной штуке за раз: «Низкий сахар — 2.8
+    ммоль/л». На главной это читается как тревога, а цифра там бесполезна —
+    сделать с ней в этот момент нечего, кроме как испугаться. Модель
+    пересказывает весь набор находок одной фразой на языке пациента.
+
+    ``source_key`` — отпечаток набора активных находок. Набор не менялся —
+    фразу не пересобираем: каждый вызов модели стоит денег, а находки за
+    шесть часов меняются в лучшем случае раз.
+    """
+    __tablename__ = "monitoring_digests"
+
+    patient_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"),
+                        primary_key=True)
+    source_key = Column(String(64), nullable=False)
+    text = Column(Text, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 class MonitoringRun(Base):
     """Когда мониторинг последний раз смотрел данные этого пациента.
 

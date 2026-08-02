@@ -16,7 +16,8 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import GlucoseReading, HealthAlert, NutritionEntry, PatientAccount
+from models import (GlucoseReading, HealthAlert, MonitoringDigest, NutritionEntry,
+                    PatientAccount)
 from patient_auth import get_current_patient
 from patient_glucose import classify
 from patient_subscription import (FEATURE_DIABETES, FEATURE_MONITORING,
@@ -54,6 +55,9 @@ class HealthSummaryOut(BaseModel):
     glucose_mark: Optional[str] = None
     active_alerts: int = 0
     top_alert: Optional[TopAlertOut] = None
+    # Одна спокойная фраза обо всех находках сразу, написанная моделью.
+    # None — фразы пока нет, клиент показывает текст правила.
+    alert_digest: Optional[str] = None
     has_nutrition: bool = False
     has_diabetes: bool = False
     has_monitoring: bool = False
@@ -108,4 +112,9 @@ def health_summary(
             out.top_alert = TopAlertOut(
                 id=top.id, kind=top.kind, severity=top.severity,
                 details=dict(top.details or {}), created_at=top.created_at)
+            # Только чтение кэша: главная не должна ждать модель.
+            digest = (db.query(MonitoringDigest)
+                      .filter(MonitoringDigest.patient_id == current.id).first())
+            if digest is not None:
+                out.alert_digest = digest.text
     return out
