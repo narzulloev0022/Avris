@@ -128,8 +128,8 @@ class TestPlansCatalog:
         # Free карточкой не продаётся — это базовое состояние.
         assert [p["tier"] for p in body["plans"]] == ["plus", "pro"]
         plus, pro = body["plans"]
-        assert (plus["price_tjs"], plus["price_usd"]) == (65, 6.99)
-        assert (pro["price_tjs"], pro["price_usd"]) == (129, 13.99)
+        assert (plus["price_tjs"], plus["price_usd"]) == (95, 9.99)
+        assert (pro["price_tjs"], pro["price_usd"]) == (215, 22.99)
 
 
 class TestFeatureGate:

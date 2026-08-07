@@ -6,10 +6,16 @@
 patient_conversations.py: пациент должен иметь возможность вернуться к тому,
 что рассказал о своём здоровье.
 
-Дневной лимит держит СЕРВЕР и он тарифный: free — 3 вопроса (канон
-Monetization.md), платные — fair-use потолок. Раньше кап был общий на всех
-(ASSISTANT_DAILY_CAP=20), то есть бесплатный пользователь получал в 6 раз
-больше обещанного, а тарифную границу «рисовал» только клиент.
+Лимиты держит СЕРВЕР, и их два: месячный — то, что тариф продаёт, дневной —
+предохранитель от всплеска внутри месяца. Оба тарифные, оба живут в
+patient_subscription.py.
+
+История граблей на этом месте. Сначала кап был общий на всех
+(ASSISTANT_DAILY_CAP=20) — бесплатный пользователь получал в 6 раз больше
+обещанного, а тарифную границу «рисовал» только клиент. Потом кап стал
+тарифным, но остался только дневным — и обнулялся каждые сутки, так что
+месяц не был ограничен ничем: при выборе дневного капа тариф уходил в
+глубокий минус. Отсюда месячный потолок.
 """
 from datetime import datetime, timezone
 from typing import List, Optional
@@ -24,7 +30,9 @@ from models import AssistantUsage, PatientAccount
 from patient_auth import get_current_patient
 from patient_conversations import (KIND_ASSISTANT, append_turn, owned_conversation,
                                    start_conversation)
-from patient_subscription import FREE, assistant_daily_cap, resolve_tier
+from patient_subscription import (FREE, assistant_daily_cap,
+                                  assistant_monthly_cap, month_total,
+                                  resolve_tier)
 from rate_limit import limiter
 
 router = APIRouter(prefix="/api/patient/assistant", tags=["patient"])
@@ -67,7 +75,8 @@ class AssistantRequest(BaseModel):
 
 class AssistantResponse(BaseModel):
     reply: str
-    remaining: Optional[int] = None  # остаток дневного лимита текущего тарифа
+    # Остаток тарифа — меньший из дневного и месячного, тот, что кончится раньше.
+    remaining: Optional[int] = None
     tier: Optional[str] = None       # чтобы клиент не гадал, чей это лимит
     conversation_id: Optional[int] = None
 
@@ -89,28 +98,45 @@ def _reserve(db: Session, account: PatientAccount) -> int:
     слот возвращает [_release], так что упавший запрос ничего не стоит
     пациенту.
 
-    Лимит берётся из тарифа на каждый запрос: подписка могла истечь между
+    Потолка два, и месячный проверяется первым: если кончился он, «попробуйте
+    завтра» было бы враньём — ждать придётся до первого числа. Дневной ловит
+    всплеск внутри месяца.
+
+    Лимиты берутся из тарифа на каждый запрос: подписка могла истечь между
     вопросами, и тогда остаток честно пересчитывается по free.
     """
-    cap = assistant_daily_cap(account)
+    daily_cap = assistant_daily_cap(account)
+    monthly_cap = assistant_monthly_cap(account)
+    # Free упёрся в тарифную границу — ему есть куда расти, платному остаётся
+    # только подождать.
+    is_free = resolve_tier(account) == FREE
+
+    # Считаем месяц до создания сегодняшней строки, чтобы пустая строка не
+    # участвовала в сумме даже нулём.
+    used_month = month_total(db, AssistantUsage, account.id)
+    if used_month >= monthly_cap:
+        raise HTTPException(status_code=429, detail=(
+            "Бесплатные вопросы AI-помощнику на этот месяц закончились — "
+            "оформите Plus, чтобы продолжить" if is_free else
+            "Лимит AI-помощника на этот месяц исчерпан — "
+            "обновится первого числа"))
+
     row = _usage_row(db, account.id)
     if row is None:
         row = AssistantUsage(patient_account_id=account.id,
                              day=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
                              count=0)
         db.add(row)
-    if row.count >= cap:
-        # Free упёрся в тарифную границу — ему есть куда расти, платному
-        # остаётся только подождать сутки.
-        if resolve_tier(account) == FREE:
-            detail = ("Бесплатный лимит AI-помощника на сегодня исчерпан — "
-                      "оформите Plus, чтобы спрашивать без ограничений")
-        else:
-            detail = "Дневной лимит AI-помощника исчерпан — попробуйте завтра"
-        raise HTTPException(status_code=429, detail=detail)
+    if row.count >= daily_cap:
+        raise HTTPException(status_code=429, detail=(
+            "Бесплатный лимит AI-помощника на сегодня исчерпан — "
+            "оформите Plus, чтобы спрашивать чаще" if is_free else
+            "Дневной лимит AI-помощника исчерпан — попробуйте завтра"))
     row.count += 1
     db.commit()
-    return max(0, cap - row.count)
+    # Наружу отдаём тот остаток, который кончится раньше, — обещать больший из
+    # двух значит соврать на следующем же вопросе.
+    return max(0, min(daily_cap - row.count, monthly_cap - used_month - 1))
 
 
 def _release(db: Session, account_id: int) -> None:
