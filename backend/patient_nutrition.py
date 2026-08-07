@@ -30,7 +30,7 @@ from database import get_db
 from llm import _claude_vision_call
 from models import NutritionEntry, NutritionUsage, PatientAccount
 from patient_auth import get_current_patient
-from patient_subscription import FEATURE_NUTRITION, require_feature
+from patient_subscription import FEATURE_NUTRITION, month_total, require_feature
 from rate_limit import limiter
 
 router = APIRouter(prefix="/api/patient/nutrition", tags=["patient"])
@@ -39,9 +39,12 @@ logger = logging.getLogger("avris.nutrition")
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/jpg", "image/png", "image/heic", "image/webp"}
 
-# Разборов фото в сутки. Зрение — самый дорогой вызов в приложении, и это
-# предохранитель от случайной серии, а не ограничение по тарифу.
+# Разборов фото в сутки и в месяц. Зрение — самый дорогой вызов в приложении:
+# дневной ловит случайную серию, месячный держит экономику Pro (тридцать
+# снимков в день целый месяц стоили бы больше половины его цены). Десять
+# снимков в день — больше, чем человек ест.
 DAILY_PHOTO_CAP = int(os.getenv("NUTRITION_DAILY_CAP", "30"))
+MONTHLY_PHOTO_CAP = int(os.getenv("NUTRITION_MONTHLY_CAP", "300"))
 
 _SYSTEM_PROMPT = """Ты помогаешь пациенту вести дневник питания по фотографии тарелки.
 
@@ -158,6 +161,13 @@ def _today_key() -> str:
 
 
 def _bump_usage(db: Session, account_id: int) -> None:
+    # Месяц считаем первым: если кончился он, «попробуйте завтра» было бы
+    # враньём — ждать до первого числа.
+    if month_total(db, NutritionUsage, account_id) >= MONTHLY_PHOTO_CAP:
+        raise HTTPException(
+            status_code=429,
+            detail="Разборы фото на этот месяц исчерпаны — обновятся первого числа")
+
     day = _today_key()
     row = (db.query(NutritionUsage)
            .filter(NutritionUsage.patient_account_id == account_id,

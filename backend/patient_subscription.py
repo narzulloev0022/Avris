@@ -5,11 +5,21 @@
 ВСЕГДА — это флайуил, врач приводит пациента, CAC ≈ 0. Платное — только
 AI-усиления:
 
-  free  0            — AI-ассистент 3 вопроса/день (Haiku)
-  plus  65 сомони    — 50 вопросов ассистенту в день, AI-разбор анализов
+  free  0            — AI-ассистент 10 вопросов в месяц
+  plus  95 сомони    — 400 вопросов ассистенту в месяц, AI-разбор анализов
                        и визитов, экспорт медкарты в PDF
-  pro   129 сомони   — всё из Plus + Sonnet-тяжёлое (питание по фото,
+  pro   215 сомони   — всё из Plus + Sonnet-тяжёлое (питание по фото,
                        диабет-контроль), 24/7 мониторинг, приоритетная запись
+
+Лимит двойной — месячный и дневной, и это разные предохранители. **Месячный**
+держит экономику: он подобран так, что тариф остаётся прибыльным даже если
+пациент выберет его до последнего вопроса. **Дневной** держит всплеск: без
+него месячный запас сжигается скриптом за сутки. Дневной стоит примерно в
+пятнадцатую долю месячного, то есть быстрее чем за две недели месяц не
+кончается ни на одном тарифе.
+
+Месячный — то, что обещано в приложении; дневной живой человек не замечает и
+видит его только в тексте отказа.
 
 Клиентский paywall рисует замки, но решает СЕРВЕР: приложение спрашивает
 GET /api/patient/subscription и получает и тариф, и лимиты, и список фич.
@@ -26,6 +36,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -59,17 +70,20 @@ FEATURE_FAMILY_PROFILES = "family_profiles"
 class TierSpec:
     """Права одного тарифа.
 
-    ``assistant_daily`` — дневной кап ассистента. Слово «безлимит» из текстов
-    убрано: обещать его нечестно, потому что потолок всё равно есть — без него
-    один скрипт сжигает маржу тарифа за сутки. Пороги стоят заведомо выше
-    живого использования (человек не задаёт 50 вопросов в день), и в
-    приложении названы прямо.
+    ``assistant_monthly`` — то, что тариф обещает: месячный запас вопросов.
+    ``assistant_daily`` — предохранитель от всплеска внутри месяца.
+
+    Слово «безлимит» из текстов убрано: обещать его нечестно, потому что
+    потолок всё равно есть — без него один скрипт сжигает маржу тарифа.
+    Пороги стоят заведомо выше живого использования (даже тревожный пациент не
+    задаёт 400 вопросов в месяц), и в приложении названы прямо.
     """
 
-    def __init__(self, code: str, assistant_daily: int, features: List[str],
-                 price_tjs: int, price_usd: float):
+    def __init__(self, code: str, assistant_daily: int, assistant_monthly: int,
+                 features: List[str], price_tjs: int, price_usd: float):
         self.code = code
         self.assistant_daily = assistant_daily
+        self.assistant_monthly = assistant_monthly
         self.features = features
         self.price_tjs = price_tjs
         self.price_usd = price_usd
@@ -85,26 +99,33 @@ def _cap(env_name: str, default: int) -> int:
 TIERS = {
     FREE: TierSpec(
         FREE,
+        # Бесплатный тариф — витрина, а не сервис: его задача дать человеку
+        # почувствовать пользу и упереться в потолок, а не обслуживать его даром.
+        # Десяти вопросов хватает на пару визитов и разбор анализов; сорока
+        # хватало на то, чтобы платить за него и не получать взамен ничего.
         assistant_daily=_cap("ASSISTANT_FREE_DAILY_CAP", 3),
+        assistant_monthly=_cap("ASSISTANT_FREE_MONTHLY_CAP", 10),
         features=[FEATURE_ASSISTANT],
         price_tjs=0,
         price_usd=0.0,
     ),
     PLUS: TierSpec(
         PLUS,
-        assistant_daily=_cap("ASSISTANT_PLUS_DAILY_CAP", 50),
+        assistant_daily=_cap("ASSISTANT_PLUS_DAILY_CAP", 30),
+        assistant_monthly=_cap("ASSISTANT_PLUS_MONTHLY_CAP", 400),
         features=[
             FEATURE_ASSISTANT,
             FEATURE_LAB_BREAKDOWN,
             FEATURE_VISIT_INSIGHTS,
             FEATURE_PDF_EXPORT,
         ],
-        price_tjs=65,
-        price_usd=6.99,
+        price_tjs=95,
+        price_usd=9.99,
     ),
     PRO: TierSpec(
         PRO,
-        assistant_daily=_cap("ASSISTANT_PRO_DAILY_CAP", 200),
+        assistant_daily=_cap("ASSISTANT_PRO_DAILY_CAP", 60),
+        assistant_monthly=_cap("ASSISTANT_PRO_MONTHLY_CAP", 1000),
         features=[
             FEATURE_ASSISTANT,
             FEATURE_LAB_BREAKDOWN,
@@ -116,8 +137,8 @@ TIERS = {
             FEATURE_PRIORITY_BOOKING,
             FEATURE_FAMILY_PROFILES,
         ],
-        price_tjs=129,
-        price_usd=13.99,
+        price_tjs=215,
+        price_usd=22.99,
     ),
 }
 
@@ -147,6 +168,32 @@ def resolve_tier(account: PatientAccount) -> str:
 
 def assistant_daily_cap(account: PatientAccount) -> int:
     return TIERS[resolve_tier(account)].assistant_daily
+
+
+def assistant_monthly_cap(account: PatientAccount) -> int:
+    return TIERS[resolve_tier(account)].assistant_monthly
+
+
+def month_key(now: Optional[datetime] = None) -> str:
+    return (now or datetime.now(timezone.utc)).strftime("%Y-%m")
+
+
+def month_total(db: Session, model, account_id: int) -> int:
+    """Расход за текущий календарный месяц по любой таблице дневных счётчиков.
+
+    Считается суммой дневных строк, а не отдельным месячным счётчиком: две
+    копии одного числа рано или поздно разойдутся, а при ошибке модели слот
+    возвращается правкой дневной строки — и месячная сумма чинится вместе с
+    ней сама, без второго места, где можно забыть.
+
+    Подходит любой модели с полями ``patient_account_id`` / ``day`` (YYYY-MM-DD)
+    / ``count`` — сейчас это ``AssistantUsage`` и ``NutritionUsage``.
+    """
+    total = (db.query(func.coalesce(func.sum(model.count), 0))
+             .filter(model.patient_account_id == account_id,
+                     model.day.like(f"{month_key()}-%"))
+             .scalar())
+    return int(total or 0)
 
 
 def has_feature(account: PatientAccount, feature: str) -> bool:
@@ -180,6 +227,9 @@ class SubscriptionOut(BaseModel):
     assistant_daily_cap: int
     assistant_used_today: int
     assistant_remaining_today: int
+    assistant_monthly_cap: int
+    assistant_used_month: int
+    assistant_remaining_month: int
 
 
 class PlanOut(BaseModel):
@@ -190,6 +240,7 @@ class PlanOut(BaseModel):
     price_usd: float
     features: List[str]
     assistant_daily_cap: int
+    assistant_monthly_cap: int
 
 
 class PlansOut(BaseModel):
@@ -218,6 +269,7 @@ def _subscription_out(db: Session, account: PatientAccount) -> SubscriptionOut:
     tier = resolve_tier(account)
     spec = TIERS[tier]
     used = _used_today(db, account.id)
+    used_month = month_total(db, AssistantUsage, account.id)
     return SubscriptionOut(
         tier=tier,
         # Срок отдаём только пока он действует — истёкший тариф уже free.
@@ -227,6 +279,9 @@ def _subscription_out(db: Session, account: PatientAccount) -> SubscriptionOut:
         assistant_daily_cap=spec.assistant_daily,
         assistant_used_today=used,
         assistant_remaining_today=max(0, spec.assistant_daily - used),
+        assistant_monthly_cap=spec.assistant_monthly,
+        assistant_used_month=used_month,
+        assistant_remaining_month=max(0, spec.assistant_monthly - used_month),
     )
 
 
@@ -257,6 +312,7 @@ def get_plans(
                 price_usd=TIERS[code].price_usd,
                 features=TIERS[code].features,
                 assistant_daily_cap=TIERS[code].assistant_daily,
+                assistant_monthly_cap=TIERS[code].assistant_monthly,
             )
             for code in (PLUS, PRO)
         ],
