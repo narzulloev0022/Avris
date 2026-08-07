@@ -323,7 +323,16 @@ _PV_SYSTEM = """Ты — ассистент врача. По истории бо
 Что важно: текущая картина и динамика; что стоит проверить сегодня; незакрытые
 вопросы (несданные анализы, невыполненный план); риски (аллергии, тяжесть).
 Только факты из переданных данных, ничего не выдумывай. Врачебный регистр,
-телеграфно кратко. Без заголовков и преамбул — только пункты."""
+телеграфно кратко. Без заголовков и преамбул — только пункты.
+
+Если есть блок самооценки самочувствия — это слова пациента, а не измерение.
+Упоминай его как жалобу («со слов пациента, третий день слабость»), не делай
+из него вывода о тяжести и не смешивай с объективными данными."""
+
+
+# Сколько дней самооценки уходит в сводку. Две недели — окно между приёмами;
+# больше не нужно ни врачу, ни модели (лишний контекст = лишние деньги).
+_PV_CHECKIN_DAYS = 14
 
 
 @router.post("/{pid}/previsit-brief", response_model=PrevisitBriefResponse)
@@ -334,11 +343,22 @@ async def previsit_brief(
     current_user: User = Depends(get_current_user),
 ):
     """AI-сводка «что важно перед приёмом» — фаза подготовки (не сохраняется)."""
+    import patient_checkins as checkins
     from epicrises import _build_history
     from llm import _claude_call
 
     p = _get_owned_patient(db, pid, current_user)
     history, _counts = _build_history(db, p, max_consults=5, max_rounds=5, max_labs=3)
+
+    # Самооценка дописывается здесь, а не внутри _build_history: ту же функцию
+    # зовёт эпикриз, а выписной документ не место для дневника настроения.
+    account_id = checkins.linked_account_id(db, p.id, current_user.id)
+    if account_id is not None:
+        block = checkins.history_block(
+            checkins.recent_for_account(db, account_id, days=_PV_CHECKIN_DAYS))
+        if block:
+            history += "\n\n" + block
+
     lang_name = _PV_LANG.get(payload.language, "русском")
     text = await _claude_call(
         _PV_SYSTEM,
@@ -350,6 +370,50 @@ async def previsit_brief(
         raise HTTPException(status_code=502, detail="Пустой ответ модели — повторите попытку")
     audit(db, action="previsit_brief", entity="patient", user_id=current_user.id, entity_id=p.id)
     return PrevisitBriefResponse(brief=brief)
+
+
+class DoctorCheckinOut(BaseModel):
+    day: date
+    level: int
+    note: Optional[str] = None
+
+
+class DoctorCheckinsOut(BaseModel):
+    """Отметки самочувствия пациента глазами врача.
+
+    ``linked`` отделяет «пациент не подключил приложение» от «подключил, но
+    ничего не отмечал» — для врача это разные вещи, и обе не ошибка. Поэтому
+    здесь 200 с пустым списком, а не 404: карточка должна сказать словами, а
+    не показать сбой.
+    """
+    linked: bool
+    days: List[DoctorCheckinOut]
+
+
+@router.get("/{pid}/checkins", response_model=DoctorCheckinsOut)
+def patient_checkins(
+    pid: int,
+    days: int = 30,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Как пациент оценивал самочувствие между приёмами.
+
+    Показываем ряд как есть — без среднего и «динамики». Это самооценка, а не
+    измерение: посчитанное по ней число выглядит как факт, которым не
+    является. Врач читает дни и слова пациента и делает вывод сам.
+    """
+    import patient_checkins as checkins
+
+    p = _get_owned_patient(db, pid, current_user)
+    account_id = checkins.linked_account_id(db, p.id, current_user.id)
+    if account_id is None:
+        return DoctorCheckinsOut(linked=False, days=[])
+    rows = checkins.recent_for_account(db, account_id, days=days)
+    return DoctorCheckinsOut(
+        linked=True,
+        days=[DoctorCheckinOut(day=r.day, level=r.level, note=r.note) for r in rows],
+    )
 
 
 @router.delete("/{pid}", status_code=status.HTTP_204_NO_CONTENT)

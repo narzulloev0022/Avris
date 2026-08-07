@@ -1039,6 +1039,25 @@ body[data-theme="dark"] .btn-logout:hover{background:rgba(255,255,255,0.06)}
 .tl-body{display:none;font-size:.82rem;color:var(--text-primary);margin-top:8px;white-space:pre-wrap;border-top:1px solid var(--border);padding-top:8px}
 .tl-item.open .tl-body{display:block}
 .tl-item.open .tl-snip{display:none}
+/* Самооценка самочувствия: ряд дней, высота столбика = уровень.
+
+   Высота и цвет кодируют РАЗНОЕ, иначе ряд читается как набор категорий, а не
+   как последовательность: высота несёт сам ряд, цвет помечает только плохие
+   дни — их врач и ищет глазами. Раскрашивать все пять уровней разными
+   оттенками бесполезно: серый→сиреневый→зелёный не воспринимается как шкала.
+
+   Пропущенный день — засечка на базовой линии, а не пробел: дыры в дневнике
+   врачу тоже кое-что говорят, а сдвиг соседей сломал бы чтение по датам. */
+.ck-strip{display:flex;align-items:flex-end;gap:4px;height:34px;margin-bottom:8px}
+.ck-bar{width:12px;border-radius:3px;background:var(--accent);opacity:.55;flex:none}
+.ck-bar.l4,.ck-bar.l5{opacity:.85}
+.ck-bar.l1{background:var(--danger);opacity:1}
+.ck-bar.l2{background:var(--warning);opacity:1}
+.ck-bar.gap{height:2px;background:var(--border);opacity:1;border-radius:1px}
+.ck-legend{display:flex;justify-content:space-between;font-family:var(--font-data);font-size:.7rem;color:var(--text-muted);margin-bottom:10px}
+.ck-note{font-size:.82rem;color:var(--text-secondary);margin-top:6px}
+.ck-note b{font-family:var(--font-data);font-size:.76rem;color:var(--text-muted);font-weight:400;margin-right:6px}
+.ck-empty{font-size:.85rem;color:var(--text-muted)}
 .pm-card::-webkit-scrollbar{width:4px}.pm-card::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
 @media(max-width:768px){
 .nr-grid{grid-template-columns:1fr 1fr}
