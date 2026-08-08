@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Avris AI — предложение для клиники</title>
+<style>
+  /* Фирменная палитра Hyperion Labs / Avris (periwinkle).
+     Старый teal #4AA391 выведен из обращения. */
+  :root {
+    --ink:   #0C1224;   /* основной текст */
+    --deep:  #4659B5;   /* заголовки и акцентный текст, читается на белом */
+    --peri:  #95AEF8;   /* акцент: линии, рамки */
+    --light: #C5D0FB;   /* светлый акцент: границы карточек */
+    --wash:  #EEF2FE;   /* подложки */
+    --muted: #7E8CB5;   /* приглушённый текст */
+    color-scheme: light;
+  }
+  @page { size: A4; margin: 8mm 10mm 6mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #fff; }
+  body {
+    font-family: "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #fff; color: var(--ink);
+    font-size: 9.3pt; line-height: 1.34;
+    max-width: 190mm; margin: 0 auto; padding: 0 2mm;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .page { page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+
+  .top { display: flex; justify-content: space-between; align-items: center;
+         border-bottom: 2px solid var(--peri); padding-bottom: 5px; margin-bottom: 8px; }
+  .logo { display: flex; align-items: center; gap: 8px; }
+  .logo img { width: 30px; height: 31px; }
+  .wordmark { font-size: 16pt; font-weight: 800; color: var(--deep); letter-spacing: -0.4px; }
+  .org { font-size: 8.3pt; color: var(--muted); text-align: right; line-height: 1.4; }
+
+  h1 { font-size: 13.5pt; font-weight: 700; color: var(--deep); margin-bottom: 4px; letter-spacing: -0.2px; }
+  .lead { font-size: 9.3pt; color: #333c52; margin-bottom: 8px; }
+  .lead b { color: var(--deep); }
+  h2 { font-size: 9.6pt; font-weight: 700; color: var(--deep); margin: 9px 0 4px;
+       text-transform: uppercase; letter-spacing: 0.4px; }
+
+  .to { display: flex; gap: 6px; align-items: baseline; font-size: 8.8pt;
+        color: var(--muted); margin-bottom: 8px; }
+  .to .line { flex: 1; border-bottom: 1px dotted var(--light); }
+
+  .flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+          background: var(--wash); border-radius: 4px; padding: 5px 9px; margin-bottom: 3px; }
+  .step { font-size: 8.5pt; font-weight: 600; color: var(--deep); }
+  .arrow { color: var(--peri); font-weight: 700; }
+
+  .demo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 3px; }
+  .demo > div { border: 1px solid var(--light); border-radius: 4px; padding: 6px 8px; }
+  .demo .made { background: var(--wash); }
+  .lbl { display: block; font-size: 8pt; font-weight: 700; text-transform: uppercase;
+         letter-spacing: 0.5px; color: var(--peri); margin-bottom: 3px; }
+  .demo p { font-size: 8.4pt; color: #333c52; }
+  .demo .quote { font-style: italic; color: var(--ink); }
+  .demo b { color: var(--deep); }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .card { border: 1px solid var(--light); border-left: 3px solid var(--peri);
+          border-radius: 4px; padding: 6px 8px; }
+  .card h3 { font-size: 9.2pt; font-weight: 700; color: var(--deep); margin-bottom: 2px; }
+  .card p { font-size: 8.4pt; color: #4a5468; }
+
+  ul { list-style: none; }
+  li { font-size: 8.6pt; color: #333c52; padding-left: 13px; position: relative; margin-bottom: 1px; }
+  li::before { content: "—"; position: absolute; left: 0; color: var(--peri); font-weight: 700; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+
+  .pilot { border: 1px solid var(--peri); background: var(--wash); border-radius: 5px;
+           padding: 7px 10px; margin-top: 4px; }
+  .pilot h2 { margin-top: 0; }
+  .after { font-size: 8.4pt; color: #4a5468; margin-top: 6px;
+           border-top: 1px solid var(--light); padding-top: 6px; }
+  .after b { color: var(--deep); }
+
+  .note { font-size: 7.9pt; color: var(--muted); border-top: 1px solid #e6e9f5;
+          margin-top: 8px; padding-top: 6px; }
+  .note b { color: #333c52; }
+  .foot { display: flex; justify-content: space-between; align-items: flex-end;
+          margin-top: 7px; border-top: 2px solid var(--peri); padding-top: 6px; }
+  .contact { font-size: 8.7pt; line-height: 1.55; }
+  .contact b { color: var(--deep); }
+  .tag { display: inline-block; font-size: 8pt; font-weight: 600; color: var(--deep);
+         background: var(--wash); border-radius: 3px; padding: 1.5px 7px; margin-left: 5px; }
+</style>
+</head>
+<body>
+
+<!-- ================= СТРАНИЦА 1 · РУССКИЙ ================= -->
+<div class="page">
+
+<div class="top">
+  <div class="logo">
+    <img src="avris-logo.svg" alt="">
+    <span class="wordmark">Avris AI</span>
+  </div>
+  <div class="org">Hyperion Labs · Душанбе<br>theavris.ai</div>
+</div>
+
+<h1>Врач говорит — история болезни пишется сама</h1>
+<p class="lead">
+  <b>Предложение для клиники.</b> Голосовая медицинская документация для стационара:
+  на русском — сегодня, на таджикском — собственная модель распознавания, обучена
+  и готовится к запуску. Работает рядом с вашей нынешней системой, не заменяя её.
+</p>
+
+<div class="to"><span>Для:</span><span class="line"></span><span>Дата:</span>
+  <span class="line" style="max-width:70px"></span></div>
+
+<div class="flow">
+  <span class="step">Поступление</span><span class="arrow">→</span>
+  <span class="step">Первичный осмотр</span><span class="arrow">→</span>
+  <span class="step">Ежедневные дневники</span><span class="arrow">→</span>
+  <span class="step">Обход</span><span class="arrow">→</span>
+  <span class="step">Анализы</span><span class="arrow">→</span>
+  <span class="step">Выписной эпикриз</span>
+</div>
+
+<h2>Как это выглядит на обходе</h2>
+<div class="demo">
+  <div class="said">
+    <span class="lbl">Врач говорит вслух</span>
+    <p class="quote">«Каримова, третья палата, вторые сутки после холецистэктомии.
+    Жалуется на боль в области шва. Температура 37,2, давление 130 на 80, пульс 78.
+    Швы чистые, признаков воспаления нет. Продолжаем цефтриаксон, перевязка завтра.»</p>
+  </div>
+  <div class="made">
+    <span class="lbl">Система пишет за него</span>
+    <p>Готовый дневник в формате 003/у: жалобы, объективный статус, оценка, план —
+    с ФИО, датой и номером карты. Температура, давление и пульс отдельно попадают
+    в лист наблюдения и на экран реанимации.<br>
+    <b>Врач читает, при необходимости правит и подписывает.</b></p>
+  </div>
+</div>
+
+<h2>Что это даёт отделению</h2>
+<div class="grid">
+  <div class="card">
+    <h3>Стационарный контур целиком</h3>
+    <p>Поступление, первичный осмотр, ежедневные дневники, эпикриз в один тап.
+       Формат 003/у, а не переведённый западный шаблон.</p>
+  </div>
+  <div class="card">
+    <h3>Ночной обход голосом</h3>
+    <p>Врач идёт по палатам и говорит подряд. Система сама определяет, к какому
+       пациенту относится каждая фраза, и раскладывает витальные по картам.</p>
+  </div>
+  <div class="card">
+    <h3>Экран реанимации</h3>
+    <p>Состояние тяжёлых пациентов на одном экране, с цветовыми порогами
+       и вызовом врача. Для ОРИТ и послеоперационных отделений.</p>
+  </div>
+  <div class="card">
+    <h3>Связь с лабораторией</h3>
+    <p>Направление превращается в QR-код. Результат возвращается в карту
+       к лечащему врачу, а не пациенту на руки. С пояснением к показателям.</p>
+  </div>
+</div>
+
+<div class="two">
+  <div>
+    <h2>Кому это подходит</h2>
+    <ul>
+      <li>Клиникам со стационаром: там, где ведут дневники и пишут эпикризы,
+          пользы больше всего</li>
+      <li>Отделениям реанимации и послеоперационным — экран тяжёлых пациентов
+          и голосовой обход</li>
+      <li>Клиникам с собственной лабораторией — петля «направление → результат»
+          замыкается без посредников</li>
+      <li>Там, где врачи ведут записи на таджикском: ни один международный сервис
+          его не поддерживает — мы обучили собственную модель</li>
+    </ul>
+  </div>
+  <div>
+    <h2>Данные пациентов</h2>
+    <ul>
+      <li>Записи хранятся в базе клиники, доступ — только у лечащего врача</li>
+      <li>Каждое действие с картой фиксируется в журнале аудита</li>
+      <li>Отчёты об ошибках уходят разработчику без единого медицинского поля —
+          проверено на перехвате трафика</li>
+      <li>Аудиозапись не сохраняется нигде: файл распознаётся и удаляется</li>
+      <li>На время пилота распознавание идёт через внешний сервис. После запуска
+          собственной модели речь не покидает наш контур</li>
+    </ul>
+  </div>
+</div>
+
+<div class="pilot">
+  <h2>Предложение: бесплатный пилот на один месяц, 10 врачей</h2>
+  <div class="two">
+    <div>
+      <ul>
+        <li><b>Один месяц, десять врачей</b> — состав и отделения выбираете вы</li>
+        <li>Полная стоимость для клиники: <b>0 сомони.</b> Ни оплаты,
+            ни обязательств продолжать</li>
+        <li>Запуск за один день: ноутбук или телефон, устанавливать ничего не нужно</li>
+      </ul>
+    </div>
+    <div>
+      <ul>
+        <li>Обучение врачей и сопровождение всё время пилота — с нашей стороны</li>
+        <li>Ваша нынешняя система документации остаётся, мы её не трогаем</li>
+        <li>По итогам — письменный отчёт: сколько записей, сколько правок,
+            что говорят врачи</li>
+      </ul>
+    </div>
+  </div>
+  <p class="after"><b>Что дальше.</b> Если по итогам месяца врачи захотят продолжить —
+    подписка от 39 долларов за врача в месяц: это до 100 приёмов, при большем
+    потоке тариф выше. В 2,5–5 раз дешевле западных аналогов.
+    Если не захотят — мы расходимся, и вы ничего не должны.</p>
+</div>
+
+<p class="note">
+  <b>О нас честно.</b> Avris создан в Душанбе и работает в продакшене, но клинического
+  пилота ещё не проходил — ваша клиника может стать первой. Продукт построил
+  практикующий клинический ординатор, который сам ведёт документацию каждый день.
+  Шесть технических решений поданы на патент через НЦИС Таджикистана. Мы не обещаем
+  цифр экономии времени, которых пока не измеряли, — именно это и хотим измерить
+  вместе с вами.
+</p>
+
+<div class="foot">
+  <div class="contact">
+    <b>Шахзод Нарзуллоев</b> — основатель, клинический ординатор<span class="tag">Душанбе</span><br>
+    theavris.ai · демонстрация занимает 15 минут
+  </div>
+  <div class="org" style="text-align:right">Hyperion Labs<br>2026</div>
+</div>
+
+</div>
+
+<!-- ================= СТРАНИЦА 2 · ТОҶИКӢ ================= -->
+<div class="page">
+
+<div class="top">
+  <div class="logo">
+    <img src="avris-logo.svg" alt="">
+    <span class="wordmark">Avris AI</span>
+  </div>
+  <div class="org">Hyperion Labs · Душанбе<br>theavris.ai</div>
+</div>
+
+<h1>Табиб мегӯяд — таърихи беморӣ худ навишта мешавад</h1>
+<p class="lead">
+  <b>Пешниҳод барои клиника.</b> Ҳуҷҷатгузории овозии тиббӣ барои беморхона:
+  бо забони русӣ — имрӯз, бо забони тоҷикӣ — модели худамон омӯзонида шудааст
+  ва ба зудӣ ба кор медарояд. Дар паҳлӯи системаи ҳозираи шумо кор мекунад,
+  онро иваз намекунад.
+</p>
+
+<div class="to"><span>Барои:</span><span class="line"></span><span>Сана:</span>
+  <span class="line" style="max-width:70px"></span></div>
+
+<div class="flow">
+  <span class="step">Қабул</span><span class="arrow">→</span>
+  <span class="step">Муоинаи аввалия</span><span class="arrow">→</span>
+  <span class="step">Рӯзномаи ҳаррӯза</span><span class="arrow">→</span>
+  <span class="step">Гашти шабона</span><span class="arrow">→</span>
+  <span class="step">Таҳлилҳо</span><span class="arrow">→</span>
+  <span class="step">Эпикризи хуруҷ</span>
+</div>
+
+<h2>Дар гашт чӣ гуна ба назар мерасад</h2>
+<div class="demo">
+  <div class="said">
+    <span class="lbl">Табиб бо овоз мегӯяд</span>
+    <p class="quote">«Каримова, палатаи сеюм, рӯзи дуюм пас аз холетсистэктомия.
+    Аз дарди ҷои дӯхт шикоят мекунад. Ҳарорат 37,2, фишор 130 ба 80, набз 78.
+    Ҷои дӯхт тоза, аломати илтиҳоб нест. Сефтриаксонро давом медиҳем,
+    бандубаст пагоҳ.»</p>
+  </div>
+  <div class="made">
+    <span class="lbl">Система ба ҷои ӯ менависад</span>
+    <p>Рӯзномаи тайёр дар шакли 003/у: шикоятҳо, ҳолати объективӣ, баҳо, нақша —
+    бо ному насаб, сана ва рақами корт. Ҳарорат, фишор ва набз алоҳида ба варақаи
+    мушоҳида ва ба экрани реанимация мераванд.<br>
+    <b>Табиб мехонад, зарур бошад ислоҳ мекунад ва имзо мегузорад.</b></p>
+  </div>
+</div>
+
+<h2>Ин ба шӯъба чӣ медиҳад</h2>
+<div class="grid">
+  <div class="card">
+    <h3>Тамоми давраи бистарӣ</h3>
+    <p>Қабул, муоинаи аввалия, рӯзномаҳои ҳаррӯза, эпикриз бо як тугма.
+       Дар шакли 003/у, на тарҷумаи қолаби ғарбӣ.</p>
+  </div>
+  <div class="card">
+    <h3>Гашти шабона бо овоз</h3>
+    <p>Табиб аз палата ба палата мегузарад ва пай дар пай мегӯяд. Система худаш
+       муайян мекунад, ки ҳар ҷумла ба кадом бемор тааллуқ дорад.</p>
+  </div>
+  <div class="card">
+    <h3>Экрани реанимация</h3>
+    <p>Ҳолати беморони вазнин дар як экран, бо ранги ҳушдор ва тугмаи даъвати
+       табиб. Барои ОРИТ ва шӯъбаҳои пас аз ҷарроҳӣ.</p>
+  </div>
+  <div class="card">
+    <h3>Пайванд бо лаборатория</h3>
+    <p>Равонкунӣ ба QR-код табдил меёбад. Натиҷа ба корти бемор, ба назди табиби
+       муолиҷакунанда бармегардад — на ба дасти бемор.</p>
+  </div>
+</div>
+
+<div class="two">
+  <div>
+    <h2>Ба кӣ мувофиқ аст</h2>
+    <ul>
+      <li>Ба клиникаҳои дорои шӯъбаи бистарӣ: он ҷо ки рӯзнома мебаранд
+          ва эпикриз менависанд, фоидааш бештар аст</li>
+      <li>Ба шӯъбаҳои реанимация ва пас аз ҷарроҳӣ — экрани беморони вазнин
+          ва гашти овозӣ</li>
+      <li>Ба клиникаҳои дорои лабораторияи худӣ — давраи «равонкунӣ → натиҷа»
+          бе миёнарав пӯшида мешавад</li>
+      <li>Он ҷо ки табибон сабтҳоро бо тоҷикӣ мебаранд: ягон хидмати байналмилалӣ
+          тоҷикиро намефаҳмад — мо модели худамонро омӯзондем</li>
+    </ul>
+  </div>
+  <div>
+    <h2>Маълумоти беморон</h2>
+    <ul>
+      <li>Сабтҳо дар базаи клиника нигоҳ дошта мешаванд, дастрасӣ — танҳо барои
+          табиби муолиҷакунанда</li>
+      <li>Ҳар амал бо корти бемор дар журнали аудит сабт мешавад</li>
+      <li>Гузоришҳо дар бораи хатоҳо ба таҳиягар бе ягон майдони тиббӣ мераванд</li>
+      <li>Сабти овозӣ дар ҳеҷ ҷо нигоҳ дошта намешавад: файл шинохта шуда,
+          нест карда мешавад</li>
+      <li>Дар давоми озмоиш шинохти нутқ тавассути хидмати берунӣ мегузарад.
+          Пас аз модели худамон нутқ аз контури мо берун намебарояд</li>
+    </ul>
+  </div>
+</div>
+
+<div class="pilot">
+  <h2>Пешниҳод: озмоиши ройгон ба муддати як моҳ, 10 табиб</h2>
+  <div class="two">
+    <div>
+      <ul>
+        <li><b>Як моҳ, даҳ табиб</b> — ҳайат ва шӯъбаҳоро шумо интихоб мекунед</li>
+        <li>Арзиши пурра барои клиника: <b>0 сомонӣ.</b> На пардохт,
+            на ӯҳдадории давом додан</li>
+        <li>Оғоз дар як рӯз: ноутбук ё телефон, чизе насб кардан лозим нест</li>
+      </ul>
+    </div>
+    <div>
+      <ul>
+        <li>Омӯзиши табибон ва дастгирӣ дар тамоми давраи озмоиш — аз ҷониби мо</li>
+        <li>Системаи ҳозираи ҳуҷҷатгузории шумо боқӣ мемонад</li>
+        <li>Дар охир — гузориши хаттӣ: чанд сабт, чанд ислоҳ, табибон чӣ мегӯянд</li>
+      </ul>
+    </div>
+  </div>
+  <p class="after"><b>Баъд аз он чӣ мешавад.</b> Агар пас аз як моҳ табибон давом
+    доданӣ шаванд — обуна аз 39 доллар барои як табиб дар як моҳ: ин то 100 қабул
+    аст, ҳангоми ҷараёни зиёдтар тарифи болотар. 2,5–5 маротиба арзонтар аз
+    аналогҳои ғарбӣ. Агар нахоҳанд — мо ҷудо мешавем ва шумо ба мо чизе қарздор нестед.</p>
+</div>
+
+<p class="note">
+  <b>Дар бораи мо ростқавлона.</b> Avris дар Душанбе сохта шудааст ва дар кор аст,
+  вале то ҳол дар ягон клиника озмоиш нагузаштааст — клиникаи шумо метавонад аввалин
+  бошад. Системаро табиби ординатори клиникӣ сохтааст, ки худаш ҳар рӯз ҳуҷҷат
+  мебарад. Шаш ҳалли техникӣ тавассути НЦИС-и Тоҷикистон ба патент пешниҳод шудаанд.
+  Мо рақамҳои сарфаи вақтро ваъда намедиҳем, зеро онҳоро ҳанӯз чен накардаем.
+</p>
+
+<div class="foot">
+  <div class="contact">
+    <b>Шаҳзод Нарзуллоев</b> — асосгузор, ординатори клиникӣ<span class="tag">Душанбе</span><br>
+    theavris.ai · намоиш 15 дақиқа вақт мегирад
+  </div>
+  <div class="org" style="text-align:right">Hyperion Labs<br>2026</div>
+</div>
+
+</div>
+
+</body>
+</html>
