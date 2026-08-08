@@ -7,47 +7,56 @@
   /* Печатный документ: фиксируем светлую схему, иначе системная тёмная тема
      браузера превращает его в нечитаемый чёрный лист. */
   :root { color-scheme: light; }
-  @page { size: A4; margin: 14mm 14mm 12mm; }
+  @page { size: A4; margin: 9mm 11mm 7mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { background: #ffffff; }
   body {
     font-family: "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
     background: #ffffff;
-    color: #1a202c; font-size: 10.2pt; line-height: 1.5;
-    max-width: 190mm; margin: 0 auto; padding: 10mm 8mm;
+    color: #1a202c; font-size: 9.5pt; line-height: 1.34;
+    max-width: 190mm; margin: 0 auto; padding: 0 2mm;
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }
   .top { display: flex; justify-content: space-between; align-items: baseline;
-         border-bottom: 2px solid #4AA391; padding-bottom: 7px; margin-bottom: 16px; }
-  .brand { font-size: 19pt; font-weight: 800; color: #1A4A3E; letter-spacing: -0.4px; }
+         border-bottom: 2px solid #4AA391; padding-bottom: 4px; margin-bottom: 7px; }
+  .brand { font-size: 17pt; font-weight: 800; color: #1A4A3E; letter-spacing: -0.4px; }
   .brand span { color: #4AA391; }
   .org { font-size: 8.6pt; color: #6b7280; text-align: right; line-height: 1.45; }
-  h1 { font-size: 15pt; font-weight: 700; color: #1A4A3E; margin-bottom: 5px; letter-spacing: -0.2px; }
-  .lead { font-size: 10.4pt; color: #374151; margin-bottom: 15px; }
-  h2 { font-size: 10.4pt; font-weight: 700; color: #1A4A3E; margin: 15px 0 7px;
+  h1 { font-size: 13.5pt; font-weight: 700; color: #1A4A3E; margin-bottom: 4px; letter-spacing: -0.2px; }
+  .lead { font-size: 9.6pt; color: #374151; margin-bottom: 9px; }
+  h2 { font-size: 9.8pt; font-weight: 700; color: #1A4A3E; margin: 9px 0 4px;
        text-transform: uppercase; letter-spacing: 0.4px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
   .card { border: 1px solid #dfe5e3; border-left: 3px solid #4AA391;
-          border-radius: 4px; padding: 9px 11px; }
-  .card h3 { font-size: 10pt; font-weight: 700; color: #1A4A3E; margin-bottom: 3px; }
-  .card p { font-size: 9.3pt; color: #4a5568; }
+          border-radius: 4px; padding: 6px 8px; }
+  .card h3 { font-size: 9.4pt; font-weight: 700; color: #1A4A3E; margin-bottom: 3px; }
+  .card p { font-size: 8.7pt; color: #4a5568; }
   .flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-          background: #f4f8f7; border-radius: 4px; padding: 10px 12px; margin-bottom: 4px; }
-  .step { font-size: 9.2pt; font-weight: 600; color: #1A4A3E; }
+          background: #f4f8f7; border-radius: 4px; padding: 5px 9px; margin-bottom: 3px; }
+  .step { font-size: 8.7pt; font-weight: 600; color: #1A4A3E; }
   .arrow { color: #4AA391; font-weight: 700; }
   ul { list-style: none; }
-  li { font-size: 9.6pt; color: #374151; padding-left: 15px; position: relative; margin-bottom: 3px; }
+  li { font-size: 8.9pt; color: #374151; padding-left: 13px; position: relative; margin-bottom: 1px; }
   li::before { content: "—"; position: absolute; left: 0; color: #4AA391; font-weight: 700; }
+  .demo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 3px; }
+  .demo > div { border: 1px solid #dfe5e3; border-radius: 4px; padding: 6px 8px; }
+  .demo .said { background: #fafbfb; }
+  .demo .made { background: #f4f8f7; border-color: #bfdcd5; }
+  .lbl { display: block; font-size: 8.2pt; font-weight: 700; text-transform: uppercase;
+         letter-spacing: 0.5px; color: #4AA391; margin-bottom: 4px; }
+  .demo p { font-size: 8.6pt; color: #374151; }
+  .demo .quote { font-style: italic; color: #1a202c; }
+  .demo b { color: #1A4A3E; }
   .pilot { border: 1px solid #4AA391; background: #f4f8f7; border-radius: 5px;
-           padding: 11px 13px; margin-top: 6px; }
+           padding: 7px 10px; margin-top: 4px; }
   .pilot h2 { margin-top: 0; }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .note { font-size: 8.8pt; color: #6b7280; border-top: 1px solid #e5e7eb;
-          margin-top: 14px; padding-top: 9px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+  .note { font-size: 8.2pt; color: #6b7280; border-top: 1px solid #e5e7eb;
+          margin-top: 8px; padding-top: 6px; }
   .foot { display: flex; justify-content: space-between; align-items: flex-end;
-          margin-top: 12px; border-top: 2px solid #4AA391; padding-top: 8px; }
+          margin-top: 7px; border-top: 2px solid #4AA391; padding-top: 6px; }
   .foot b { color: #1A4A3E; }
-  .contact { font-size: 9.4pt; line-height: 1.6; }
+  .contact { font-size: 8.9pt; line-height: 1.6; }
   .tag { display: inline-block; font-size: 8.4pt; font-weight: 600; color: #1A4A3E;
          background: #e8f2ef; border-radius: 3px; padding: 1.5px 7px; margin-left: 5px; }
 </style>
@@ -61,9 +70,10 @@
 
 <h1>Врач говорит — история болезни пишется сама</h1>
 <p class="lead">
-  Голосовая медицинская документация для стационара. На русском — сегодня,
+  <b>Коммерческое предложение</b> для Международной клиники ибн Сино.
+  Голосовая медицинская документация для стационара: на русском — сегодня,
   на таджикском — собственная модель распознавания, обучена и готовится к запуску.
-  Работает без замены вашей текущей системы.
+  Работает рядом с вашей нынешней системой, не заменяя её.
 </p>
 
 <div class="flow">
@@ -73,6 +83,23 @@
   <span class="step">Обход</span><span class="arrow">→</span>
   <span class="step">Анализы</span><span class="arrow">→</span>
   <span class="step">Выписной эпикриз</span>
+</div>
+
+<h2>Как это выглядит на обходе</h2>
+<div class="demo">
+  <div class="said">
+    <span class="lbl">Врач говорит вслух</span>
+    <p class="quote">«Каримова, третья палата, вторые сутки после холецистэктомии.
+    Жалуется на боль в области шва. Температура 37,2, давление 130 на 80, пульс 78.
+    Швы чистые, признаков воспаления нет. Продолжаем цефтриаксон, перевязка завтра.»</p>
+  </div>
+  <div class="made">
+    <span class="lbl">Система пишет за него</span>
+    <p>Готовый дневник в формате 003/у: жалобы, объективный статус, оценка, план —
+    с ФИО, датой и номером карты. Температура, давление и пульс отдельно попадают
+    в лист наблюдения и на экран реанимации.<br>
+    <b>Врач читает, при необходимости правит и подписывает.</b></p>
+  </div>
 </div>
 
 <h2>Что это даёт отделению</h2>
@@ -128,23 +155,31 @@
 </div>
 
 <div class="pilot">
-  <h2>Что предлагаем</h2>
+  <h2>Предложение: бесплатный пилот на один месяц, 10 врачей</h2>
   <div class="two">
     <div>
       <ul>
-        <li><b>Бесплатный пилот</b> на 4 недели — вы ничего не платите и ничем не рискуете</li>
-        <li>Одно отделение, 3–5 врачей по вашему выбору</li>
-        <li>Запуск за один день: ноутбук или телефон, ничего устанавливать не нужно</li>
+        <li><b>Один месяц, десять врачей</b> — состав и отделения выбираете вы</li>
+        <li>Полная стоимость для клиники: <b>0 сомони.</b> Ни оплаты, ни обязательств
+            продолжать</li>
+        <li>Запуск за один день: ноутбук или телефон, устанавливать ничего не нужно</li>
       </ul>
     </div>
     <div>
       <ul>
-        <li>Первый приём проводим вместе, дальше врач работает сам</li>
-        <li>Ваша нынешняя система документации остаётся — мы её не трогаем</li>
-        <li>По итогам — отчёт: сколько записей, сколько правок, что просят врачи</li>
+        <li>Обучение врачей и сопровождение всё время пилота — с нашей стороны</li>
+        <li>Ваша нынешняя система документации остаётся, мы её не трогаем</li>
+        <li>По итогам — письменный отчёт: сколько записей, сколько правок,
+            что говорят врачи</li>
       </ul>
     </div>
   </div>
+  <p style="font-size:8.6pt;color:#4a5568;margin-top:6px;border-top:1px solid #cfe0dc;padding-top:7px">
+    <b>Что дальше.</b> Если по итогам месяца врачи захотят продолжить — подписка
+    от 39 долларов за врача в месяц: это до 100 приёмов, при большем потоке
+    тариф выше. В 2,5–5 раз дешевле западных аналогов.
+    Если не захотят — мы расходимся, и вы ничего не должны.
+  </p>
 </div>
 
 <p class="note">
