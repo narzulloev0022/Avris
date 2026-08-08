@@ -24,6 +24,6 @@ playwright-report/
 .pytest_cache/
 .env
 *.env
-AvrisAI-Pitch-Deck.pptx
+AvrisAI-Pitch-Deck-АРХИВ-2026-06.pptx
 security_report_bandit.txt
 security_audit_20260617.md
