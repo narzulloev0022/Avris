@@ -27,7 +27,7 @@
 
 ### Запланировано / Интегрируется
 - **STT (распознавание речи):** OpenAI Whisper (фиксировано)
-- **LLM (генерация SOAP и анализ):** Claude Sonnet от Anthropic (фиксировано)
+- **LLM (генерация SOAP и анализ):** LLM (фиксированный поставщик) (фиксировано)
 - **Аутентификация:** TBD
 - **База данных:** TBD
 - **Бэкенд:** TBD
@@ -73,12 +73,12 @@ index.html (~1300 строк)
 - Waveform-анимация, 3rem timer, REC-кнопка
 - STT lang switcher (RU/TJ/EN, независим от UI-языка)
 - Transcript с `Evidence Link`-фразами (клик → highlight соответствующей SOAP-карточки)
-- 4 SOAP-textarea (S/O/A/P) c AI-бейджем «Claude Sonnet»
+- 4 SOAP-textarea (S/O/A/P) c AI-бейджем «LLM»
 
 **Вкладка 2: Анализы**
 - Карточка ОАК с пилюлей «Получено»
 - Таблица показателей (Гемоглобин/Лейкоциты/Тромбоциты/СОЭ) с цветными флагами
-- Lab Connect AI-комментарий (Claude Sonnet)
+- Lab Connect AI-комментарий
 
 **Вкладка 3: История**
 - Заглушка (пациент-специфическая история)
@@ -242,13 +242,13 @@ Clinical (4) / Biochem (8) / Vitamins (4) / Infectious (7) / Hormones (6) / Inst
 | Функция | Текущее состояние | Нужно |
 |---------|-----------------|-------|
 | Голосовая запись | Симуляция typewriter (TR_LINES) | OpenAI Whisper API |
-| SOAP из транскрипта | Захардкоженный Evidence Link demo | Claude Sonnet (generate SOAP) |
+| SOAP из транскрипта | Захардкоженный Evidence Link demo | LLM (generate SOAP) |
 | Аутентификация | Любые данные принимаются | Реальный бэкенд |
 | Персистентность данных | In-memory, сброс при reload | localStorage → БД |
 | Реальные пациенты | 6 захардкоженных | CRUD API |
 | Realtime ОРИТ | Статичные цифры | WebSocket / polling |
 | Lab Connect QR | SVG-генерация фейкового QR | Реальный QR с уникальным token + портал лаборатории |
-| AI-комментарий к анализам | Захардкоженный текст | Claude Sonnet через API |
+| AI-комментарий к анализам | Захардкоженный текст | LLM через API |
 
 ---
 
@@ -256,7 +256,7 @@ Clinical (4) / Biochem (8) / Vitamins (4) / Infectious (7) / Hormones (6) / Inst
 
 - Всегда общаться на **русском языке**
 - При добавлении кода — сохранять стиль (CSS-переменные, минифицированный JS не обязателен, но структуру `var $`/`esc`/IIFE соблюдать)
-- STT = OpenAI Whisper, LLM = Claude Sonnet — фиксированный выбор стека
+- STT = OpenAI Whisper, LLM = LLM — фиксированный выбор стека
 - Никаких эмодзи в продакшен-UI — только inline SVG (есть SVG_WARN, SVG_BOLT, SVG_CHECK, SVG_ALERT константы в JS)
 - Любые новые data-driven строки — через TR-ключи (для RU/TJ/EN)
 - Любые новые табы/pills — с `role="tab"` + `aria-selected` обработчиком в JS

@@ -129,7 +129,7 @@ def _build_history(db: Session, p: Patient,
                    max_consults: int = MAX_CONSULTS,
                    max_rounds: int = MAX_ROUNDS,
                    max_labs: int = MAX_LABS) -> tuple:
-    """Собрать текст истории болезни для Claude + счётчики записей.
+    """Собрать текст истории болезни для LLM + счётчики записей.
 
     Лимиты параметризованы: эпикриз берёт полные хвосты, pre-visit сводка
     (patients.py) — короткие.
@@ -290,7 +290,7 @@ async def draft_epicrisis(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Черновик от Claude. НЕ сохраняется — врач правит и жмёт «Сохранить»."""
+    """Черновик от LLM. НЕ сохраняется — врач правит и жмёт «Сохранить»."""
     _check_kind(payload.kind)
     p = _owned_patient(db, payload.patient_id, current_user)
     history, counts = _build_history(db, p)

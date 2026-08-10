@@ -63,7 +63,7 @@ def create_consultation(
     c = Consultation(doctor_id=current_user.id, **data)
     db.add(c)
     # Bump accuracy counters only when the frontend explicitly tagged this save.
-    # None means the SOAP was hand-typed without Claude — irrelevant to accuracy.
+    # None means the SOAP was hand-typed without LLM — irrelevant to accuracy.
     if was_edited is True:
         current_user.soap_edited_count = (current_user.soap_edited_count or 0) + 1
     elif was_edited is False:
@@ -73,7 +73,7 @@ def create_consultation(
     audit(db, action="create", entity="consultation", user_id=current_user.id,
           entity_id=c.id, meta={"patient_id": c.patient_id, "language": c.language})
     # Patient app: pre-generate the patient-readable summary in the background.
-    # Best-effort by design — a Claude failure never breaks the doctor's save.
+    # Best-effort by design — a LLM failure never breaks the doctor's save.
     from patient_visits import generate_visit_summary
     background_tasks.add_task(generate_visit_summary, c.id)
     return c

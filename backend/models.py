@@ -40,7 +40,7 @@ class User(Base):
     is_approved = Column(Boolean, nullable=False, default=False)
     rejection_reason = Column(String, nullable=True)
     # SOAP accuracy stats — incremented when a consultation is saved.
-    # accurate = doctor saved Claude's SOAP without edits (high alignment),
+    # accurate = doctor saved LLM's SOAP without edits (high alignment),
     # edited  = doctor changed at least one S/O/A/P field before saving.
     # Dashboard shows accurate / (accurate + edited) * 100 as "AI accuracy".
     soap_accurate_count = Column(Integer, nullable=False, default=0)
@@ -486,7 +486,7 @@ class VisitSummary(Base):
     patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
     summary = Column(Text, nullable=False)
     # Human-readable rendering of the treatment plan (SOAP "P"), produced by the
-    # SAME Claude pass as the summary — never raw SOAP. NULL = no prescriptions
+    # SAME LLM pass as the summary — never raw SOAP. NULL = no prescriptions
     # in this visit. Distinct from PatientAccount.medications ("known meds" the
     # patient self-reported at onboarding), which is never mixed in here.
     prescriptions = Column(Text, nullable=True)

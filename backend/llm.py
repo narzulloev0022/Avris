@@ -16,7 +16,7 @@ from rate_limit import limiter
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-# Reference set for validating Claude's ICD-10 suggestions (see _validate_icd10).
+# Reference set for validating LLM's ICD-10 suggestions (see _validate_icd10).
 _VALID_ICD10 = {c for c, _ru, _en in ICD10_CODES}
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
@@ -37,12 +37,12 @@ class SoapRequest(BaseModel):
 
 class DifferentialDiagnosis(BaseModel):
     name: str
-    probability: int  # 0-100, Claude's qualitative confidence — not a calibrated stat
+    probability: int  # 0-100, LLM's qualitative confidence — not a calibrated stat
     icd10: Optional[str] = None
 
 
 class AiRecommendations(BaseModel):
-    """Claude's clinical thinking layer on top of the SOAP — what the doctor
+    """LLM's clinical thinking layer on top of the SOAP — what the doctor
     might be missing. Every field is suggestion-only; the frontend renders
     them as click-to-append snippets so the doctor stays in control."""
     additional_tests: list[str] = []
@@ -67,7 +67,7 @@ class SoapResponse(BaseModel):
     patient_allergies: Optional[list[str]] = None
     department: Optional[str] = None  # therapy|cardiology|surgery|neurology|pulmonology|icu|post_icu|other
     severity: Optional[str] = None    # stable|watch|serious|critical
-    avris_score: Optional[int] = None  # 0-100, derived from Claude's clinical assessment
+    avris_score: Optional[int] = None  # 0-100, derived from LLM's clinical assessment
     ai_recommendations: Optional[AiRecommendations] = None
 
 
@@ -143,7 +143,7 @@ async def _claude_call(system_prompt: str, user_msg: str, max_tokens: int = 1024
 
 async def _claude_vision_call(system_prompt: str, user_msg: str, image_b64: str,
                               media_type: str, max_tokens: int = 800) -> str:
-    """Тот же вызов Claude, но с картинкой в сообщении.
+    """Тот же вызов LLM, но с картинкой в сообщении.
 
     Отдельная функция, а не флаг в ``_claude_call``: у зрения своя цена и свои
     ограничения на размер, и смешивать их с текстовыми вызовами — способ
@@ -187,7 +187,7 @@ async def _claude_vision_call(system_prompt: str, user_msg: str, image_b64: str,
 
 
 def _validate_icd10(raw) -> Optional[str]:
-    """Claude occasionally invents ICD-10 codes. Keep a code only when it exists
+    """LLM occasionally invents ICD-10 codes. Keep a code only when it exists
     in the curated reference (icd10_data). A subcode falls back to its known
     parent (I11.9 -> I11) so the UI stays consistent with /api/icd10 search;
     a fully unknown code is dropped — the diagnosis name itself stays."""
@@ -297,7 +297,7 @@ async def generate_soap(request: Request, req: SoapRequest, current_user: User =
             score = max(0, min(100, score))  # clamp to 0..100
     except (TypeError, ValueError):
         score = None
-    # ai_recommendations is best-effort — bad shape from Claude shouldn't fail
+    # ai_recommendations is best-effort — bad shape from LLM shouldn't fail
     # the whole SOAP response; we just drop the recs and return SOAP without.
     ai_rec = None
     raw_rec = parsed.get("ai_recommendations")

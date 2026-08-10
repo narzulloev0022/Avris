@@ -11,7 +11,7 @@ Avris AI lets a doctor narrate an exam, a night-round, or a lab referral — and
 
 | Domain | What it does |
 |---|---|
-| **Voice SOAP** | One-tap recording → Whisper transcript → Claude Sonnet generates S/O/A/P with Evidence Link highlighting |
+| **Voice SOAP** | One-tap recording → Whisper transcript → LLM generates S/O/A/P with Evidence Link highlighting |
 | **Voice Night Round** | Doctor narrates "Палата A1, Иванова, пульс 78…", AI auto-extracts ward, patient, vitals, status, notes — ward gets ✓ Осмотрен |
 | **Lab Connect** | QR-based referral with 38 tests / 6 groups; lab-tech portal at `/lab.html` enters results without auth; AI commentary on receipt |
 | **ICU Monitor** | 5 critical-care patients with live vitals, alert pills, "Вызвать врача" CTA; collapsible Post-ICU on mobile |
@@ -30,7 +30,7 @@ Avris AI lets a doctor narrate an exam, a night-round, or a lab referral — and
 |---|---|
 | **Frontend** | Single-file SPA (HTML + CSS + vanilla JS, IIFE strict mode), Inter + JetBrains Mono via Google Fonts, ~30 inline SVG icons |
 | **Backend** | FastAPI · SQLAlchemy · Pydantic v2 · python-jose (JWT) · passlib + bcrypt · python-multipart |
-| **AI** | OpenAI Whisper (STT) · Anthropic Claude Sonnet (SOAP / lab commentary) |
+| **AI** | OpenAI Whisper (STT) · LLM (SOAP / lab commentary) |
 | **Email** | Resend (verification codes, password reset) |
 | **PDF** | reportlab (pure Python, auto-discovers system Cyrillic TTF) |
 | **Database** | SQLite (dev) → PostgreSQL (prod) |
@@ -94,7 +94,7 @@ Avris/
     ├── lab_orders.py           # Order CRUD + public lab-tech endpoints + PDF
     ├── night_rounds.py         # Voice round persistence
     ├── stt.py                  # Whisper proxy
-    ├── llm.py                  # Claude proxy (SOAP + lab commentary)
+    ├── llm.py                  # LLM proxy (SOAP + lab commentary)
     ├── pdf_export.py           # reportlab renderers
     ├── email_service.py        # Resend integration
     ├── requirements.txt
@@ -114,7 +114,7 @@ Avris/
 | ✅ Done | PDF export (consultations + lab orders) |
 | ✅ Done | OAuth (Google · Mail.ru) |
 | 🔜 Next | Real Whisper API integration (currently 503 without key) |
-| 🔜 Next | Real Claude SOAP integration (currently 503 without key) |
+| 🔜 Next | Real LLM SOAP integration (currently 503 without key) |
 | 🔜 Next | Apple Sign In (waiting on Apple Developer enrollment) |
 | 🔜 Next | Migrate to PostgreSQL · Alembic migrations |
 | 🔜 Next | S3 / object storage for avatars (currently base64 in DB) |
