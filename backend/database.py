@@ -83,6 +83,8 @@ def init_db():
                 conn.execute(text("ALTER TABLE users ADD COLUMN soap_edited_count INTEGER NOT NULL DEFAULT 0"))
             if "stt_consent" not in u_existing:
                 conn.execute(text("ALTER TABLE users ADD COLUMN stt_consent BOOLEAN NOT NULL DEFAULT FALSE"))
+            if "facility_type" not in u_existing:
+                conn.execute(text("ALTER TABLE users ADD COLUMN facility_type VARCHAR(16)"))
     # Заметка выросла с 300 до 1000 символов (интервью собирает структуру из
     # нескольких строк). В SQLite длина VARCHAR не проверяется, в Postgres —
     # проверяется, поэтому колонку надо расширить явно.

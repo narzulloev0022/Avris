@@ -188,9 +188,24 @@ body[data-theme="light"] .oauth-btn:hover{background:#E8E7E2}
 .profile-setup-hdr{text-align:center;margin-bottom:24px}
 .profile-setup-hdr h2{font-size:1.4rem;font-weight:800;margin:14px 0 4px}
 .profile-setup-sub{color:var(--text-muted);font-size:13px}
-.prof-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;margin-bottom:18px}
+.prof-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;margin-bottom:0}
 .prof-grid .full{grid-column:1/-1}
 .prof-grid .login-field{margin-bottom:0}
+/* Профиль разбит на смысловые группы: двенадцать полей подряд читаются как
+   анкета, три коротких блока — как форма, которую можно заполнить. */
+.fgroup{border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px 18px;margin-bottom:14px;background:var(--bg-card)}
+.fgroup-t{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.fgroup-t::after{content:"";flex:1;height:1px;background:var(--border)}
+.fhint{font-size:11.5px;color:var(--text-muted);margin-top:6px;line-height:1.4}
+.login-field input:hover:not(:disabled),.prof-grid select:hover{border-color:var(--border-hover)}
+.login-field input:disabled{opacity:.55;cursor:not-allowed}
+/* Тип учреждения — выбор из двух, поэтому переключатель, а не выпадающий список:
+   оба варианта видны сразу и попадают в один тап. */
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg-b{padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-input);background:var(--bg-input);color:var(--text-secondary);font-size:13.5px;font-weight:600;font-family:var(--font-ui);cursor:pointer;transition:var(--transition);text-align:center}
+.seg-b:hover{border-color:var(--border-hover);color:var(--text-primary)}
+.seg-b.on{background:var(--accent-glow);border-color:var(--accent);color:var(--accent)}
+@media(max-width:560px){.seg{grid-template-columns:1fr}.fgroup{padding:14px}}
 .prof-grid select{width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-input);padding:13px 16px;color:var(--text-primary);font-size:14px;font-family:var(--font-ui);transition:var(--transition)}
 .prof-grid select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 12px var(--accent-glow)}
 @media(max-width:600px){.profile-setup-card{padding:24px 18px}.prof-grid{grid-template-columns:1fr}}

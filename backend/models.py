@@ -20,6 +20,10 @@ class User(Base):
     specialty = Column(String, nullable=True)
     hospital_name = Column(String, nullable=True)
     hospital_address = Column(String, nullable=True)
+    # Государственная или частная. Влияет не на права, а на разговор: в частной
+    # клинике решение о покупке принимает владелец, в государственной — бюджет
+    # и минздрав, и путь внедрения там совсем другой.
+    facility_type = Column(String(16), nullable=True)  # state | private
     department = Column(String, nullable=True)
     position = Column(String, nullable=True)
     experience_years = Column(Integer, nullable=True)

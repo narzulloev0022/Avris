@@ -90,17 +90,20 @@
 <span class="avatar-edit-hint" data-i18n="prof_change_photo">Изменить фото</span>
 </div>
 <div class="prof-grid">
-<div class="login-field"><label data-i18n="prof_last_name">Фамилия *</label><input id="pfLastName" type="text" required autocomplete="family-name"></div>
-<div class="login-field"><label data-i18n="prof_first_name">Имя *</label><input id="pfFirstName" type="text" required autocomplete="given-name"></div>
-<div class="login-field"><label data-i18n="prof_patronymic">Отчество</label><input id="pfPatronymic" type="text" autocomplete="additional-name"></div>
+<div class="login-field full"><label data-i18n="prof_fio">ФИО *</label><input id="pfFullName" type="text" required autocomplete="name" data-phk="ph_fio" placeholder="Фамилия Имя Отчество"><div class="fhint" data-i18n="prof_fio_hint">Через пробел, в порядке: фамилия, имя, отчество</div></div>
 <div class="login-field"><label data-i18n="prof_dob">Дата рождения</label><input id="pfDob" type="date"></div>
 <div class="login-field"><label data-i18n="prof_phone">Телефон</label><input id="pfPhone" type="tel" placeholder="+992 ...." autocomplete="tel"></div>
 <div class="login-field"><label data-i18n="prof_specialty">Специальность *</label><select id="pfSpecialty" required></select></div>
-<div class="login-field full"><label data-i18n="prof_hospital">Больница</label><input id="pfHospital" type="text" autocomplete="organization"></div>
-<div class="login-field"><label data-i18n="prof_department">Отделение</label><input id="pfDepartment" type="text"></div>
 <div class="login-field"><label data-i18n="prof_position">Должность</label><select id="pfPosition"></select></div>
+<div class="login-field full"><label data-i18n="prof_facility">Медицинское учреждение</label><input id="pfHospital" type="text" autocomplete="organization" data-phk="ph_facility" placeholder="Название клиники или больницы"></div>
+<div class="login-field full"><label data-i18n="prof_facility_type">Тип учреждения</label>
+<div class="seg" id="pfFacilityType">
+<button type="button" class="seg-b" data-v="state" data-i18n="fac_state">Государственное</button>
+<button type="button" class="seg-b" data-v="private" data-i18n="fac_private">Частное</button>
+</div></div>
+<div class="login-field"><label data-i18n="prof_department">Отделение</label><input id="pfDepartment" type="text" data-phk="ph_dept" placeholder="Например: кардиология"></div>
 <div class="login-field"><label data-i18n="prof_experience">Стаж (лет)</label><input id="pfExperience" type="number" min="0" max="80"></div>
-<div class="login-field"><label data-i18n="prof_license">Номер лицензии</label><input id="pfLicense" type="text"></div>
+<div class="login-field full"><label data-i18n="prof_license">Номер лицензии</label><input id="pfLicense" type="text"></div>
 </div>
 <div class="login-error" id="profileError" role="alert"></div>
 <button class="login-submit" type="submit" data-i18n="prof_save_btn">Сохранить профиль</button>
@@ -367,20 +370,32 @@
 <span class="badge safe prof-active-badge" style="margin-left:auto" data-i18n="st_active" title="Активен">Активен</span>
 </div>
 <form id="setProfileForm">
-<div class="prof-grid" style="margin-bottom:18px">
-<div class="login-field"><label data-i18n="prof_last_name">Фамилия *</label><input id="spLastName" type="text" required></div>
-<div class="login-field"><label data-i18n="prof_first_name">Имя *</label><input id="spFirstName" type="text" required></div>
-<div class="login-field"><label data-i18n="prof_patronymic">Отчество</label><input id="spPatronymic" type="text"></div>
+<div class="fgroup"><div class="fgroup-t" data-i18n="prof_g_person">Личные данные</div>
+<div class="prof-grid">
+<div class="login-field full"><label data-i18n="prof_fio">ФИО *</label><input id="spFullName" type="text" required autocomplete="name" data-phk="ph_fio" placeholder="Фамилия Имя Отчество"><div class="fhint" data-i18n="prof_fio_hint">Через пробел, в порядке: фамилия, имя, отчество</div></div>
 <div class="login-field"><label data-i18n="prof_dob">Дата рождения</label><input id="spDob" type="date"></div>
-<div class="login-field"><label data-i18n="prof_phone">Телефон</label><input id="spPhone" type="tel"></div>
+<div class="login-field"><label data-i18n="prof_phone">Телефон</label><input id="spPhone" type="tel" placeholder="+992"></div>
+<div class="login-field full"><label data-i18n="set_email_l">Email</label><input id="spEmail" type="email" disabled></div>
+</div></div>
+
+<div class="fgroup"><div class="fgroup-t" data-i18n="prof_g_prof">Профессия</div>
+<div class="prof-grid">
 <div class="login-field"><label data-i18n="prof_specialty">Специальность *</label><select id="spSpecialty" required></select></div>
-<div class="login-field full"><label data-i18n="prof_hospital">Больница</label><input id="spHospital" type="text"></div>
-<div class="login-field"><label data-i18n="prof_department">Отделение</label><input id="spDepartment" type="text"></div>
 <div class="login-field"><label data-i18n="prof_position">Должность</label><select id="spPosition"></select></div>
-<div class="login-field"><label data-i18n="prof_experience">Стаж (лет)</label><input id="spExperience" type="number" min="0" max="80"></div>
+<div class="login-field"><label data-i18n="prof_experience">Стаж (лет)</label><input id="spExperience" type="number" min="0" max="80" placeholder="0"></div>
 <div class="login-field"><label data-i18n="prof_license">Номер лицензии</label><input id="spLicense" type="text"></div>
-<div class="login-field"><label data-i18n="set_email_l">Email</label><input id="spEmail" type="email" disabled></div>
-</div>
+</div></div>
+
+<div class="fgroup"><div class="fgroup-t" data-i18n="prof_g_place">Место работы</div>
+<div class="prof-grid">
+<div class="login-field full"><label data-i18n="prof_facility">Медицинское учреждение</label><input id="spHospital" type="text" autocomplete="organization" data-phk="ph_facility" placeholder="Название клиники или больницы"></div>
+<div class="login-field full"><label data-i18n="prof_facility_type">Тип учреждения</label>
+<div class="seg" id="spFacilityType">
+<button type="button" class="seg-b" data-v="state" data-i18n="fac_state">Государственное</button>
+<button type="button" class="seg-b" data-v="private" data-i18n="fac_private">Частное</button>
+</div></div>
+<div class="login-field full"><label data-i18n="prof_department">Отделение</label><input id="spDepartment" type="text" data-phk="ph_dept" placeholder="Например: кардиология"></div>
+</div></div>
 <div style="display:flex;justify-content:flex-end"><button class="btn primary" type="submit" data-i18n="prof_save_changes">Сохранить изменения</button></div>
 </form>
 </div>
