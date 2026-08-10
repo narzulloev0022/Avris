@@ -75,3 +75,8 @@ mobile/
 # graphify artifacts (local only)
 graphify-out/
 .graphify_analysis.json
+
+# Заходы в клиники: списки целей, письма, тактика продаж.
+# Репозиторий публичный — этому здесь не место, живёт в базе знаний.
+marketing/clinic-outreach.md
+marketing/clinics-dushanbe.md
