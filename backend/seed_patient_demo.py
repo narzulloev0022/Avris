@@ -30,7 +30,7 @@ from models import (Consultation, LabOrder, Patient, PatientAccount,  # noqa: E4
                     PatientLink, PatientPreVisitNote, User, VisitSummary)
 from patient_ids import new_avris_patient_id  # noqa: E402
 
-DOCTOR_EMAIL = "demo.doctor@avris.local"
+DOCTOR_EMAIL = "demo.doctor@avris.ai"
 
 PROFILE = dict(
     full_name="Носирова Мехрангез",

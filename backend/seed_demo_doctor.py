@@ -18,7 +18,11 @@ from auth import create_access_token, hash_password  # noqa: E402
 from database import SessionLocal, init_db  # noqa: E402
 from models import User  # noqa: E402
 
-EMAIL = "demo.doctor@avris.local"
+# Домен .local зарезервирован под mDNS (RFC 6762), и валидатор адресов его
+# отклоняет — аккаунт создавался, но войти под ним было нельзя: вход падал
+# на проверке e-mail ещё до пароля. Держим демо-врача на боевом домене.
+EMAIL = "demo.doctor@avris.ai"
+LEGACY_EMAIL = "demo.doctor@avris.local"
 PASSWORD = "demo1234"
 FULL_NAME = "Др. Демо Каримов"
 
@@ -28,6 +32,14 @@ def main() -> None:
     db = SessionLocal()
     try:
         doc = db.query(User).filter(User.email == EMAIL).first()
+        if doc is None:
+            # Переносим аккаунт, созданный до починки, вместе с его пациентами
+            # и записями — заводить второго демо-врача незачем.
+            legacy = db.query(User).filter(User.email == LEGACY_EMAIL).first()
+            if legacy is not None:
+                legacy.email = EMAIL
+                db.commit()
+                doc = legacy
         if doc is None:
             doc = User(
                 email=EMAIL,
