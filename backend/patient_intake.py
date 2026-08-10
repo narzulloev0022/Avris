@@ -30,7 +30,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from database import get_db
-from llm import _claude_call
+from llm import _llm_call
 from models import IntakeUsage, PatientAccount
 from patient_auth import get_current_patient
 from patient_conversations import (KIND_INTAKE, append_turn, owned_conversation,
@@ -225,7 +225,7 @@ async def intake_turn(
     user_msg = f"Язык ответа: {lang_name}.\n\nДиалог:\n{convo}"
 
     try:
-        raw = await _claude_call(_SYSTEM_PROMPT, user_msg, max_tokens=700)
+        raw = await _llm_call(_SYSTEM_PROMPT, user_msg, max_tokens=700)
     except Exception:
         _release(db, account.id)
         raise

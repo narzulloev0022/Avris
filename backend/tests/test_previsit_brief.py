@@ -1,4 +1,4 @@
-"""Pre-visit сводка: короткая AI-выжимка перед приёмом (мок Claude, scoping)."""
+"""Pre-visit сводка: короткая AI-выжимка перед приёмом (мок ИИ, scoping)."""
 import llm as llm_module
 from conftest import auth_headers
 
@@ -15,13 +15,13 @@ def _mk_patient(client, doctor, **overrides):
 def test_brief_happy_path(client, doctor, monkeypatch):
     captured = {}
 
-    async def fake_claude(system_prompt, user_msg, max_tokens=1024):
+    async def fake_llm(system_prompt, user_msg, max_tokens=1024):
         captured["system"] = system_prompt
         captured["user"] = user_msg
         return "— Динамика положительная\n— Проверить ОАК\n— Аллергия: пенициллин"
 
-    # patients.py импортирует _claude_call изнутри функции → патчим модуль llm
-    monkeypatch.setattr(llm_module, "_claude_call", fake_claude)
+    # patients.py импортирует _llm_call изнутри функции → патчим модуль llm
+    monkeypatch.setattr(llm_module, "_llm_call", fake_llm)
     p = _mk_patient(client, doctor)
     client.post("/api/consultations/",
                 json={"patient_id": p["id"], "soap_s": "Кашель", "visit_type": "daily"},

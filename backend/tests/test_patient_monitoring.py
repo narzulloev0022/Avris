@@ -410,7 +410,7 @@ def _with_low(db, account, mmol=2.7):
 def test_digest_is_written_and_cached(monkeypatch):
     """Второй раз на том же наборе находок модель не зовём — это деньги."""
     _fake_call.seen, _fake_call.answer = [], "Недавно сахар опускался ниже обычного. Стоит показать дневник врачу."
-    monkeypatch.setattr(patient_monitoring, "_claude_call", _fake_call)
+    monkeypatch.setattr(patient_monitoring, "_llm_call", _fake_call)
     db = SessionLocal()
     try:
         account = _digest_account(db, "+992943000001")
@@ -430,7 +430,7 @@ def test_digest_is_written_and_cached(monkeypatch):
 def test_digest_with_numbers_is_rejected(monkeypatch):
     """Цифра с единицами на главной — ровно то, из-за чего карточка пугала."""
     _fake_call.seen, _fake_call.answer = [], "Сахар опускался до 2.8 ммоль/л — покажите врачу."
-    monkeypatch.setattr(patient_monitoring, "_claude_call", _fake_call)
+    monkeypatch.setattr(patient_monitoring, "_llm_call", _fake_call)
     db = SessionLocal()
     try:
         account = _digest_account(db, "+992943000002")
@@ -443,7 +443,7 @@ def test_digest_with_numbers_is_rejected(monkeypatch):
 def test_digest_with_diagnosis_is_rejected(monkeypatch):
     """Правило диагноза не ставило — не должна и фраза о нём."""
     _fake_call.seen, _fake_call.answer = [], "Похоже, у вас гипогликемия — обратитесь к врачу."
-    monkeypatch.setattr(patient_monitoring, "_claude_call", _fake_call)
+    monkeypatch.setattr(patient_monitoring, "_llm_call", _fake_call)
     db = SessionLocal()
     try:
         account = _digest_account(db, "+992943000003")
@@ -456,7 +456,7 @@ def test_digest_with_diagnosis_is_rejected(monkeypatch):
 def test_model_failure_keeps_the_old_phrase(monkeypatch):
     """Модель отвалилась — показываем прежнюю фразу, а не пустоту."""
     _fake_call.seen, _fake_call.answer = [], "Недавно сахар опускался ниже обычного."
-    monkeypatch.setattr(patient_monitoring, "_claude_call", _fake_call)
+    monkeypatch.setattr(patient_monitoring, "_llm_call", _fake_call)
     db = SessionLocal()
     try:
         account = _digest_account(db, "+992943000004")
@@ -466,7 +466,7 @@ def test_model_failure_keeps_the_old_phrase(monkeypatch):
         async def boom(*a, **k):
             raise RuntimeError("сеть")
 
-        monkeypatch.setattr(patient_monitoring, "_claude_call", boom)
+        monkeypatch.setattr(patient_monitoring, "_llm_call", boom)
         _with_low(db, account, mmol=2.6)  # набор изменился — кэш устарел
         assert asyncio.run(patient_monitoring.build_digest(db, account)) == kept
     finally:
@@ -476,7 +476,7 @@ def test_model_failure_keeps_the_old_phrase(monkeypatch):
 def test_digest_disappears_with_the_last_finding(monkeypatch):
     """Прочитали всё — фразе не о чем говорить."""
     _fake_call.seen, _fake_call.answer = [], "Недавно сахар опускался ниже обычного."
-    monkeypatch.setattr(patient_monitoring, "_claude_call", _fake_call)
+    monkeypatch.setattr(patient_monitoring, "_llm_call", _fake_call)
     db = SessionLocal()
     try:
         account = _digest_account(db, "+992943000005")

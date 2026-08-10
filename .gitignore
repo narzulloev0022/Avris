@@ -11,8 +11,6 @@ client_secret*.json
 *-oauth.json
 
 # Project knowledge / dev workspace (kept local)
-CLAUDE.md
-.claude/
 AvrisAI Knowledge Base/
 screenshots/
 _tools/

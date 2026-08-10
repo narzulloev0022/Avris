@@ -27,7 +27,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from database import get_db
-from llm import _claude_call
+from llm import _llm_call
 from models import (Consultation, LabOrder, PatientAccount, User, VisitInsight,
                     VisitSummary)
 from patient_auth import get_current_patient
@@ -240,7 +240,7 @@ async def build_insight(
                           questions=saved.questions or [], visits_used=saved.visits_used,
                           created_at=saved.created_at)
 
-    raw = await _claude_call(_SYSTEM_PROMPT, _user_message(db, current, visits, labs),
+    raw = await _llm_call(_SYSTEM_PROMPT, _user_message(db, current, visits, labs),
                              max_tokens=900)
     try:
         parsed = parse_insight(raw or "")

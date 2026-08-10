@@ -27,7 +27,7 @@ from sqlalchemy.orm import Session
 
 from audit import audit
 from database import get_db
-from llm import _claude_vision_call
+from llm import _llm_vision_call
 from models import NutritionEntry, NutritionUsage, PatientAccount
 from patient_auth import get_current_patient
 from patient_subscription import FEATURE_NUTRITION, month_total, require_feature
@@ -262,7 +262,7 @@ async def add_by_photo(
     # Слот занимаем ДО вызова модели и возвращаем при любой неудаче.
     _bump_usage(db, current.id)
     try:
-        answer = await _claude_vision_call(
+        answer = await _llm_vision_call(
             _SYSTEM_PROMPT,
             "Что на фото и сколько в этом калорий?",
             base64.b64encode(image).decode(),

@@ -179,7 +179,7 @@ def test_cached_insight_is_served_without_calling_the_model(client, monkeypatch)
     async def _boom(*a, **kw):  # pragma: no cover — не должен вызваться
         raise AssertionError("модель не должна вызываться при совпавшем ключе")
 
-    monkeypatch.setattr(pi, "_claude_call", _boom)
+    monkeypatch.setattr(pi, "_llm_call", _boom)
     body = client.post("/api/patient/insights", headers=headers).json()
     assert body["picture"] == "Сохранённая картина"
 
@@ -208,7 +208,7 @@ def test_stale_cache_is_rebuilt_and_replaced(client, monkeypatch):
     async def _fake(system, user, **kw):
         return '{"picture": "Новая картина", "watch": ["вес"], "questions": ["когда контроль?"]}'
 
-    monkeypatch.setattr(pi, "_claude_call", _fake)
+    monkeypatch.setattr(pi, "_llm_call", _fake)
     body = client.post("/api/patient/insights", headers=headers).json()
     assert body["picture"] == "Новая картина"
 
@@ -235,7 +235,7 @@ def test_unparseable_model_reply_is_not_shown(client, monkeypatch):
     async def _fake(system, user, **kw):
         return "Вероятно, у вас гипертония — принимайте эналаприл."
 
-    monkeypatch.setattr(pi, "_claude_call", _fake)
+    monkeypatch.setattr(pi, "_llm_call", _fake)
     assert client.post("/api/patient/insights", headers=headers).status_code == 502
 
     db = SessionLocal()

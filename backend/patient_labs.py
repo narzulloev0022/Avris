@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from http_files import content_disposition
-from llm import _claude_call
+from llm import _llm_call
 from models import LabFile, LabOrder, PatientAccount, User
 from patient_auth import get_current_patient
 from patient_monitoring import out_of_range as _out_of_range
@@ -227,7 +227,7 @@ async def lab_breakdown(
     if current.allergies:
         user_msg += f"\nАллергии: {', '.join(current.allergies)}"
 
-    text = (await _claude_call(_BREAKDOWN_PROMPT, user_msg, max_tokens=700) or "").strip()
+    text = (await _llm_call(_BREAKDOWN_PROMPT, user_msg, max_tokens=700) or "").strip()
     if not text:
         raise HTTPException(status_code=502, detail="Пустой ответ модели — повторите попытку")
     o.patient_breakdown = text

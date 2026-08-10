@@ -1,4 +1,4 @@
-"""AI-ассистент пациента: гардрейлы промпта, дневной кап, auth, мок Claude."""
+"""AI-ассистент пациента: гардрейлы промпта, дневной кап, auth, мок ИИ."""
 import os
 
 os.environ.setdefault("PATIENT_DEV_OTP", "424242")
@@ -29,7 +29,7 @@ def _auth(client, phone):
 
 
 @pytest.fixture()
-def fake_claude(monkeypatch):
+def fake_llm(monkeypatch):
     captured = {}
 
     async def _fake(system_prompt, user_msg, max_tokens=1024):
@@ -37,7 +37,7 @@ def fake_claude(monkeypatch):
         captured["user"] = user_msg
         return "Понимаю вас. Когда началась головная боль? Если боль внезапная и очень сильная — позвоните в 103."
 
-    monkeypatch.setattr(pa_module, "_claude_call", _fake)
+    monkeypatch.setattr(pa_module, "_llm_call", _fake)
     return captured
 
 
@@ -53,7 +53,7 @@ def test_requires_auth(client):
     assert r.status_code in (401, 403)
 
 
-def test_happy_path_and_prompt_guardrails(client, fake_claude):
+def test_happy_path_and_prompt_guardrails(client, fake_llm):
     h = _auth(client, "+992905000001")
     r = _chat(client, h, [{"role": "user", "text": "У меня болит голова"}])
     assert r.status_code == 200, r.text
@@ -64,16 +64,16 @@ def test_happy_path_and_prompt_guardrails(client, fake_claude):
     assert body["remaining"] == ps_module.TIERS["free"].assistant_daily - 1
 
     # Гардрейлы в системном промпте
-    sys_p = fake_claude["system"]
+    sys_p = fake_llm["system"]
     assert "не ставь диагнозы" in sys_p.lower() or "НИКОГДА не ставь диагнозы" in sys_p
     assert "103" in sys_p
     assert "не назначай лекарства" in sys_p.lower() or "НИКОГДА не назначай" in sys_p
     # История и язык дошли до модели
-    assert "болит голова" in fake_claude["user"]
-    assert "русском" in fake_claude["user"]
+    assert "болит голова" in fake_llm["user"]
+    assert "русском" in fake_llm["user"]
 
 
-def test_history_passed(client, fake_claude):
+def test_history_passed(client, fake_llm):
     h = _auth(client, "+992905000002")
     msgs = [
         {"role": "user", "text": "Кашель третий день"},
@@ -82,17 +82,17 @@ def test_history_passed(client, fake_claude):
     ]
     r = _chat(client, h, msgs)
     assert r.status_code == 200
-    assert "Кашель третий день" in fake_claude["user"]
-    assert "37.8" in fake_claude["user"]
+    assert "Кашель третий день" in fake_llm["user"]
+    assert "37.8" in fake_llm["user"]
 
 
-def test_last_message_must_be_user(client, fake_claude):
+def test_last_message_must_be_user(client, fake_llm):
     h = _auth(client, "+992905000003")
     r = _chat(client, h, [{"role": "assistant", "text": "Здравствуйте"}])
     assert r.status_code == 422
 
 
-def test_free_daily_cap_is_three(client, fake_claude):
+def test_free_daily_cap_is_three(client, fake_llm):
     """Free упирается ровно в тарифные 3 вопроса — без патча капа."""
     h = _auth(client, "+992905000004")
     for i in range(3):
@@ -105,7 +105,7 @@ def test_free_daily_cap_is_three(client, fake_claude):
     assert "Plus" in r.json()["detail"]
 
 
-def test_cap_is_per_account(client, fake_claude, monkeypatch):
+def test_cap_is_per_account(client, fake_llm, monkeypatch):
     monkeypatch.setattr(ps_module.TIERS["free"], "assistant_daily", 1)
     h1 = _auth(client, "+992905000005")
     h2 = _auth(client, "+992905000006")
@@ -115,7 +115,7 @@ def test_cap_is_per_account(client, fake_claude, monkeypatch):
     assert _chat(client, h2, [{"role": "user", "text": "Вопрос"}]).status_code == 200
 
 
-def test_validation_limits(client, fake_claude):
+def test_validation_limits(client, fake_llm):
     h = _auth(client, "+992905000007")
     # Пустой список
     assert _chat(client, h, []).status_code == 422
@@ -125,7 +125,7 @@ def test_validation_limits(client, fake_claude):
 
 
 def test_503_without_key(client):
-    """Без мока Claude и без ANTHROPIC_API_KEY (пуст в тестах) — честный 503."""
+    """Без мока ИИ и без ANTHROPIC_API_KEY (пуст в тестах) — честный 503."""
     h = _auth(client, "+992905000008")
     r = _chat(client, h, [{"role": "user", "text": "Привет"}])
     assert r.status_code == 503

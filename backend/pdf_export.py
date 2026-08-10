@@ -290,7 +290,7 @@ def render_consultation_pdf(consultation, patient, doctor) -> bytes:
     story.append(Spacer(0, 0.4 * cm))
 
     # SOAP block
-    story.append(Paragraph("ЗАПИСЬ ОСМОТРА (SOAP) · Claude Sonnet", styles["h2"]))
+    story.append(Paragraph("ЗАПИСЬ ОСМОТРА (SOAP) · Avris AI", styles["h2"]))
     story.append(Spacer(0, 0.2 * cm))
     soap_rows = [
         ("S — Subjective · Жалобы", consultation.soap_s),
@@ -525,7 +525,7 @@ def render_lab_order_pdf(order, patient, doctor) -> bytes:
         story.append(Spacer(0, 0.4 * cm))
 
         if order.ai_comment:
-            story.append(Paragraph("AI-КОММЕНТАРИЙ · Claude Sonnet", styles["h2"]))
+            story.append(Paragraph("AI-КОММЕНТАРИЙ · Avris AI", styles["h2"]))
             story.append(Spacer(0, 0.1 * cm))
             ai_tbl = Table(
                 [[Paragraph(_esc(order.ai_comment), styles["body"])]],

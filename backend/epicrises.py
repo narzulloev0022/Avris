@@ -1,6 +1,6 @@
 """Эпикризы — этапный (interim) и выписной (discharge).
 
-Черновик генерирует Claude из ВСЕЙ истории болезни пациента: снимок
+Черновик генерирует ИИ из ВСЕЙ истории болезни пациента: снимок
 поступления + консультации (первичный осмотр / дневники / приёмы, SOAP) +
 ночные обходы + полученные результаты анализов. Врач редактирует черновик
 и сохраняет финальный текст; каждое сохранение — новая запись (версии).
@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from audit import audit
 from database import get_db
-from llm import _claude_call
+from llm import _llm_call
 from models import Consultation, Epicrisis, LabOrder, NightRound, Patient, User
 from auth import get_current_user
 from pdf_export import render_epicrisis_pdf
@@ -294,7 +294,7 @@ async def draft_epicrisis(
     _check_kind(payload.kind)
     p = _owned_patient(db, payload.patient_id, current_user)
     history, counts = _build_history(db, p)
-    text = await _claude_call(
+    text = await _llm_call(
         _system_prompt(payload.kind, payload.language),
         f"История болезни пациента:\n\n{history}",
         max_tokens=2500,

@@ -17,7 +17,7 @@ from rate_limit import limiter
 from http_files import content_disposition
 from models import LabOrder, LabFile, User, Patient
 from auth import get_current_user
-from llm import _claude_call, ANTHROPIC_API_KEY
+from llm import _llm_call, ANTHROPIC_API_KEY
 from pdf_export import render_lab_order_pdf
 
 logger = logging.getLogger(__name__)
@@ -131,7 +131,7 @@ async def _generate_ai_comment(results: dict, patient_context: Optional[dict]) -
         user_msg = "Результаты анализов: " + json.dumps(results, ensure_ascii=False)
         if patient_context:
             user_msg += "\n\nКонтекст пациента: " + json.dumps(patient_context, ensure_ascii=False)
-        return await _claude_call(system_prompt, user_msg, max_tokens=400)
+        return await _llm_call(system_prompt, user_msg, max_tokens=400)
     except Exception as e:
         logger.warning("AI comment generation failed: %s", e)
         return _ai_comment_fallback(results)

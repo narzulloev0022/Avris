@@ -220,12 +220,12 @@ def test_history_block_is_empty_without_marks():
 def test_brief_carries_the_marks_to_the_model(client, doctor, monkeypatch):
     captured = {}
 
-    async def fake_claude(system_prompt, user_msg, max_tokens=1024):
+    async def fake_llm(system_prompt, user_msg, max_tokens=1024):
         captured["system"] = system_prompt
         captured["user"] = user_msg
         return "— Со слов пациента, слабость третий день"
 
-    monkeypatch.setattr(llm_module, "_claude_call", fake_claude)
+    monkeypatch.setattr(llm_module, "_llm_call", fake_llm)
     db = SessionLocal()
     try:
         account, card = _linked_pair(client, db, doctor, "0012")

@@ -37,7 +37,7 @@ def fake_assistant(monkeypatch):
     async def _fake(system_prompt, user_msg, max_tokens=1024):
         return "Расскажите подробнее, когда это началось?"
 
-    monkeypatch.setattr(pa_module, "_claude_call", _fake)
+    monkeypatch.setattr(pa_module, "_llm_call", _fake)
 
 
 def _ask(client, headers, text, conversation_id=None):
@@ -93,7 +93,7 @@ class TestConversationHistory:
         async def _boom(system_prompt, user_msg, max_tokens=1024):
             raise HTTPException(status_code=503, detail="Сервис AI временно недоступен")
 
-        monkeypatch.setattr(pa_module, "_claude_call", _boom)
+        monkeypatch.setattr(pa_module, "_llm_call", _boom)
         h = _auth(client, "+992908000005")
         assert _ask(client, h, "Вопрос").status_code == 503
         assert client.get("/api/patient/conversations", headers=h).json() == []
@@ -128,7 +128,7 @@ class TestIntakeInterview:
         async def _fake(system_prompt, user_msg, max_tokens=1024):
             return '{"reply": "Когда это началось?", "done": false, "verdict": "ok", "note": null}'
 
-        monkeypatch.setattr(intake_module, "_claude_call", _fake)
+        monkeypatch.setattr(intake_module, "_llm_call", _fake)
 
     @pytest.fixture()
     def fake_finish(self, monkeypatch):
@@ -137,7 +137,7 @@ class TestIntakeInterview:
                     ' "note": "Кашель 3 недели, ночью сильнее.\\nТемпературы нет.\\n'
                     'Вопрос: можно ли делать прививку"}')
 
-        monkeypatch.setattr(intake_module, "_claude_call", _fake)
+        monkeypatch.setattr(intake_module, "_llm_call", _fake)
 
     def test_empty_start_asks_first_question(self, client, fake_question):
         h = _auth(client, "+992908000020")
@@ -170,7 +170,7 @@ class TestIntakeInterview:
         async def _plain(system_prompt, user_msg, max_tokens=1024):
             return "А когда это началось?"
 
-        monkeypatch.setattr(intake_module, "_claude_call", _plain)
+        monkeypatch.setattr(intake_module, "_llm_call", _plain)
         h = _auth(client, "+992908000023")
         body = client.post("/api/patient/intake", json={"messages": [], "language": "ru"},
                            headers=h).json()
@@ -232,7 +232,7 @@ class TestSummaryForDoctor:
             assert "Пациент:" in user_msg
             return "Кашель третью неделю, ночью сильнее.\nПринимал сироп.\nВопрос про прививку"
 
-        monkeypatch.setattr(pc_module, "_claude_call", _fake)
+        monkeypatch.setattr(pc_module, "_llm_call", _fake)
 
     def test_draft_is_built_from_the_conversation(self, client, fake_assistant, fake_summary):
         h = _auth(client, "+992908000030")
@@ -285,7 +285,7 @@ class TestIntakeCounterIsolation:
         async def _fake(system_prompt, user_msg, max_tokens=1024):
             return '{"reply": "Когда началось?", "done": false, "verdict": "ok", "note": null}'
 
-        monkeypatch.setattr(intake_module, "_claude_call", _fake)
+        monkeypatch.setattr(intake_module, "_llm_call", _fake)
         h = _auth(client, "+992908000042")
         assert client.post("/api/patient/intake", json={"messages": []}, headers=h).status_code == 200
 

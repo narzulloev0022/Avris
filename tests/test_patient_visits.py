@@ -1,4 +1,4 @@
-"""T7 — post-visit summary: Claude retells the SOAP note for the patient.
+"""T7 — post-visit summary: The model retells the SOAP note for the patient.
 
 Generation is a best-effort background task on consultation save (pre-cached,
 never live on stage). A summary that slips into diagnosis-speak ("вероятно,
@@ -33,18 +33,18 @@ def client(db_session):
 
 
 @pytest.fixture()
-def mock_claude(monkeypatch):
-    """Patch the Claude call; tests never hit the network."""
+def mock_llm(monkeypatch):
+    """Patch the model call; tests never hit the network."""
     state = {"reply": GOOD_SUMMARY, "calls": 0}
 
-    async def fake_claude(system_prompt, user_msg, max_tokens=1024):
+    async def fake_llm(system_prompt, user_msg, max_tokens=1024):
         state["calls"] += 1
         if isinstance(state["reply"], Exception):
             raise state["reply"]
         return state["reply"]
 
     import patient_visits
-    monkeypatch.setattr(patient_visits, "_claude_call", fake_claude)
+    monkeypatch.setattr(patient_visits, "_llm_call", fake_llm)
     return state
 
 
@@ -90,7 +90,7 @@ def _save_consultation(client, doctor_headers, patient_id):
 
 
 class TestSummaryGeneration:
-    def test_summary_created_for_linked_patient(self, client, doctor_headers, mock_claude):
+    def test_summary_created_for_linked_patient(self, client, doctor_headers, mock_llm):
         h, pid = _linked_patient(client, doctor_headers)
         cid = _save_consultation(client, doctor_headers, pid)
 
@@ -103,17 +103,17 @@ class TestSummaryGeneration:
         assert detail["summary"] == GOOD_SUMMARY
         assert detail["doctor_name"] == "Др. Каримов"
 
-    def test_no_summary_for_unlinked_patient(self, client, doctor_headers, mock_claude, db_session):
+    def test_no_summary_for_unlinked_patient(self, client, doctor_headers, mock_llm, db_session):
         # обычный пациент кабинета, без аккаунта в приложении
         r = client.post("/api/patients/", headers=doctor_headers,
                         json={"full_name": "Обычный Пациент"})
         cid = _save_consultation(client, doctor_headers, r.json()["id"])
         from models import VisitSummary
         assert db_session.query(VisitSummary).count() == 0
-        assert mock_claude["calls"] == 0
+        assert mock_llm["calls"] == 0
 
-    def test_forbidden_phrasing_dropped(self, client, doctor_headers, mock_claude):
-        mock_claude["reply"] = FORBIDDEN_SUMMARY
+    def test_forbidden_phrasing_dropped(self, client, doctor_headers, mock_llm):
+        mock_llm["reply"] = FORBIDDEN_SUMMARY
         h, pid = _linked_patient(client, doctor_headers)
         cid = _save_consultation(client, doctor_headers, pid)
 
@@ -122,8 +122,8 @@ class TestSummaryGeneration:
         detail = client.get(f"/api/patient/visits/{cid}", headers=h).json()
         assert detail["summary"] is None
 
-    def test_claude_failure_never_breaks_doctor_save(self, client, doctor_headers, mock_claude):
-        mock_claude["reply"] = RuntimeError("503 no key")
+    def test_llm_failure_never_breaks_doctor_save(self, client, doctor_headers, mock_llm):
+        mock_llm["reply"] = RuntimeError("503 no key")
         h, pid = _linked_patient(client, doctor_headers)
         cid = _save_consultation(client, doctor_headers, pid)  # asserts 201 inside
         assert client.get(f"/api/patient/visits/{cid}", headers=h).json()["summary"] is None
@@ -133,39 +133,39 @@ class TestSummaryRetry:
     """Сводка не должна застревать в «готовится» навсегда."""
 
     def test_failed_summary_is_retried_when_the_patient_opens_the_visit(
-            self, client, doctor_headers, mock_claude):
+            self, client, doctor_headers, mock_llm):
         import patient_visits
         patient_visits._last_attempt.clear()
 
         # Первая попытка — сразу после приёма — падает.
-        mock_claude["reply"] = RuntimeError("503 no key")
+        mock_llm["reply"] = RuntimeError("503 no key")
         h, pid = _linked_patient(client, doctor_headers)
         cid = _save_consultation(client, doctor_headers, pid)
         assert client.get(f"/api/patient/visits/{cid}", headers=h).json()["summary"] is None
 
         # Ключ появился — следующее открытие визита собирает сводку.
-        mock_claude["reply"] = GOOD_SUMMARY
+        mock_llm["reply"] = GOOD_SUMMARY
         patient_visits._last_attempt.clear()  # обходим демпфер, как сделало бы время
         client.get(f"/api/patient/visits/{cid}", headers=h)
         assert client.get(f"/api/patient/visits/{cid}", headers=h).json()["summary"] == GOOD_SUMMARY
 
-    def test_repeated_opens_do_not_hammer_the_model(self, client, doctor_headers, mock_claude):
+    def test_repeated_opens_do_not_hammer_the_model(self, client, doctor_headers, mock_llm):
         import patient_visits
         patient_visits._last_attempt.clear()
 
-        mock_claude["reply"] = RuntimeError("503 no key")
+        mock_llm["reply"] = RuntimeError("503 no key")
         h, pid = _linked_patient(client, doctor_headers)
         cid = _save_consultation(client, doctor_headers, pid)
-        before = mock_claude["calls"]
+        before = mock_llm["calls"]
         for _ in range(5):
             client.get(f"/api/patient/visits/{cid}", headers=h)
         # Одна попытка на окно, а не по вызову модели на каждое открытие.
-        assert mock_claude["calls"] - before <= 1
+        assert mock_llm["calls"] - before <= 1
 
 
 class TestPrescriptions:
-    def test_prescriptions_extracted_as_separate_block(self, client, doctor_headers, mock_claude):
-        mock_claude["reply"] = json.dumps({
+    def test_prescriptions_extracted_as_separate_block(self, client, doctor_headers, mock_llm):
+        mock_llm["reply"] = json.dumps({
             "summary": GOOD_SUMMARY,
             "prescriptions": "Амброксол 30мг — 3 раза в день после еды, 5 дней.\nОбильное тёплое питьё.",
         })
@@ -177,25 +177,25 @@ class TestPrescriptions:
         assert "Амброксол" in detail["prescriptions"]
         assert detail["summary_status"] == "ready"
 
-    def test_no_prescriptions_when_plan_empty(self, client, doctor_headers, mock_claude):
-        mock_claude["reply"] = json.dumps({"summary": GOOD_SUMMARY, "prescriptions": ""})
+    def test_no_prescriptions_when_plan_empty(self, client, doctor_headers, mock_llm):
+        mock_llm["reply"] = json.dumps({"summary": GOOD_SUMMARY, "prescriptions": ""})
         h, pid = _linked_patient(client, doctor_headers)
         cid = _save_consultation(client, doctor_headers, pid)
         detail = client.get(f"/api/patient/visits/{cid}", headers=h).json()
         assert detail["summary"] == GOOD_SUMMARY
         assert detail["prescriptions"] is None
 
-    def test_plaintext_reply_still_works_as_summary(self, client, doctor_headers, mock_claude):
-        """Fallback: a non-JSON Claude reply becomes the summary, no prescriptions."""
-        mock_claude["reply"] = GOOD_SUMMARY  # plain text, not JSON
+    def test_plaintext_reply_still_works_as_summary(self, client, doctor_headers, mock_llm):
+        """Fallback: a non-JSON model reply becomes the summary, no prescriptions."""
+        mock_llm["reply"] = GOOD_SUMMARY  # plain text, not JSON
         h, pid = _linked_patient(client, doctor_headers)
         cid = _save_consultation(client, doctor_headers, pid)
         detail = client.get(f"/api/patient/visits/{cid}", headers=h).json()
         assert detail["summary"] == GOOD_SUMMARY
         assert detail["prescriptions"] is None
 
-    def test_forbidden_in_prescriptions_dropped_but_summary_kept(self, client, doctor_headers, mock_claude):
-        mock_claude["reply"] = json.dumps({
+    def test_forbidden_in_prescriptions_dropped_but_summary_kept(self, client, doctor_headers, mock_llm):
+        mock_llm["reply"] = json.dumps({
             "summary": GOOD_SUMMARY,
             "prescriptions": "Вероятно, у вас пневмония, принимайте антибиотики.",
         })
@@ -207,7 +207,7 @@ class TestPrescriptions:
 
 
 class TestVisitAccess:
-    def test_patient_cannot_read_foreign_visit(self, client, doctor_headers, mock_claude):
+    def test_patient_cannot_read_foreign_visit(self, client, doctor_headers, mock_llm):
         h_a, pid_a = _linked_patient(client, doctor_headers, phone="+992908880001")
         cid_a = _save_consultation(client, doctor_headers, pid_a)
 

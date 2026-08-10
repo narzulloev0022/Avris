@@ -60,7 +60,7 @@ def test_soft_delete_patient(client, doctor):
 
 def test_doctor_scoping(client, doctor, second_doctor):
     p = _mk_patient(client, doctor, full_name="Чужой П.П.")
-    # Backend contract (CLAUDE.md): foreign data answers 404 or 403
+    # Backend contract (контекст проекта): foreign data answers 404 or 403
     r = client.get(f"/api/patients/{p['id']}", headers=auth_headers(second_doctor))
     assert r.status_code in (403, 404)
     r = client.put(

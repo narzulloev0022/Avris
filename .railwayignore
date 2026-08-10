@@ -1,8 +1,6 @@
 # Build context for `railway up` — only what the Dockerfile COPYs is needed.
 # Confidential / local-only (NOT in git, must never leave this machine):
 AvrisAI Knowledge Base/
-CLAUDE.md
-.claude/
 _tools/
 _downloads/
 screenshots/

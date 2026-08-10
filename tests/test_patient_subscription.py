@@ -110,7 +110,7 @@ class TestSubscriptionState:
             return "Ответ помощника."
 
         import patient_assistant as pa_module
-        monkeypatch.setattr(pa_module, "_claude_call", _fake)
+        monkeypatch.setattr(pa_module, "_llm_call", _fake)
         client.post("/api/patient/assistant",
                     json={"messages": [{"role": "user", "text": "Привет"}], "language": "ru"},
                     headers=h)
@@ -136,11 +136,11 @@ class TestFeatureGate:
     """Гейт на живой платной фиче — AI-разбор анализа (Plus)."""
 
     @pytest.fixture()
-    def fake_claude(self, monkeypatch):
+    def fake_llm(self, monkeypatch):
         async def _fake(system_prompt, user_msg, max_tokens=1024):
             return "Ваши показатели в пределах нормы. Обсудите результаты с врачом."
 
-        monkeypatch.setattr(labs_module, "_claude_call", _fake)
+        monkeypatch.setattr(labs_module, "_llm_call", _fake)
 
     @pytest.fixture()
     def doctor(self, db_session):
@@ -170,13 +170,13 @@ class TestFeatureGate:
         db_session.commit()
         return h, order.id
 
-    def test_free_gets_402_with_upgrade_hint(self, client, db_session, doctor, fake_claude):
+    def test_free_gets_402_with_upgrade_hint(self, client, db_session, doctor, fake_llm):
         h, oid = self._linked_lab(client, db_session, doctor, "+992906000020")
         r = client.post(f"/api/patient/labs/{oid}/breakdown", headers=h)
         # 402 «нужна оплата», а не 403: клиент по нему открывает «Тарифы».
         assert r.status_code == 402, r.text
 
-    def test_plus_gets_the_breakdown(self, client, db_session, doctor, fake_claude):
+    def test_plus_gets_the_breakdown(self, client, db_session, doctor, fake_llm):
         phone = "+992906000021"
         h, oid = self._linked_lab(client, db_session, doctor, phone)
         _set_tier(db_session, phone, "plus")
@@ -184,7 +184,7 @@ class TestFeatureGate:
         assert r.status_code == 200, r.text
         assert "врач" in r.json()["breakdown"].lower()
 
-    def test_expired_plus_loses_the_feature(self, client, db_session, doctor, fake_claude):
+    def test_expired_plus_loses_the_feature(self, client, db_session, doctor, fake_llm):
         phone = "+992906000022"
         h, oid = self._linked_lab(client, db_session, doctor, phone)
         acc = _set_tier(db_session, phone, "plus")
@@ -205,7 +205,7 @@ class TestFeatureGate:
             calls.append(1)
             return "Показатели в норме. Обсудите с врачом."
 
-        monkeypatch.setattr(labs_module, "_claude_call", _counting)
+        monkeypatch.setattr(labs_module, "_llm_call", _counting)
 
         phone = "+992906000030"
         h, oid = self._linked_lab(client, db_session, doctor, phone)
@@ -226,7 +226,7 @@ class TestFeatureGate:
             calls.append(1)
             return f"Разбор {len(calls)}"
 
-        monkeypatch.setattr(labs_module, "_claude_call", _counting)
+        monkeypatch.setattr(labs_module, "_llm_call", _counting)
 
         phone = "+992906000031"
         h, oid = self._linked_lab(client, db_session, doctor, phone)
@@ -242,7 +242,7 @@ class TestFeatureGate:
         assert again.status_code == 200
         assert len(calls) == 2, "изменившиеся результаты должны пересобрать разбор"
 
-    def test_breakdown_of_foreign_lab_is_404(self, client, db_session, doctor, fake_claude):
+    def test_breakdown_of_foreign_lab_is_404(self, client, db_session, doctor, fake_llm):
         _, oid = self._linked_lab(client, db_session, doctor, "+992906000023")
         stranger = "+992906000024"
         h2 = _auth(client, stranger)
@@ -250,7 +250,7 @@ class TestFeatureGate:
         # Оплаченный тариф не даёт доступа к чужим данным.
         assert client.post(f"/api/patient/labs/{oid}/breakdown", headers=h2).status_code == 404
 
-    def test_foreign_lab_is_404_even_for_free(self, client, db_session, doctor, fake_claude):
+    def test_foreign_lab_is_404_even_for_free(self, client, db_session, doctor, fake_llm):
         """Владение проверяется раньше оплаты: иначе по коду 402 vs 404 видно,
         что чужой анализ существует."""
         _, oid = self._linked_lab(client, db_session, doctor, "+992906000025")
@@ -303,10 +303,10 @@ class TestUsageAccounting:
         from fastapi import HTTPException
 
         async def _boom(system_prompt, user_msg, max_tokens=1024):
-            # Ровно так падает настоящий _claude_call: сеть/ключ/квота → 503.
+            # Ровно так падает настоящий _llm_call: сеть/ключ/квота → 503.
             raise HTTPException(status_code=503, detail="Сервис AI временно недоступен")
 
-        monkeypatch.setattr(pa_module, "_claude_call", _boom)
+        monkeypatch.setattr(pa_module, "_llm_call", _boom)
         h = _auth(client, "+992906000040")
         r = client.post("/api/patient/assistant",
                         json={"messages": [{"role": "user", "text": "Привет"}], "language": "ru"},
@@ -323,7 +323,7 @@ class TestUsageAccounting:
         async def _ok(system_prompt, user_msg, max_tokens=1024):
             return "Расскажите подробнее, когда это началось?"
 
-        monkeypatch.setattr(pa_module, "_claude_call", _ok)
+        monkeypatch.setattr(pa_module, "_llm_call", _ok)
         h = _auth(client, "+992906000041")
         r = client.post("/api/patient/assistant",
                         json={"messages": [{"role": "user", "text": "Привет"}], "language": "ru"},
@@ -350,7 +350,7 @@ class TestCapRace:
             seen["count_mid_flight"] = row.count if row else 0
             return "Ответ помощника."
 
-        monkeypatch.setattr(pa_module, "_claude_call", _slow)
+        monkeypatch.setattr(pa_module, "_llm_call", _slow)
         h = _auth(client, "+992906000050")
         r = client.post("/api/patient/assistant",
                         json={"messages": [{"role": "user", "text": "Привет"}], "language": "ru"},

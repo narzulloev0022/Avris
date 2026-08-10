@@ -25,7 +25,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from database import get_db
-from llm import _claude_call
+from llm import _llm_call
 from models import AssistantUsage, PatientAccount
 from patient_auth import get_current_patient
 from patient_conversations import (KIND_ASSISTANT, append_turn, owned_conversation,
@@ -92,7 +92,7 @@ def _usage_row(db: Session, account_id: int) -> Optional[AssistantUsage]:
 def _reserve(db: Session, account: PatientAccount) -> int:
     """Занять слот ДО вызова модели; вернуть остаток. 429 при исчерпании.
 
-    Слот занимается до, а не после ответа: вызов Claude длится секунды, и
+    Слот занимается до, а не после ответа: вызов модели длится секунды, и
     параллельные запросы одного аккаунта успевали проскочить проверку все
     разом — free получал больше своих трёх вопросов. Если модель не ответит,
     слот возвращает [_release], так что упавший запрос ничего не стоит
@@ -169,7 +169,7 @@ async def assistant_chat(
                 f"{'Имя пациента: ' + account.full_name if account.full_name else ''}\n\n"
                 f"Диалог:\n{convo}\n\nПомощник:")
     try:
-        text = await _claude_call(_SYSTEM_PROMPT, user_msg, max_tokens=700)
+        text = await _llm_call(_SYSTEM_PROMPT, user_msg, max_tokens=700)
         reply = (text or "").strip()
         if not reply:
             raise HTTPException(status_code=502, detail="Пустой ответ модели — повторите попытку")

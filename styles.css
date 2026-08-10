@@ -65,12 +65,12 @@ textarea{resize:vertical;min-height:90px}
 .tag.danger{background:var(--danger-bg);color:var(--danger)}
 .score-pill{min-width:68px;text-align:center;border-radius:var(--r3);padding:5px 10px;font-weight:700;font-size:.82rem}
 .score-pill.danger{background:rgba(239,68,68,.15);color:#EF4444}.score-pill.serious{background:rgba(245,158,11,.15);color:#F59E0B}.score-pill.watch{background:rgba(234,179,8,.15);color:#EAB308}.score-pill.safe{background:rgba(16,185,129,.15);color:#10B981}.score-pill.warn{background:rgba(245,158,11,.15);color:#F59E0B}.score-pill.pending{background:rgba(138,152,168,.15);color:var(--text-muted);font-weight:600;font-size:.74rem}.pat-ctx-score.serious{background:rgba(245,158,11,.15);color:#F59E0B}.pat-ctx-score.watch{background:rgba(234,179,8,.15);color:#EAB308}.pat-ctx-score.pending{background:rgba(138,152,168,.15);color:var(--text-muted)}
-/* Green pulse on Save / Confirm-SOAP buttons after Claude fills SOAP — signals
+/* Green pulse on Save / Confirm-SOAP buttons after the AI fills SOAP — signals
    the doctor that the next step is to review and commit. */
 .btn.save-ready{background:#10b981!important;border-color:#10b981!important;box-shadow:0 0 0 0 rgba(16,185,129,.7);animation:save-pulse 2s ease-out 2}
 .btn.save-ready:hover{filter:brightness(1.07)}
 @keyframes save-pulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.55)}70%{box-shadow:0 0 0 12px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
-/* AI Recommendations panel — Claude's clinical thinking layer below SOAP */
+/* AI Recommendations panel — the AI's clinical thinking layer below SOAP */
 .ai-recs{margin-top:18px;background:linear-gradient(135deg,rgba(149,174,248,.08),rgba(149,174,248,.03));border:1px solid rgba(149,174,248,.28);border-radius:14px;overflow:hidden}
 .ai-recs-hdr{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;cursor:pointer;user-select:none;transition:background .15s}
 .ai-recs-hdr:hover{background:rgba(149,174,248,.06)}

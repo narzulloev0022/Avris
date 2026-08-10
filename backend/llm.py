@@ -21,7 +21,10 @@ _VALID_ICD10 = {c for c, _ru, _en in ICD10_CODES}
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
-ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")
+# Имя модели живёт только в окружении: в публичном репозитории незачем
+# показывать, на чём именно считается генерация. Пусто = не настроено, и
+# вызов отказывает так же, как без ключа.
+ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "")
 ANTHROPIC_VERSION = "2023-06-01"
 
 LANG_LABEL = {"ru": "русский", "tj": "тоҷикӣ", "en": "English"}
@@ -111,10 +114,10 @@ class ParsePatientResponse(BaseModel):
     admission_status: Optional[str] = None  # stable|watch|serious|critical
 
 
-async def _claude_call(system_prompt: str, user_msg: str, max_tokens: int = 1024) -> str:
-    if not ANTHROPIC_API_KEY:
+async def _llm_call(system_prompt: str, user_msg: str, max_tokens: int = 1024) -> str:
+    if not ANTHROPIC_API_KEY or not ANTHROPIC_MODEL:
         # detail доходит до пациента в приложении — конфигурация остаётся в логах
-        logger.error("Claude call refused: ANTHROPIC_API_KEY is not configured")
+        logger.error("LLM call refused: ANTHROPIC_API_KEY/ANTHROPIC_MODEL is not configured")
         raise HTTPException(status_code=503, detail="Сервис AI временно недоступен — попробуйте позже")
     headers = {
         "x-api-key": ANTHROPIC_API_KEY,
@@ -132,25 +135,25 @@ async def _claude_call(system_prompt: str, user_msg: str, max_tokens: int = 1024
             r = await client.post(ANTHROPIC_URL, headers=headers, json=body)
         except httpx.HTTPError as e:
             logger.error("Anthropic request failed: %s", e)
-            raise HTTPException(status_code=502, detail="Claude недоступен")
+            raise HTTPException(status_code=502, detail="ИИ недоступен")
     if r.status_code != 200:
         logger.warning("Anthropic %d (тело ответа скрыто — возможны PHI)", r.status_code)
-        raise HTTPException(status_code=r.status_code, detail=f"Ошибка Claude ({r.status_code})")
+        raise HTTPException(status_code=r.status_code, detail=f"Ошибка ИИ ({r.status_code})")
     j = r.json()
     parts = j.get("content", []) or []
     return "".join(p.get("text", "") for p in parts if p.get("type") == "text").strip()
 
 
-async def _claude_vision_call(system_prompt: str, user_msg: str, image_b64: str,
+async def _llm_vision_call(system_prompt: str, user_msg: str, image_b64: str,
                               media_type: str, max_tokens: int = 800) -> str:
     """Тот же вызов LLM, но с картинкой в сообщении.
 
-    Отдельная функция, а не флаг в ``_claude_call``: у зрения своя цена и свои
+    Отдельная функция, а не флаг в ``_llm_call``: у зрения своя цена и свои
     ограничения на размер, и смешивать их с текстовыми вызовами — способ
     однажды случайно отправить фото туда, где его не ждут.
     """
-    if not ANTHROPIC_API_KEY:
-        logger.error("Claude vision call refused: ANTHROPIC_API_KEY is not configured")
+    if not ANTHROPIC_API_KEY or not ANTHROPIC_MODEL:
+        logger.error("LLM vision call refused: ANTHROPIC_API_KEY/ANTHROPIC_MODEL is not configured")
         raise HTTPException(status_code=503, detail="Сервис AI временно недоступен — попробуйте позже")
     headers = {
         "x-api-key": ANTHROPIC_API_KEY,
@@ -176,11 +179,11 @@ async def _claude_vision_call(system_prompt: str, user_msg: str, image_b64: str,
             r = await client.post(ANTHROPIC_URL, headers=headers, json=body)
         except httpx.HTTPError as e:
             logger.error("Anthropic vision request failed: %s", e)
-            raise HTTPException(status_code=502, detail="Claude недоступен")
+            raise HTTPException(status_code=502, detail="ИИ недоступен")
     if r.status_code != 200:
         # Тело не логируем: в нём может быть отражено содержимое фото.
         logger.warning("Anthropic vision %d", r.status_code)
-        raise HTTPException(status_code=r.status_code, detail=f"Ошибка Claude ({r.status_code})")
+        raise HTTPException(status_code=r.status_code, detail=f"Ошибка ИИ ({r.status_code})")
     j = r.json()
     parts = j.get("content", []) or []
     return "".join(p.get("text", "") for p in parts if p.get("type") == "text").strip()
@@ -205,11 +208,11 @@ def _validate_icd10(raw) -> Optional[str]:
 def _extract_json(text: str) -> dict:
     m = re.search(r"\{[\s\S]*\}", text)
     if not m:
-        raise HTTPException(status_code=502, detail="Claude вернул не JSON")
+        raise HTTPException(status_code=502, detail="ИИ вернул не JSON")
     try:
         return json.loads(m.group(0))
     except json.JSONDecodeError:
-        raise HTTPException(status_code=502, detail="Claude вернул невалидный JSON")
+        raise HTTPException(status_code=502, detail="ИИ вернул невалидный JSON")
 
 
 @router.post("/generate-soap", response_model=SoapResponse)
@@ -274,7 +277,7 @@ async def generate_soap(request: Request, req: SoapRequest, current_user: User =
     user_msg = f"Транскрипт приёма:\n\n{req.transcript}"
     if req.patient_context:
         user_msg += "\n\nКонтекст пациента: " + json.dumps(req.patient_context, ensure_ascii=False)
-    text = await _claude_call(system_prompt, user_msg, max_tokens=3000)
+    text = await _llm_call(system_prompt, user_msg, max_tokens=3000)
     parsed = _extract_json(text)
     def _list(v):
         if v is None: return None
@@ -389,7 +392,7 @@ async def parse_patient(request: Request, req: ParsePatientRequest, current_user
         "Ненайденные поля не включай в JSON или ставь null. "
         "Верни ровно один JSON-объект, без префиксов и markdown-обёрток."
     )
-    text = await _claude_call(system_prompt, f"Описание пациента:\n\n{req.transcript}", max_tokens=800)
+    text = await _llm_call(system_prompt, f"Описание пациента:\n\n{req.transcript}", max_tokens=800)
     parsed = _extract_json(text)
 
     def _int(v, lo=None, hi=None):
@@ -467,5 +470,5 @@ async def analyze_labs(request: Request, req: LabsRequest, current_user: User = 
     user_msg = "Результаты анализов: " + json.dumps(req.results, ensure_ascii=False)
     if req.patient_context:
         user_msg += "\n\nКонтекст пациента: " + json.dumps(req.patient_context, ensure_ascii=False)
-    text = await _claude_call(system_prompt, user_msg, max_tokens=400)
+    text = await _llm_call(system_prompt, user_msg, max_tokens=400)
     return LabsResponse(comment=text)

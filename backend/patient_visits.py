@@ -21,7 +21,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from database import SessionLocal, get_db
-from llm import _claude_call
+from llm import _llm_call
 from models import Consultation, PatientAccount, PatientLink, User, VisitSummary
 from patient_auth import get_current_patient
 
@@ -124,7 +124,7 @@ async def generate_visit_summary(consultation_id: int) -> None:
         if not soap:
             return
 
-        text = await _claude_call(
+        text = await _llm_call(
             _SYSTEM_PROMPT,
             f"Язык пациента: {lang_name}.\n\nSOAP-заметка врача:\n{soap}",
             max_tokens=600,
@@ -150,7 +150,7 @@ async def generate_visit_summary(consultation_id: int) -> None:
             summary=summary,
             prescriptions=prescriptions,
             language=lang,
-            model=os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6"),
+            model=os.getenv("ANTHROPIC_MODEL", ""),
         ))
         db.commit()
     except Exception:

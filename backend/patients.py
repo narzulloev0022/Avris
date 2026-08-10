@@ -345,7 +345,7 @@ async def previsit_brief(
     """AI-сводка «что важно перед приёмом» — фаза подготовки (не сохраняется)."""
     import patient_checkins as checkins
     from epicrises import _build_history
-    from llm import _claude_call
+    from llm import _llm_call
 
     p = _get_owned_patient(db, pid, current_user)
     history, _counts = _build_history(db, p, max_consults=5, max_rounds=5, max_labs=3)
@@ -360,7 +360,7 @@ async def previsit_brief(
             history += "\n\n" + block
 
     lang_name = _PV_LANG.get(payload.language, "русском")
-    text = await _claude_call(
+    text = await _llm_call(
         _PV_SYSTEM,
         f"Язык сводки: {lang_name}.\n\nИстория болезни:\n\n{history}",
         max_tokens=500,

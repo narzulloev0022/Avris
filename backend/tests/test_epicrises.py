@@ -1,4 +1,4 @@
-"""Эпикризы: черновик Claude (мок), сохранение версий, scoping, PDF."""
+"""Эпикризы: черновик ИИ (мок), сохранение версий, scoping, PDF."""
 import pytest
 
 from conftest import auth_headers
@@ -50,7 +50,7 @@ def _mk_consultation(client, doctor, pid, **overrides):
 # ---------- Черновик ----------
 
 def test_draft_503_without_api_key(client, doctor):
-    """Без ANTHROPIC_API_KEY (в тестах он пуст) — честный 503 от _claude_call."""
+    """Без ANTHROPIC_API_KEY (в тестах он пуст) — честный 503 от _llm_call."""
     p = _mk_patient(client, doctor)
     r = client.post("/api/epicrises/draft",
                     json={"patient_id": p["id"], "kind": "discharge"},
@@ -58,19 +58,19 @@ def test_draft_503_without_api_key(client, doctor):
     assert r.status_code == 503
 
 
-def test_draft_with_mocked_claude(client, doctor, monkeypatch):
+def test_draft_with_mocked_llm(client, doctor, monkeypatch):
     p = _mk_patient(client, doctor)
     _mk_consultation(client, doctor, p["id"], visit_type="primary")
     _mk_consultation(client, doctor, p["id"])
 
     captured = {}
 
-    async def fake_claude(system_prompt, user_msg, max_tokens=1024):
+    async def fake_llm(system_prompt, user_msg, max_tokens=1024):
         captured["system"] = system_prompt
         captured["user"] = user_msg
         return FAKE_DRAFT
 
-    monkeypatch.setattr(epi_module, "_claude_call", fake_claude)
+    monkeypatch.setattr(epi_module, "_llm_call", fake_llm)
     r = client.post("/api/epicrises/draft",
                     json={"patient_id": p["id"], "kind": "discharge", "language": "ru"},
                     headers=auth_headers(doctor))
@@ -94,11 +94,11 @@ def test_draft_interim_prompt(client, doctor, monkeypatch):
     p = _mk_patient(client, doctor)
     captured = {}
 
-    async def fake_claude(system_prompt, user_msg, max_tokens=1024):
+    async def fake_llm(system_prompt, user_msg, max_tokens=1024):
         captured["system"] = system_prompt
         return "ТЕКУЩЕЕ СОСТОЯНИЕ\nСтабильное."
 
-    monkeypatch.setattr(epi_module, "_claude_call", fake_claude)
+    monkeypatch.setattr(epi_module, "_llm_call", fake_llm)
     r = client.post("/api/epicrises/draft",
                     json={"patient_id": p["id"], "kind": "interim"},
                     headers=auth_headers(doctor))
