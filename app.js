@@ -864,12 +864,13 @@ function plDigits(v){return String(v||"").replace(/\D/g,"").slice(0,6)}
    переводим сами, незнакомое отдаём как пришло — это лучше пустого «ошибка». */
 function plErr(status,detail){var k={404:"pl_e404",410:"pl_e410",429:"pl_e429",403:"pl_e403"}[status];
 return k?t(k):((typeof detail==="string"&&detail)?detail:t("t_network"))}
+function plGender(g){return {female:t("gender_f"),male:t("gender_m")}[g]||g||""}
 function plRow(label,value){return value?'<div class="pl-row"><span>'+esc(label)+'</span><span>'+esc(value)+'</span></div>':""}
 function plRenderPreview(d){
 var w=$("plPreview"),dob=d.date_of_birth?ecFmtDate(d.date_of_birth+"T00:00:00").slice(0,10):"";
 var al=(d.allergies||[]);
 w.innerHTML=plRow(t("pat_f_name"),d.full_name||"—")+plRow(t("pat_f_dob"),dob)
-+plRow(t("pat_f_gender"),d.gender)+plRow(t("pat_f_blood"),d.blood_type)
++plRow(t("pat_f_gender"),plGender(d.gender))+plRow(t("pat_f_blood"),d.blood_type)
 +(al.length?'<div class="pl-allergy"><div class="pl-row"><span>'+esc(t("m_allergy"))+'</span><span style="color:var(--danger)">'+esc(al.join(", "))+'</span></div></div>'
  :'<div class="pl-allergy"><div class="pl-row"><span>'+esc(t("m_allergy"))+'</span><span>'+esc(t("none"))+'</span></div></div>');
 $("plStep1").hidden=true;$("plStep2").hidden=false;$("plAltToggle").style.display="none";
