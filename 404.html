@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Avris AI</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+/* Страница автономна: ни styles.css, ни app.js. Её показывают ровно тогда,
+   когда с приложением что-то не так, и тянуть за собой его зависимости —
+   верный способ получить пустой экран вместо объяснения. */
+:root{
+  --bg:#080e18;--card:#111e2e;--text:#f0f4f8;--muted:#94a3b8;
+  --accent:#95AEF8;--accent-dim:#6E86E0;--border:rgba(255,255,255,.08);
+}
+body[data-theme="light"]{
+  --bg:#FFFFFF;--card:#F8FAFC;--text:#1a202c;--muted:#4a5568;
+  --accent:#4659B5;--accent-dim:#95AEF8;--border:rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:var(--bg);color:var(--text);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  display:flex;align-items:center;justify-content:center;padding:24px;
+  transition:background .2s,color .2s}
+.wrap{width:100%;max-width:440px;text-align:center}
+.logo{height:34px;margin-bottom:34px;opacity:.9}
+.code{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:4.6rem;
+  line-height:1;letter-spacing:-.02em;
+  background:linear-gradient(135deg,var(--accent-dim),var(--accent));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+h1{font-size:1.35rem;font-weight:800;margin:18px 0 10px;letter-spacing:-.01em}
+p{font-size:.92rem;line-height:1.55;color:var(--muted)}
+.actions{display:flex;gap:10px;justify-content:center;margin-top:28px;flex-wrap:wrap}
+.btn{padding:11px 22px;border-radius:20px;font-size:.86rem;font-weight:600;
+  text-decoration:none;transition:transform .15s,opacity .15s;display:inline-block}
+.btn:hover{transform:translateY(-1px)}
+.btn-p{background:linear-gradient(135deg,var(--accent-dim),var(--accent));color:#fff}
+body[data-theme="light"] .btn-p{color:#fff}
+.btn-g{border:1px solid var(--border);color:var(--text);background:var(--card)}
+.langs{margin-top:34px;display:flex;gap:6px;justify-content:center}
+.langs button{background:none;border:1px solid var(--border);color:var(--muted);
+  font-family:inherit;font-size:.72rem;font-weight:600;padding:5px 12px;
+  border-radius:20px;cursor:pointer;transition:.15s}
+.langs button.on{border-color:var(--accent);color:var(--accent)}
+@media(max-width:480px){.code{font-size:3.6rem}h1{font-size:1.15rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <img src="/assets/logo.svg" alt="Avris AI" class="logo">
+  <div class="code">404</div>
+  <h1 id="ttl">Страница не найдена</h1>
+  <p id="txt">Такого адреса в Avris нет. Возможно, ссылка устарела или в адресе опечатка.</p>
+  <div class="actions">
+    <a href="/app" class="btn btn-p" id="b1">В приложение</a>
+    <a href="/" class="btn btn-g" id="b2">На главную</a>
+  </div>
+  <div class="langs">
+    <button data-l="ru">RU</button><button data-l="tj">TJ</button><button data-l="en">EN</button>
+  </div>
+</div>
+<script>
+(function(){
+  var T={
+    ru:{ttl:"Страница не найдена",txt:"Такого адреса в Avris нет. Возможно, ссылка устарела или в адресе опечатка.",b1:"В приложение",b2:"На главную"},
+    tj:{ttl:"Саҳифа ёфт нашуд",txt:"Чунин суроға дар Avris нест. Эҳтимол пайванд кӯҳна шудааст ё дар суроға хато аст.",b1:"Ба барнома",b2:"Ба саҳифаи асосӣ"},
+    en:{ttl:"Page not found",txt:"This address doesn't exist in Avris. The link may be outdated or mistyped.",b1:"Open the app",b2:"Go home"}
+  };
+  /* Тему и язык берём из тех же ключей, что и приложение: человек, попавший
+     сюда из Avris, не должен увидеть чужую тему и чужой язык. */
+  var th="dark";
+  try{
+    var pref=localStorage.getItem("avris-theme")||"system";
+    th=pref==="system"?(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"):pref;
+  }catch(e){}
+  document.body.dataset.theme=th;
+  function apply(l){
+    var d=T[l]||T.ru;
+    document.documentElement.lang=l;
+    document.getElementById("ttl").textContent=d.ttl;
+    document.getElementById("txt").textContent=d.txt;
+    document.getElementById("b1").textContent=d.b1;
+    document.getElementById("b2").textContent=d.b2;
+    var bs=document.querySelectorAll(".langs button");
+    for(var i=0;i<bs.length;i++)bs[i].className=bs[i].dataset.l===l?"on":"";
+  }
+  var lang="ru";
+  try{lang=localStorage.getItem("avris-lang")||((navigator.language||"ru").slice(0,2)==="en"?"en":"ru")}catch(e){}
+  if(!T[lang])lang="ru";
+  apply(lang);
+  document.querySelector(".langs").addEventListener("click",function(e){
+    var b=e.target.closest("button");
+    if(!b)return;
+    apply(b.dataset.l);
+    try{localStorage.setItem("avris-lang",b.dataset.l)}catch(e){}
+  });
+})();
+</script>
+</body>
+</html>

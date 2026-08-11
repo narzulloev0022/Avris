@@ -142,6 +142,7 @@
 <script>!function(){var pref=localStorage.getItem("avris-theme")||"system";var eff=pref==="system"?(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"):pref;document.body.dataset.theme=eff;var paths=eff==="dark"?'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>':'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';var ic=document.getElementById("themeIcon");if(ic)ic.innerHTML=paths;var lic=document.getElementById("loginThemeIcon");if(lic)lic.innerHTML=paths}()</script>
 </div>
 </header>
+<div class="netbar" id="netBar" role="status" aria-live="polite" hidden><span class="netbar-ic" id="netBarIc" aria-hidden="true"></span><span class="netbar-msg" id="netBarMsg"></span><button class="netbar-btn" id="netBarRetry" type="button" data-i18n="net_retry">Повторить</button></div>
 <div class="main">
 <section class="screen active" id="dashboard">
 <div class="dash-stats">

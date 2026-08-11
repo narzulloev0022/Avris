@@ -24,7 +24,7 @@ from models import User  # noqa: E402
 EMAIL = "demo.doctor@avris.ai"
 LEGACY_EMAIL = "demo.doctor@avris.local"
 PASSWORD = "demo1234"
-FULL_NAME = "Др. Демо Каримов"
+FULL_NAME = "Каримов Демо Абдуллоевич"
 
 
 def main() -> None:
@@ -55,6 +55,9 @@ def main() -> None:
         else:
             doc.is_verified = True
             doc.is_approved = True
+            # Имя чиним и у уже созданного аккаунта: префикс «Др.» рисует UI.
+            if doc.full_name != FULL_NAME:
+                doc.full_name = FULL_NAME
             db.commit()
             state = "exists "
         token = create_access_token(doc.id)

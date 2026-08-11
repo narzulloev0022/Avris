@@ -359,6 +359,21 @@ body[data-theme="light"] .profile-setup-card{background:#FFFFFF}
 .toast.toast-ok{border-left-color:var(--success)}
 .toast.toast-err{border-left-color:var(--danger)}
 .toast.toast-info{border-left-color:var(--accent)}
+/* Полоса состояния связи под topbar. Живёт в потоке, а не поверх контента:
+   врач должен видеть её постоянно, пока связь не восстановлена, а не ловить
+   трёхсекундный тост между двумя пациентами. */
+.netbar{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:.8rem;font-weight:600;background:var(--warning-bg);color:var(--warning);border-bottom:1px solid var(--border);position:sticky;top:var(--topbar);z-index:790}
+.netbar[hidden]{display:none}
+.netbar-ic{display:inline-flex;flex-shrink:0}
+.netbar-msg{flex:1;min-width:0}
+.netbar-btn{flex-shrink:0;padding:5px 12px;border-radius:var(--radius-pill);border:1px solid currentColor;background:transparent;color:inherit;font-family:var(--font-ui);font-size:.75rem;font-weight:700;cursor:pointer;transition:var(--transition)}
+.netbar-btn:hover{background:var(--warning);color:#fff;border-color:var(--warning)}
+.netbar-btn[hidden]{display:none}
+/* Несохранённое опаснее отсутствия связи: связь вернётся сама, а запись,
+   о которой врач думает, что она ушла, — нет. */
+.netbar.netbar-pending{background:var(--danger-bg);color:var(--danger)}
+.netbar.netbar-pending .netbar-btn:hover{background:var(--danger);border-color:var(--danger)}
+@media(max-width:560px){.netbar{padding:8px 14px;font-size:.75rem;gap:8px}}
 .confirm-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9998;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(3px)}
 .confirm-ov.show{opacity:1;pointer-events:auto}
 .confirm-d{background:var(--bg-card);border-radius:var(--radius-md);padding:28px;max-width:360px;width:90%;text-align:center;box-shadow:var(--sh2)}

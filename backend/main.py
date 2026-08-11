@@ -6,9 +6,11 @@ from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from dotenv import load_dotenv
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -270,6 +272,19 @@ def serve_app():
     return {"message": "Frontend not found at " + str(INDEX_HTML)}
 
 
+@app.get("/app/{sub_path:path}")
+def serve_app_deep(sub_path: str):
+    """Любой под-адрес /app/... отдаёт то же приложение.
+
+    Без этого ссылка на конкретный экран возвращала 404: врач не мог ни
+    переслать её коллеге, ни просто нажать F5 не на корне. Роутинг внутри
+    SPA свой, серверу достаточно вернуть оболочку.
+    """
+    if INDEX_HTML.exists():
+        return FileResponse(INDEX_HTML)
+    return {"message": "Frontend not found at " + str(INDEX_HTML)}
+
+
 WAITLIST_HTML = PROJECT_ROOT / "marketing" / "waitlist.html"
 
 
@@ -339,6 +354,25 @@ def serve_app_js():
     if APP_JS.exists():
         return FileResponse(APP_JS, media_type="application/javascript")
     return {"message": "app.js not found"}
+
+
+NOT_FOUND_HTML = PROJECT_ROOT / "404.html"
+
+
+@app.exception_handler(StarletteHTTPException)
+async def not_found_page(request, exc: StarletteHTTPException):
+    """Человеку — страница, машине — JSON.
+
+    Раньше опечатка в адресе давала врачу голый {"detail":"Not Found"}: ни
+    бренда, ни пути назад. Клиентам API это по-прежнему нужно в JSON, поэтому
+    развилка идёт по префиксу пути, а не по заголовку Accept — заголовок
+    браузера слишком часто врёт.
+    """
+    if (exc.status_code == 404
+            and not request.url.path.startswith("/api/")
+            and NOT_FOUND_HTML.exists()):
+        return FileResponse(NOT_FOUND_HTML, status_code=404)
+    return await http_exception_handler(request, exc)
 
 
 # Mount any sibling static assets (favicons, future bundled JS) if present

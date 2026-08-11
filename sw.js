@@ -13,7 +13,7 @@
  */
 "use strict";
 
-var SW_VERSION = "v46";
+var SW_VERSION = "v47";
 var SHELL_CACHE = "avris-shell-" + SW_VERSION;
 var STATIC_CACHE = "avris-static-" + SW_VERSION;
 
@@ -25,6 +25,7 @@ var SHELL_URLS = [
   "/assets/favicon-hyperion.svg",
   "/assets/logo.svg",
   "/manifest.json",
+  "/404.html",
   "/assets/vendor/anime.umd.min.js",
   "/assets/vendor/motion.min.js",
   "/assets/vendor/gsap/gsap.min.js",
