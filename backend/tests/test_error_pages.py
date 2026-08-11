@@ -44,3 +44,10 @@ class TestDeepLinks:
         r = client.get("/app")
         assert 'id="netBar"' in r.text
         assert 'id="netBarRetry"' in r.text
+
+    def test_login_screen_has_its_own_bar(self, client):
+        """Врач, который не смог войти из-за сети, должен видеть причину —
+        а не гадать над «Ошибка сети» под кнопкой."""
+        r = client.get("/app")
+        assert 'id="loginNetBar"' in r.text
+        assert 'id="loginNetBarRetry"' in r.text

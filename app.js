@@ -125,12 +125,19 @@ var PENDING_TTL=7*24*3600*1000,PENDING_MAX=20;
 function pendingList(){try{var v=JSON.parse(localStorage.getItem("avris-pending-consults")||"[]");if(!Array.isArray(v))return[];var now=Date.now();return v.filter(function(it){return it&&it.ts&&(now-it.ts)<PENDING_TTL}).slice(-PENDING_MAX)}catch(e){return[]}}
 function pendingSet(list){try{localStorage.setItem("avris-pending-consults",JSON.stringify(list))}catch(e){}renderNetBar()}
 function queueConsult(body){var list=pendingList();list.push({owner:(currentUser&&currentUser.email)||"",body:body,ts:Date.now()});pendingSet(list)}
-function renderNetBar(){var bar=$("netBar");if(!bar)return;var n=pendingList().length;
-if(!netDown&&!n){bar.hidden=true;return}
+/* Полос две — в приложении и на экране входа. Состояние одно: врач, который
+   не смог войти из-за сети, должен видеть ту же причину, что и врач, у которого
+   сеть отвалилась в середине смены. */
+function renderNetBar(){var n=pendingList().length,show=netDown||n>0;
+var msg=netDown?(n?t("net_offline_pending").replace("{n}",n):t("net_offline")):t("net_pending").replace("{n}",n);
+[["netBar","netBarIc","netBarMsg","netBarRetry"],["loginNetBar","loginNetBarIc","loginNetBarMsg","loginNetBarRetry"]].forEach(function(ids){
+var bar=$(ids[0]);if(!bar)return;
+if(!show){bar.hidden=true;return}
 bar.hidden=false;bar.classList.toggle("netbar-pending",!netDown&&n>0);
-$("netBarIc").innerHTML=netDown?SVG_NET:SVG_WARN;
-$("netBarMsg").textContent=netDown?(n?t("net_offline_pending").replace("{n}",n):t("net_offline")):t("net_pending").replace("{n}",n);
-$("netBarRetry").hidden=netDown&&!n}
+$(ids[1]).innerHTML=netDown?SVG_NET:SVG_WARN;
+$(ids[2]).textContent=msg;
+$(ids[3]).hidden=(ids[0]==="netBar")&&netDown&&!n});
+var ls=$("loginScreen"),lb=$("loginNetBar");if(ls){ls.classList.toggle("netbar-on",show);ls.style.setProperty("--netbar-h",(show&&lb?lb.offsetHeight:0)+"px")}}
 function markNetDown(){if(!netDown){netDown=true;renderNetBar()}
 if(!netProbeTm)netProbeTm=setInterval(function(){fetch(API_BASE+"/api/health").then(function(r){if(r.ok)markNetUp()}).catch(function(){})},15000)}
 function markNetUp(){if(netProbeTm){clearInterval(netProbeTm);netProbeTm=null}
@@ -146,7 +153,8 @@ function step(i){if(i>=list.length){var rest=list.filter(function(it,k){return !
 var it=list[i];if(it.owner&&mine&&it.owner!==mine){step(i+1);return}
 apiFetch("/api/consultations/",{method:"POST",body:JSON.stringify(it.body)}).then(function(r){if(r.ok){it._done=true;sent++}step(i+1)}).catch(function(){pendingSet(list.filter(function(x){return !x._done}))})}
 step(0)}
-if($("netBarRetry"))$("netBarRetry").onclick=function(){var b=$("netBarRetry");b.disabled=true;fetch(API_BASE+"/api/health").then(function(r){if(r.ok){markNetUp();flushPending()}else{markNetDown()}}).catch(markNetDown).then(function(){b.disabled=false})};
+function netRetry(b){b.disabled=true;fetch(API_BASE+"/api/health").then(function(r){if(r.ok){markNetUp();flushPending()}else{markNetDown()}}).catch(markNetDown).then(function(){b.disabled=false;/* Кнопка на логине повторяет и сам вход: связь есть, а человек всё ещё смотрит в форму, из-за которой пришёл. */if(b.id==="loginNetBarRetry"&&!netDown&&authToken())bootstrap()})}
+["netBarRetry","loginNetBarRetry"].forEach(function(id){var b=$(id);if(b)b.onclick=function(){netRetry(b)}});
 renderNetBar();
 window.addEventListener("offline",markNetDown);
 window.addEventListener("online",function(){fetch(API_BASE+"/api/health").then(function(r){if(r.ok)markNetUp()}).catch(function(){})});
@@ -180,7 +188,7 @@ function bootstrap(){var qs=new URLSearchParams(location.search);var oauthTk=qs.
    login screen on every refresh while /api/auth/me is in flight. */if(tk){$("loginScreen").classList.add("hidden")}var probeUrl=tk?"/api/auth/me":"/api/health";var probeOpts=tk?{headers:{"Authorization":"Bearer "+tk}}:{};fetch(API_BASE+probeUrl,probeOpts).then(function(r){if(tk){if(r.ok)return r.json().then(function(u){applySession(u);if(u.is_verified&&!u.profile_completed){showProfileSetup();return}if(u.is_verified&&u.profile_completed&&u.is_approved===false){showPendingScreen();return}showApp();flushPending();fetchPatients();if(typeof refreshAdminPending==="function")refreshAdminPending();if(typeof refreshNotifs==="function")refreshNotifs()});/* Only invalidate the token on real auth failures (401 / 403). For
    transient backend issues (500, 502, 503, 504) keep the user signed in
    and let them retry — wiping the token here forces a relogin every
-   time Railway hiccups. */if(r.status===401||r.status===403){if(!window._bsRefreshed&&refreshTok()){window._bsRefreshed=true;return doRefresh().then(function(ok){if(ok)return bootstrap();setAuthToken("");setRefreshTok("");showLogin()})}setAuthToken("");setRefreshTok("");showLogin();return}showLogin();return}showLogin()}).catch(function(){if(tk){/* Сеть упала, а токен на руках. Экран входа тут бесполезен: войти всё равно некуда, а врач теряет смену. Поднимаем сессию из локального профиля и честно говорим полосой, что связи нет; при возврате bootstrap повторится. */var cached=null;try{cached=JSON.parse(localStorage.getItem("avris-user")||"null")}catch(e){}if(cached){window._offlineSession=true;applySession(cached);showApp();markNetDown();return}showLogin();showLoginMsg(t("net_offline"));markNetDown();return}enterDemoMode()})}
+   time Railway hiccups. */if(r.status===401||r.status===403){if(!window._bsRefreshed&&refreshTok()){window._bsRefreshed=true;return doRefresh().then(function(ok){if(ok)return bootstrap();setAuthToken("");setRefreshTok("");showLogin()})}setAuthToken("");setRefreshTok("");showLogin();return}showLogin();return}showLogin()}).catch(function(){if(tk){/* Сеть упала, а токен на руках. Экран входа тут бесполезен: войти всё равно некуда, а врач теряет смену. Поднимаем сессию из локального профиля и честно говорим полосой, что связи нет; при возврате bootstrap повторится. */var cached=null;try{cached=JSON.parse(localStorage.getItem("avris-user")||"null")}catch(e){}if(cached){window._offlineSession=true;applySession(cached);showApp();markNetDown();return}showLogin();markNetDown();return}enterDemoMode()})}
 
 function csv(s){return (s||"").split(",").map(function(x){return x.trim()}).filter(Boolean)}
 function bePatToFe(p){return{id:String(p.id),_serverId:p.id,name:p.full_name||"",ini:p.initials||(p.full_name||"").split(/\s+/).map(function(w){return w[0]||""}).join("").slice(0,2).toUpperCase(),ward:p.ward||"",ward_en:p.ward_en||p.ward||"",department:p.department||"",status:p.status||"",patient_type:p.patient_type||"outpatient",dob:p.date_of_birth||"",record:p.record_number||"",adm_date:p.admission_date||"",adm_diag:p.admission_diagnosis||"",adm_status:p.admission_status||"",score:(p.avris_score==null?null:p.avris_score),diag:p.diagnoses||[],diag_en:p.diagnoses_en||p.diagnoses||[],current:p.current_conditions||p.diagnoses||[],current_en:p.current_conditions_en||p.diagnoses_en||[],hist:p.history||[],hist_en:p.history_en||p.history||[],allergy:p.allergies||[],allergy_en:p.allergies_en||p.allergies||[],meds:p.medications||[],meds_en:p.medications_en||p.medications||[],insight:p.insight||"",insight_en:p.insight_en||p.insight||"",demo:{age:p.age,gender:p.gender||"",gender_en:p.gender_en||p.gender||"",blood:p.blood_type||"",blood_en:p.blood_type_en||p.blood_type||"",height:p.height,weight:p.weight,bmi:p.bmi||""},vitals:p.vitals||{}}}

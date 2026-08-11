@@ -373,6 +373,12 @@ body[data-theme="light"] .profile-setup-card{background:#FFFFFF}
    о которой врач думает, что она ушла, — нет. */
 .netbar.netbar-pending{background:var(--danger-bg);color:var(--danger)}
 .netbar.netbar-pending .netbar-btn:hover{background:var(--danger);border-color:var(--danger)}
+/* На экране входа полосе не подо что подстраиваться — topbar'а нет, форма
+   центрирована по вертикали. Прибиваем к верхнему краю окна, а угловые
+   кнопки (тема, язык) сдвигаем вниз, чтобы полоса их не накрыла. */
+.netbar-login{position:fixed;top:0;left:0;right:0;z-index:900}
+.login-screen.netbar-on{padding-top:var(--netbar-h,44px)}
+.login-screen.netbar-on .login-theme-toggle,.login-screen.netbar-on .login-lang-corner{top:calc(var(--netbar-h,44px) + 12px)}
 @media(max-width:560px){.netbar{padding:8px 14px;font-size:.75rem;gap:8px}}
 .confirm-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9998;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(3px)}
 .confirm-ov.show{opacity:1;pointer-events:auto}
