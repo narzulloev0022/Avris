@@ -134,10 +134,10 @@ async def _llm_call(system_prompt: str, user_msg: str, max_tokens: int = 1024) -
         try:
             r = await client.post(ANTHROPIC_URL, headers=headers, json=body)
         except httpx.HTTPError as e:
-            logger.error("Anthropic request failed: %s", e)
+            logger.error("LLM request failed: %s", e)
             raise HTTPException(status_code=502, detail="ИИ недоступен")
     if r.status_code != 200:
-        logger.warning("Anthropic %d (тело ответа скрыто — возможны PHI)", r.status_code)
+        logger.warning("LLM %d (тело ответа скрыто — возможны PHI)", r.status_code)
         raise HTTPException(status_code=r.status_code, detail=f"Ошибка ИИ ({r.status_code})")
     j = r.json()
     parts = j.get("content", []) or []
@@ -178,11 +178,11 @@ async def _llm_vision_call(system_prompt: str, user_msg: str, image_b64: str,
         try:
             r = await client.post(ANTHROPIC_URL, headers=headers, json=body)
         except httpx.HTTPError as e:
-            logger.error("Anthropic vision request failed: %s", e)
+            logger.error("LLM vision request failed: %s", e)
             raise HTTPException(status_code=502, detail="ИИ недоступен")
     if r.status_code != 200:
         # Тело не логируем: в нём может быть отражено содержимое фото.
-        logger.warning("Anthropic vision %d", r.status_code)
+        logger.warning("LLM vision %d", r.status_code)
         raise HTTPException(status_code=r.status_code, detail=f"Ошибка ИИ ({r.status_code})")
     j = r.json()
     parts = j.get("content", []) or []

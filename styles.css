@@ -1054,6 +1054,34 @@ body[data-theme="dark"] .btn-logout:hover{background:rgba(255,255,255,0.06)}
 .tl-body{display:none;font-size:.82rem;color:var(--text-primary);margin-top:8px;white-space:pre-wrap;border-top:1px solid var(--border);padding-top:8px}
 .tl-item.open .tl-body{display:block}
 .tl-item.open .tl-snip{display:none}
+/* Связывание пациента с приложением: код у стойки за пятнадцать секунд.
+   Кнопка стоит рядом с «Новый пациент» — это альтернатива ручному заведению
+   карточки, а не отдельный раздел. */
+.fab-link{position:fixed;right:24px;bottom:88px;display:flex;align-items:center;gap:8px;
+  padding:11px 18px;border-radius:var(--radius-pill);border:1px solid var(--accent);
+  background:var(--bg-card);color:var(--accent);font-size:.84rem;font-weight:600;
+  cursor:pointer;transition:background .15s,color .15s}
+.fab-link:hover{background:var(--accent);color:#0b1020}
+.pl-hint{font-size:.84rem;color:var(--text-secondary);margin-bottom:14px;line-height:1.45}
+/* Код читают вслух с чужого экрана — поэтому крупно, моноширинно и с разрядкой:
+   на 6 слитных мелких цифрах ошибаются, а каждая ошибка тратит попытку. */
+.pl-code{font-family:var(--font-data);font-size:1.6rem;letter-spacing:.22em;text-align:center}
+.pl-note{font-size:.78rem;color:var(--text-muted);margin-top:6px;line-height:1.4}
+.pl-preview{border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 14px}
+.pl-row{display:flex;justify-content:space-between;gap:12px;font-size:.86rem;padding:3px 0}
+.pl-row span:first-child{color:var(--text-muted)}
+.pl-row span:last-child{color:var(--text-primary);font-weight:600;text-align:right}
+.pl-allergy{margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.pl-ask{font-size:.88rem;color:var(--text-secondary);margin-top:12px}
+/* Заметка пациента показывается ОДИН раз — на подтверждении связи. Сервер
+   тут же метит её прочитанной, второго шанса не будет, поэтому она выделена. */
+.pl-note-card{margin-top:10px;border:1px solid var(--accent);border-radius:var(--radius-md);
+  padding:10px 12px;background:var(--accent-glow)}
+.pl-note-card b{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--accent);margin-bottom:4px}
+.pl-note-card p{font-size:.85rem;color:var(--text-primary);line-height:1.45;white-space:pre-wrap}
+@media(max-width:768px){.fab-link{right:16px;bottom:80px;padding:9px 14px;font-size:.8rem}}
+
 /* Самооценка самочувствия: ряд дней, высота столбика = уровень.
 
    Высота и цвет кодируют РАЗНОЕ, иначе ряд читается как набор категорий, а не

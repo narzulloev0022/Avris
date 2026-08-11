@@ -158,6 +158,7 @@
 </div>
 <div class="p-list" id="patList"></div>
 <div class="p-empty empty-state empty-state-sm" id="patEmpty"><div class="empty-state-t" data-i18n="pat_empty">Пациенты не найдены</div></div>
+<button class="fab-link" id="fabLinkPat" type="button" data-i18n-title="pl_title"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v3M17 20h4"/></svg><span data-i18n="pl_btn">Пациент с приложением</span></button>
 <button class="fab-exam" id="fabNewPat" type="button"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg><span data-i18n="fab_new_pat">Новый пациент</span></button>
 </section>
 <section class="screen" id="consultation">
@@ -611,6 +612,34 @@
 </div>
 </div>
 <div class="toast" id="toast"></div>
+<div class="nr-modal-ov" id="plModal">
+<div class="nr-modal-card" style="max-width:460px">
+<div class="nr-modal-hdr"><h3 data-i18n="pl_title">Пациент с приложением</h3><button class="icon-btn" id="plClose" aria-label="Close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<p class="pl-hint" data-i18n="pl_hint">Попросите пациента открыть Avris и показать код. Он действует пять минут.</p>
+<div id="plStep1">
+<div id="plCodeBlock">
+<label for="plCode" data-i18n="pl_code_lbl">Код из приложения</label>
+<input type="text" id="plCode" inputmode="numeric" autocomplete="off" maxlength="7" class="pl-code" placeholder="000 000">
+</div>
+<button class="btn ghost sm" type="button" id="plAltToggle" data-i18n="pl_alt_toggle">Нет кода — по Avris ID</button>
+<div id="plAlt" hidden>
+<label for="plAvrisId" data-i18n="pl_avris_id">Avris ID</label>
+<input type="text" id="plAvrisId" autocomplete="off" placeholder="AV-XXXX-XXXX">
+<label for="plName" data-i18n="pl_name">ФИО полностью</label>
+<input type="text" id="plName" autocomplete="off" data-phk="pl_name_ph" placeholder="Как записано в приложении">
+<p class="pl-note" id="plHintId" data-i18n="pl_alt_note">Имя должно совпасть в точности — иначе пациент не найдётся.</p>
+</div>
+</div>
+<div id="plStep2" hidden>
+<div class="pl-preview" id="plPreview"></div>
+<p class="pl-ask" data-i18n="pl_confirm_ask">Это ваш пациент?</p>
+</div>
+<div class="btn-row" style="margin-top:14px">
+<button class="btn ghost" type="button" id="plCancel" data-i18n="btn_cancel">Отмена</button>
+<button class="btn primary" type="button" id="plNext" data-i18n="pl_next">Найти</button>
+</div>
+</div>
+</div>
 <div class="confirm-ov" id="confirmOv"><div class="confirm-d"><h3 id="cTitle">—</h3><p id="cText"></p><div class="btn-row"><button class="btn ghost" id="cCancel" data-i18n="btn_cancel">Отмена</button><button class="btn danger" id="cOk" data-i18n="btn_yes">Да</button></div></div></div>
 <div class="vc-ov" id="vcOv"><div class="vc-card"><div class="vc-mic"><svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></div><div class="vc-state" id="vcState" data-i18n="vc_listening">Слушаю команду…</div><div class="vc-heard" id="vcHeard"></div><button class="btn ghost" id="vcCancel" data-i18n="btn_cancel">Отмена</button></div></div>
 <div class="memo-ov" id="consentOv"><div class="memo-d"><div class="memo-hdr"><h3 data-i18n="consent_title">Информированное согласие пациента</h3><button class="icon-btn" id="consentClose" aria-label="Close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div id="consentText" style="font-size:.88rem;line-height:1.55;color:var(--text-secondary);max-height:280px;overflow-y:auto;padding:8px 0"></div><label class="chk-lbl" style="margin-top:12px"><input type="checkbox" id="consentChk"> <span data-i18n="consent_check">Пациент ознакомлен и согласен</span></label><div id="consentSig" style="margin-top:12px;font-size:.78rem;color:var(--text-muted);font-family:var(--font-data)"></div><div class="btn-row"><button class="btn ghost" id="consentCancel" data-i18n="btn_cancel">Отмена</button><button class="btn primary" id="consentSave" data-i18n="btn_save">Сохранить</button></div></div></div>

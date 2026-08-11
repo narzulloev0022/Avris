@@ -48,7 +48,7 @@
 - **CORS**: whitelist (не `*`), `allow_credentials=False`.
 - **Аудио** не сохраняется на диск — память → Whisper, лимит размера.
 - **HTTPS**: HTTP→HTTPS 301 (Cloudflare).
-- **API-ключи** (Anthropic/OpenAI/Resend) не логируются.
+- **API-ключи** (LLM/OpenAI/Resend) не логируются.
 - `.gitignore` закрывает `.env`, `*.env`, `client_secret*.json`, `*.db`, `__pycache__/`, `.venv/`.
 - **npm audit: 0** уязвимостей; **safety: 0** CVE в установленных зависимостях.
 - БД — PostgreSQL (данные персистентны), пароли хешируются.

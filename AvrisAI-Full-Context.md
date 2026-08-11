@@ -77,7 +77,7 @@
 
 ## 5. Технологический стек
 
-**AI-ядро:** OpenAI **Whisper** (STT RU/TJ/EN) · Anthropic **LLM** (SOAP, комментарии к анализам, инсайты). Выбор стека фиксирован.
+**AI-ядро:** OpenAI **Whisper** (STT RU/TJ/EN) · **LLM** (SOAP, комментарии к анализам, инсайты). Выбор стека фиксирован.
 
 **Backend** (`backend/`): **FastAPI** (Python, async) · SQLAlchemy · Pydantic v2 · python-jose (JWT) · passlib+bcrypt · python-multipart · reportlab · Resend · slowapi (rate-limit). БД: **SQLite** (`backend/avris.db`, dev) → PostgreSQL (prod-цель). Миграции: **Alembic**.
 
