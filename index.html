@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=57">
+<link rel="stylesheet" href="styles.css?v=63">
 </head>
 <body data-theme="light">
 <div class="login-screen" id="loginScreen">
@@ -602,8 +602,8 @@
 <h3><span data-i18n="lab_modal_title">Направление на анализ</span> — <span id="labPatName">Иванова А.М.</span></h3>
 <button class="icon-btn" id="labModalClose" type="button" aria-label="Close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
 </div>
-<div class="lab-qr"><svg aria-hidden="true" id="labQrSvg" width="200" height="200" shape-rendering="crispEdges"></svg></div>
-<div class="lab-qr-help" data-i18n="lab_qr_help">Покажите этот код в лаборатории</div>
+<div class="lab-qr"><svg aria-hidden="true" id="labQrSvg" width="200" height="200" shape-rendering="crispEdges"></svg><div class="lab-qr-off" id="labQrOff" hidden data-i18n="lab_qr_offline">Без связи QR не выдать — код формирует сервер</div></div>
+<div class="lab-qr-help" id="labQrHelp" data-i18n="lab_qr_help">Покажите этот код в лаборатории</div>
 <input class="lab-search-input" id="labSearch" data-phk="lab_search_ph" placeholder="Поиск анализов..." type="search">
 <div id="labGroups"></div>
 <div class="lab-counter"><span data-i18n="lab_selected">Выбрано</span>: <strong id="labSelCount">0</strong></div>
@@ -695,6 +695,6 @@
 <script src="assets/vendor/gsap/TextPlugin.min.js"></script>
 <script src="assets/vendor/anime.umd.min.js"></script>
 <script src="assets/vendor/motion.min.js"></script>
-<script src="app.js?v=57"></script>
+<script src="app.js?v=63"></script>
 </body>
 </html>

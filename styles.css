@@ -377,6 +377,8 @@ body[data-theme="light"] .profile-setup-card{background:#FFFFFF}
    центрирована по вертикали. Прибиваем к верхнему краю окна, а угловые
    кнопки (тема, язык) сдвигаем вниз, чтобы полоса их не накрыла. */
 .netbar-login{position:fixed;top:0;left:0;right:0;z-index:900}
+.lab-qr-off{max-width:200px;font-size:.78rem;font-weight:600;line-height:1.4;color:var(--warning);text-align:center;padding:14px 10px;border:1px dashed var(--warning);border-radius:var(--radius-md);background:var(--warning-bg)}
+.lab-qr-off[hidden]{display:none}
 .login-screen.netbar-on{padding-top:var(--netbar-h,44px)}
 .login-screen.netbar-on .login-theme-toggle,.login-screen.netbar-on .login-lang-corner{top:calc(var(--netbar-h,44px) + 12px)}
 @media(max-width:560px){.netbar{padding:8px 14px;font-size:.75rem;gap:8px}}
@@ -727,7 +729,7 @@ body[data-theme="light"] .lab-file-item{background:#FAFAFA}
 body[data-theme="light"] .lab-modal-card{background:#FFFFFF;border-color:rgba(0,0,0,0.08);box-shadow:0 8px 32px rgba(0,0,0,.16)}
 .lab-modal-hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}
 .lab-modal-hdr h3{font-size:1rem;font-weight:700;line-height:1.3}
-.lab-qr{display:flex;justify-content:center;padding:14px;background:#fff;border-radius:12px;margin-bottom:10px}
+.lab-qr{display:flex;align-items:center;justify-content:center;min-height:228px;padding:14px;background:#fff;border-radius:12px;margin-bottom:10px}
 .lab-qr svg{display:block}
 .lab-qr-help{text-align:center;color:var(--text-muted);font-size:13px;margin-bottom:18px}
 .lab-tests-list{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}

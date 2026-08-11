@@ -45,6 +45,25 @@ class TestDeepLinks:
         assert 'id="netBar"' in r.text
         assert 'id="netBarRetry"' in r.text
 
+    def test_work_in_progress_survives_a_failed_generation(self, client):
+        """Кнопка генерации чистит поля под скелетон. Если запрос не дошёл,
+        текст врача обязан вернуться на место, а не остаться стёртым."""
+        r = client.get("/app.js")
+        assert "_prevSoap" in r.text
+        assert "_restoreSoap" in r.text
+        assert "t_soap_kept" in r.text
+
+    def test_referral_qr_is_never_faked(self, client):
+        """Без ответа сервера QR рисовался с выдуманным токеном: лаборатория
+        сканирует, упирается в «не найдено», а пациента уже отпустили."""
+        r = client.get("/app.js")
+        assert "lab_qr_offline" in r.text
+        js = r.text
+        i = js.find("function buildQR(")
+        assert i != -1
+        # заглушка стоит раньше ветки с демо-токеном
+        assert js.index("labQrOff", i) < js.index("demoToken", i)
+
     def test_shell_ships_the_offline_audio_store(self, client):
         """Аудио, не доехавшее до распознавания, должно переживать перезагрузку:
         врач жмёт F5, надеясь «починить», и не должен терять наговорённое."""
