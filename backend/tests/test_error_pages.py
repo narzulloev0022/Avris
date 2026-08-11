@@ -45,6 +45,15 @@ class TestDeepLinks:
         assert 'id="netBar"' in r.text
         assert 'id="netBarRetry"' in r.text
 
+    def test_shell_ships_the_offline_audio_store(self, client):
+        """Аудио, не доехавшее до распознавания, должно переживать перезагрузку:
+        врач жмёт F5, надеясь «починить», и не должен терять наговорённое."""
+        r = client.get("/app.js")
+        assert "avris-audio" in r.text
+        assert "restorePendingAudio" in r.text
+        # Голос пациента на диске — с ограничением по сроку и по владельцу.
+        assert "AUDIO_TTL" in r.text
+
     def test_login_screen_has_its_own_bar(self, client):
         """Врач, который не смог войти из-за сети, должен видеть причину —
         а не гадать над «Ошибка сети» под кнопкой."""
