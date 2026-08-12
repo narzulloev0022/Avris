@@ -26,7 +26,7 @@ def _render_code_email(code: str, headline: str, body: str, full_name: str = "")
     greeting = f"Здравствуйте, {_esc(full_name)}!" if full_name else "Здравствуйте!"
     return f"""
     <div style="font-family:Inter,Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#1a202c">
-      <h2 style="color:#4AA391;margin:0 0 16px">Avris AI</h2>
+      <h2 style="color:#4659B5;margin:0 0 16px">Avris AI</h2>
       <p>{greeting}</p>
       <p><strong>{headline}</strong></p>
       <p>{body}</p>
@@ -87,7 +87,7 @@ def _render_plain(headline: str, body_html: str, full_name: str = "") -> str:
     greeting = f"Здравствуйте, {_esc(full_name)}!" if full_name else "Здравствуйте!"
     return f"""
     <div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1a202c">
-      <h2 style="color:#4AA391;margin:0 0 16px">Avris AI</h2>
+      <h2 style="color:#4659B5;margin:0 0 16px">Avris AI</h2>
       <p>{greeting}</p>
       <p><strong>{headline}</strong></p>
       {body_html}
@@ -137,7 +137,7 @@ def send_doctor_approved(to_email: str, full_name: str = "") -> bool:
     body = """
       <p>Ваша заявка на доступ к Avris AI одобрена.</p>
       <p>Теперь вы можете войти в систему и начать работу.</p>
-      <p style="margin-top:18px"><a href="https://theavris.ai" style="background:#4AA391;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:600;display:inline-block">Войти в Avris AI</a></p>
+      <p style="margin-top:18px"><a href="https://theavris.ai" style="background:#4659B5;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:600;display:inline-block">Войти в Avris AI</a></p>
     """
     html = _render_plain("Добро пожаловать в Avris AI", body, full_name)
     return _send_via_resend(to_email, "Avris AI — ваш доступ одобрен", html, "Approval", to_email)
@@ -186,7 +186,7 @@ def send_patient_alert_email(to_email: str, full_name: str = "") -> bool:
       <p>Avris заметил кое-что в ваших измерениях и готов показать это вам.</p>
       <p>Откройте приложение — заметка ждёт в разделе «Здоровье → Мониторинг».
          Она не заменяет осмотр и не ставит диагноз: это повод показать данные врачу.</p>
-      <p style="margin-top:18px"><a href="https://theavris.ai" style="background:#4AA391;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:600;display:inline-block">Открыть Avris</a></p>
+      <p style="margin-top:18px"><a href="https://theavris.ai" style="background:#4659B5;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:600;display:inline-block">Открыть Avris</a></p>
       <p style="color:#8a98a8;font-size:.9em;margin-top:18px">Если вам плохо прямо сейчас — не ждите приёма, обратитесь за помощью.</p>
     """
     html = _render_plain("Есть что показать врачу", body, full_name)

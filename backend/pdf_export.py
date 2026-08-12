@@ -19,12 +19,12 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 logger = logging.getLogger(__name__)
 
-ACCENT = HexColor("#4AA391")
-ACCENT_DIM = HexColor("#3d8a79")
-TEXT = HexColor("#1a202c")
-MUTED = HexColor("#5a6673")
-BORDER = HexColor("#d8d4cb")
-BG_SOFT = HexColor("#f1f0ea")
+ACCENT = HexColor("#4659B5")
+ACCENT_DIM = HexColor("#6E86E0")
+TEXT = HexColor("#0C1224")
+MUTED = HexColor("#7E8CB5")
+BORDER = HexColor("#C5D0FB")
+BG_SOFT = HexColor("#EEF2FE")
 BG_CARD = HexColor("#ffffff")
 BG_DANGER = HexColor("#FEE2E2")
 TXT_DANGER = HexColor("#B91C1C")
@@ -135,13 +135,13 @@ def _brand_block(styles, lang: Optional[str] = None):
     """Header with AVRIS title + Hyperion Labs subtitle, optional lang pill."""
     rows = [[
         Paragraph(f'<font name="{_FONT_BOLD}" size="22" color="#1a202c">AVRIS</font>'
-                  f'<font color="#4AA391"> ●</font>', styles["h1"]),
+                  f'<font color="#4659B5"> ●</font>', styles["h1"]),
     ]]
     if lang:
         # Language pill on the right
         lang_para = Paragraph(
             f'<para alignment="right"><font name="{_FONT_BOLD}" size="9" color="#ffffff" '
-            f'backColor="#4AA391"> &nbsp;{lang.upper()}&nbsp; </font></para>',
+            f'backColor="#4659B5"> &nbsp;{lang.upper()}&nbsp; </font></para>',
             styles["body"],
         )
         rows[0].append(lang_para)
@@ -290,7 +290,7 @@ def render_consultation_pdf(consultation, patient, doctor) -> bytes:
     story.append(Spacer(0, 0.4 * cm))
 
     # SOAP block
-    story.append(Paragraph("ЗАПИСЬ ОСМОТРА (SOAP) · Avris AI", styles["h2"]))
+    story.append(Paragraph("ЗАПИСЬ ОСМОТРА · SOAP", styles["h2"]))
     story.append(Spacer(0, 0.2 * cm))
     soap_rows = [
         ("S — Subjective · Жалобы", consultation.soap_s),
@@ -310,7 +310,7 @@ def render_consultation_pdf(consultation, patient, doctor) -> bytes:
 
     # Transcript
     if consultation.transcript:
-        story.append(Paragraph("ТРАНСКРИПТ · Whisper AI", styles["h2"]))
+        story.append(Paragraph("ТРАНСКРИПТ", styles["h2"]))
         story.append(Spacer(0, 0.2 * cm))
         # Transcript in a soft-bg box
         tbl = Table(
@@ -525,14 +525,14 @@ def render_lab_order_pdf(order, patient, doctor) -> bytes:
         story.append(Spacer(0, 0.4 * cm))
 
         if order.ai_comment:
-            story.append(Paragraph("AI-КОММЕНТАРИЙ · Avris AI", styles["h2"]))
+            story.append(Paragraph("AI-КОММЕНТАРИЙ", styles["h2"]))
             story.append(Spacer(0, 0.1 * cm))
             ai_tbl = Table(
                 [[Paragraph(_esc(order.ai_comment), styles["body"])]],
                 colWidths=[17 * cm],
             )
             ai_tbl.setStyle(TableStyle([
-                ("BACKGROUND", (0, 0), (-1, -1), HexColor("#e9f5f2")),
+                ("BACKGROUND", (0, 0), (-1, -1), HexColor("#EEF2FE")),
                 ("BOX", (0, 0), (-1, -1), 0.5, ACCENT),
                 ("LEFTPADDING", (0, 0), (-1, -1), 12),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 12),
