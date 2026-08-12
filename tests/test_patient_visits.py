@@ -37,7 +37,7 @@ def mock_llm(monkeypatch):
     """Patch the model call; tests never hit the network."""
     state = {"reply": GOOD_SUMMARY, "calls": 0}
 
-    async def fake_llm(system_prompt, user_msg, max_tokens=1024):
+    async def fake_llm(system_prompt, user_msg, max_tokens=1024, **_):
         state["calls"] += 1
         if isinstance(state["reply"], Exception):
             raise state["reply"]

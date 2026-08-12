@@ -28,7 +28,7 @@ from sqlalchemy.orm import Session
 
 from database import SessionLocal, get_db
 from email_service import send_patient_alert_email
-from llm import _llm_call
+from llm import LIGHT, _llm_call
 from models import (GlucoseReading, HealthAlert, LabOrder, MonitoringDigest,
                     MonitoringRun, PatientAccount, PatientLink)
 from patient_auth import get_current_patient
@@ -438,10 +438,14 @@ async def build_digest(db: Session, account: PatientAccount) -> Optional[str]:
     language = {"ru": "русском", "tj": "таджикском", "en": "английском"}.get(
         account.language_pref, "русском")
     try:
+        # Одна фраза на 200 токенов из готовых фактов, да ещё и с
+        # пост-фильтром ниже: он отвергает цифры, диагнозы и всё длиннее
+        # 240 знаков. Клиническое суждение здесь делают правила, а не модель.
         raw = await _llm_call(
             _DIGEST_PROMPT,
             f"Язык ответа: {language}.\nЧто заметила проверка:\n{_digest_facts(active)}",
             max_tokens=200,
+            tier=LIGHT,
         )
     except Exception:
         log.exception("monitoring digest failed for account %s", account.id)

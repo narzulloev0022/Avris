@@ -25,7 +25,29 @@ ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
 # показывать, на чём именно считается генерация. Пусто = не настроено, и
 # вызов отказывает так же, как без ключа.
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "")
+# Лёгкая модель — для вызовов, где нет клинического суждения: извлечение
+# полей из речи, заголовок диалога, фраза дайджеста, вопросы интервью.
+# Втрое дешевле, а на пациентских тарифах именно эти вызовы дают объём.
+#
+# ПУСТО = ВСЁ ИДЁТ НА КЛИНИЧЕСКОЙ. Откат намеренный: молчаливое понижение
+# модели — не то, что должно случаться само по себе при выкатке кода.
+ANTHROPIC_MODEL_LIGHT = os.getenv("ANTHROPIC_MODEL_LIGHT", "")
 ANTHROPIC_VERSION = "2023-06-01"
+
+# Уровни вызова. Клинический — всё, что врач или пациент прочитает как
+# медицинское содержание: SOAP, эпикриз, сводка к приёму, комментарий к
+# анализам, разбор анализа пациенту, пересказ визита с назначениями,
+# инсайты. Лёгкий — форматирование, извлечение и разговор под жёсткими
+# гардрейлами с пост-фильтром.
+CLINICAL = "clinical"
+LIGHT = "light"
+
+
+def _model_for(tier: str) -> str:
+    """Имя модели по уровню. Лёгкая не настроена — берём клиническую."""
+    if tier == LIGHT and ANTHROPIC_MODEL_LIGHT:
+        return ANTHROPIC_MODEL_LIGHT
+    return ANTHROPIC_MODEL
 
 LANG_LABEL = {"ru": "русский", "tj": "тоҷикӣ", "en": "English"}
 
@@ -114,7 +136,10 @@ class ParsePatientResponse(BaseModel):
     admission_status: Optional[str] = None  # stable|watch|serious|critical
 
 
-async def _llm_call(system_prompt: str, user_msg: str, max_tokens: int = 1024) -> str:
+async def _llm_call(system_prompt: str, user_msg: str, max_tokens: int = 1024,
+                    tier: str = CLINICAL) -> str:
+    """Вызов модели. ``tier`` по умолчанию клинический: понижать уровень
+    нужно осознанно в месте вызова, а не забыв его указать."""
     if not ANTHROPIC_API_KEY or not ANTHROPIC_MODEL:
         # detail доходит до пациента в приложении — конфигурация остаётся в логах
         logger.error("LLM call refused: ANTHROPIC_API_KEY/ANTHROPIC_MODEL is not configured")
@@ -125,7 +150,7 @@ async def _llm_call(system_prompt: str, user_msg: str, max_tokens: int = 1024) -
         "content-type": "application/json",
     }
     body = {
-        "model": ANTHROPIC_MODEL,
+        "model": _model_for(tier),
         "max_tokens": max_tokens,
         "system": system_prompt,
         "messages": [{"role": "user", "content": user_msg}],
@@ -392,7 +417,10 @@ async def parse_patient(request: Request, req: ParsePatientRequest, current_user
         "Ненайденные поля не включай в JSON или ставь null. "
         "Верни ровно один JSON-объект, без префиксов и markdown-обёрток."
     )
-    text = await _llm_call(system_prompt, f"Описание пациента:\n\n{req.transcript}", max_tokens=800)
+    # Извлечение полей из речи, а не клиническое суждение: врач видит
+    # заполненную форму и правит её до сохранения.
+    text = await _llm_call(system_prompt, f"Описание пациента:\n\n{req.transcript}",
+                           max_tokens=800, tier=LIGHT)
     parsed = _extract_json(text)
 
     def _int(v, lo=None, hi=None):

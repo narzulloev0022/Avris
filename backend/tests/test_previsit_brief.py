@@ -15,7 +15,7 @@ def _mk_patient(client, doctor, **overrides):
 def test_brief_happy_path(client, doctor, monkeypatch):
     captured = {}
 
-    async def fake_llm(system_prompt, user_msg, max_tokens=1024):
+    async def fake_llm(system_prompt, user_msg, max_tokens=1024, **_):
         captured["system"] = system_prompt
         captured["user"] = user_msg
         return "— Динамика положительная\n— Проверить ОАК\n— Аллергия: пенициллин"

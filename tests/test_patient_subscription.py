@@ -106,7 +106,7 @@ class TestSubscriptionState:
         phone = "+992906000006"
         h = _auth(client, phone)
 
-        async def _fake(system_prompt, user_msg, max_tokens=1024):
+        async def _fake(system_prompt, user_msg, max_tokens=1024, **_):
             return "Ответ помощника."
 
         import patient_assistant as pa_module
@@ -137,7 +137,7 @@ class TestFeatureGate:
 
     @pytest.fixture()
     def fake_llm(self, monkeypatch):
-        async def _fake(system_prompt, user_msg, max_tokens=1024):
+        async def _fake(system_prompt, user_msg, max_tokens=1024, **_):
             return "Ваши показатели в пределах нормы. Обсудите результаты с врачом."
 
         monkeypatch.setattr(labs_module, "_llm_call", _fake)
@@ -201,7 +201,7 @@ class TestFeatureGate:
         """
         calls = []
 
-        async def _counting(system_prompt, user_msg, max_tokens=1024):
+        async def _counting(system_prompt, user_msg, max_tokens=1024, **_):
             calls.append(1)
             return "Показатели в норме. Обсудите с врачом."
 
@@ -222,7 +222,7 @@ class TestFeatureGate:
         """Перезалили результаты — старое объяснение к ним уже не относится."""
         calls = []
 
-        async def _counting(system_prompt, user_msg, max_tokens=1024):
+        async def _counting(system_prompt, user_msg, max_tokens=1024, **_):
             calls.append(1)
             return f"Разбор {len(calls)}"
 
@@ -302,7 +302,7 @@ class TestUsageAccounting:
 
         from fastapi import HTTPException
 
-        async def _boom(system_prompt, user_msg, max_tokens=1024):
+        async def _boom(system_prompt, user_msg, max_tokens=1024, **_):
             # Ровно так падает настоящий _llm_call: сеть/ключ/квота → 503.
             raise HTTPException(status_code=503, detail="Сервис AI временно недоступен")
 
@@ -320,7 +320,7 @@ class TestUsageAccounting:
     def test_successful_call_consumes_one(self, client, monkeypatch):
         import patient_assistant as pa_module
 
-        async def _ok(system_prompt, user_msg, max_tokens=1024):
+        async def _ok(system_prompt, user_msg, max_tokens=1024, **_):
             return "Расскажите подробнее, когда это началось?"
 
         monkeypatch.setattr(pa_module, "_llm_call", _ok)
@@ -342,7 +342,7 @@ class TestCapRace:
 
         seen = {}
 
-        async def _slow(system_prompt, user_msg, max_tokens=1024):
+        async def _slow(system_prompt, user_msg, max_tokens=1024, **_):
             # Пока модель «думает», счётчик уже должен быть увеличен: именно
             # это не даёт параллельному запросу пройти проверку лимита.
             db_session.expire_all()

@@ -384,7 +384,7 @@ def test_patient_without_email_is_not_a_crash(monkeypatch):
 
 # ---------- фраза для главной ----------
 
-async def _fake_call(system, user, max_tokens=1024):
+async def _fake_call(system, user, max_tokens=1024, **_):
     _fake_call.seen.append(user)
     return _fake_call.answer
 

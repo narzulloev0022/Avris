@@ -65,7 +65,7 @@ def test_draft_with_mocked_llm(client, doctor, monkeypatch):
 
     captured = {}
 
-    async def fake_llm(system_prompt, user_msg, max_tokens=1024):
+    async def fake_llm(system_prompt, user_msg, max_tokens=1024, **_):
         captured["system"] = system_prompt
         captured["user"] = user_msg
         return FAKE_DRAFT
@@ -94,7 +94,7 @@ def test_draft_interim_prompt(client, doctor, monkeypatch):
     p = _mk_patient(client, doctor)
     captured = {}
 
-    async def fake_llm(system_prompt, user_msg, max_tokens=1024):
+    async def fake_llm(system_prompt, user_msg, max_tokens=1024, **_):
         captured["system"] = system_prompt
         return "ТЕКУЩЕЕ СОСТОЯНИЕ\nСтабильное."
 

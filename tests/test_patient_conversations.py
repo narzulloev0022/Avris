@@ -34,7 +34,7 @@ def _auth(client, phone):
 
 @pytest.fixture()
 def fake_assistant(monkeypatch):
-    async def _fake(system_prompt, user_msg, max_tokens=1024):
+    async def _fake(system_prompt, user_msg, max_tokens=1024, **_):
         return "Расскажите подробнее, когда это началось?"
 
     monkeypatch.setattr(pa_module, "_llm_call", _fake)
@@ -90,7 +90,7 @@ class TestConversationHistory:
         """Обрыв не должен оставлять в истории вопрос без ответа."""
         from fastapi import HTTPException
 
-        async def _boom(system_prompt, user_msg, max_tokens=1024):
+        async def _boom(system_prompt, user_msg, max_tokens=1024, **_):
             raise HTTPException(status_code=503, detail="Сервис AI временно недоступен")
 
         monkeypatch.setattr(pa_module, "_llm_call", _boom)
@@ -125,14 +125,14 @@ class TestIntakeInterview:
 
     @pytest.fixture()
     def fake_question(self, monkeypatch):
-        async def _fake(system_prompt, user_msg, max_tokens=1024):
+        async def _fake(system_prompt, user_msg, max_tokens=1024, **_):
             return '{"reply": "Когда это началось?", "done": false, "verdict": "ok", "note": null}'
 
         monkeypatch.setattr(intake_module, "_llm_call", _fake)
 
     @pytest.fixture()
     def fake_finish(self, monkeypatch):
-        async def _fake(system_prompt, user_msg, max_tokens=1024):
+        async def _fake(system_prompt, user_msg, max_tokens=1024, **_):
             return ('{"reply": "Спасибо, этого достаточно", "done": true, "verdict": "ok",'
                     ' "note": "Кашель 3 недели, ночью сильнее.\\nТемпературы нет.\\n'
                     'Вопрос: можно ли делать прививку"}')
@@ -167,7 +167,7 @@ class TestIntakeInterview:
 
     def test_broken_json_becomes_a_plain_question(self, client, monkeypatch):
         """Сломанный формат ответа модели не должен обрывать разговор."""
-        async def _plain(system_prompt, user_msg, max_tokens=1024):
+        async def _plain(system_prompt, user_msg, max_tokens=1024, **_):
             return "А когда это началось?"
 
         monkeypatch.setattr(intake_module, "_llm_call", _plain)
@@ -228,7 +228,7 @@ class TestSummaryForDoctor:
     def fake_summary(self, monkeypatch):
         import patient_conversations as pc_module
 
-        async def _fake(system_prompt, user_msg, max_tokens=1024):
+        async def _fake(system_prompt, user_msg, max_tokens=1024, **_):
             assert "Пациент:" in user_msg
             return "Кашель третью неделю, ночью сильнее.\nПринимал сироп.\nВопрос про прививку"
 
@@ -282,7 +282,7 @@ class TestIntakeCounterIsolation:
     влезал в VARCHAR(10) и уронил бы Postgres в проде."""
 
     def test_day_key_fits_the_column(self, client, monkeypatch):
-        async def _fake(system_prompt, user_msg, max_tokens=1024):
+        async def _fake(system_prompt, user_msg, max_tokens=1024, **_):
             return '{"reply": "Когда началось?", "done": false, "verdict": "ok", "note": null}'
 
         monkeypatch.setattr(intake_module, "_llm_call", _fake)

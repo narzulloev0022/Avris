@@ -25,7 +25,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from database import get_db
-from llm import _llm_call
+from llm import LIGHT, _llm_call
 from models import AssistantUsage, PatientAccount
 from patient_auth import get_current_patient
 from patient_conversations import (KIND_ASSISTANT, append_turn, owned_conversation,
@@ -169,7 +169,16 @@ async def assistant_chat(
                 f"{'Имя пациента: ' + account.full_name if account.full_name else ''}\n\n"
                 f"Диалог:\n{convo}\n\nПомощник:")
     try:
-        text = await _llm_call(_SYSTEM_PROMPT, user_msg, max_tokens=700)
+        # Сюда приходит ВЕСЬ объём пациентских тарифов: остальные вызовы
+        # случаются раз в визит, а этот — десятки раз в месяц на человека.
+        # Ассистент информационный, диагнозов не ставит, красные флаги уводит
+        # в неотложку, и всё это держит промпт.
+        #
+        # ВАЖНО: гардрейлы здесь промптовые, а слабая модель следует сложным
+        # инструкциям хуже. Прежде чем выставлять ANTHROPIC_MODEL_LIGHT в
+        # проде, эти гардрейлы надо прогнать на живых вопросах — красные
+        # флаги, просьбы поставить диагноз, вопросы про дозировки.
+        text = await _llm_call(_SYSTEM_PROMPT, user_msg, max_tokens=700, tier=LIGHT)
         reply = (text or "").strip()
         if not reply:
             raise HTTPException(status_code=502, detail="Пустой ответ модели — повторите попытку")

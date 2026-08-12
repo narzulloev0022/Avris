@@ -220,7 +220,7 @@ def test_history_block_is_empty_without_marks():
 def test_brief_carries_the_marks_to_the_model(client, doctor, monkeypatch):
     captured = {}
 
-    async def fake_llm(system_prompt, user_msg, max_tokens=1024):
+    async def fake_llm(system_prompt, user_msg, max_tokens=1024, **_):
         captured["system"] = system_prompt
         captured["user"] = user_msg
         return "— Со слов пациента, слабость третий день"

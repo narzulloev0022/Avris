@@ -32,7 +32,7 @@ def _auth(client, phone):
 def fake_llm(monkeypatch):
     captured = {}
 
-    async def _fake(system_prompt, user_msg, max_tokens=1024):
+    async def _fake(system_prompt, user_msg, max_tokens=1024, **_):
         captured["system"] = system_prompt
         captured["user"] = user_msg
         return "Понимаю вас. Когда началась головная боль? Если боль внезапная и очень сильная — позвоните в 103."

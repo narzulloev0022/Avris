@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from audit import audit
 from database import get_db
-from llm import _llm_call
+from llm import LIGHT, _llm_call
 from models import PatientAccount, PatientConversation, PatientMessage
 from patient_auth import get_current_patient
 from rate_limit import limiter
@@ -202,7 +202,10 @@ async def summarize_for_doctor(
         f"{'Пациент' if m.role == 'user' else 'Помощник'}: {m.text.strip()}"
         for m in convo.messages
     )
-    draft = (await _llm_call(_SUMMARY_PROMPT, user_msg, max_tokens=500) or "").strip()
+    # Пересказ собственного разговора пациента для заметки врачу: содержание
+    # уже сказано человеком, модель его только сжимает.
+    draft = (await _llm_call(_SUMMARY_PROMPT, user_msg, max_tokens=500,
+                             tier=LIGHT) or "").strip()
     if not draft:
         raise HTTPException(status_code=409, detail="В разговоре пока нечего собирать")
     return ConversationSummaryOut(draft=_clip_to_note_limit(draft))
