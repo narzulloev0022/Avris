@@ -295,6 +295,20 @@ def serve_waitlist():
     return RedirectResponse("/", status_code=307)
 
 
+PRICING_HTML = PROJECT_ROOT / "marketing" / "pricing.html"
+
+
+@app.get("/pricing")
+@app.get("/tarify")
+def serve_pricing():
+    """Тарифы — публичная страница, живёт независимо от переключателя лендинга:
+    ссылку на неё мы кладём в письма клиникам, и она не должна ломаться от
+    того, вышел ли маркетинговый корень."""
+    if PRICING_HTML.exists():
+        return FileResponse(PRICING_HTML)
+    return RedirectResponse("/", status_code=307)
+
+
 LAB_HTML = PROJECT_ROOT / "lab.html"
 
 

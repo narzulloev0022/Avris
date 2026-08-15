@@ -39,6 +39,7 @@ class WaitlistIn(BaseModel):
     full_name: str = Field(min_length=2, max_length=120)
     phone: str = Field(min_length=7, max_length=32)
     role: str = Field(default="doctor", max_length=16)
+    plan: str = Field(default="", max_length=16)
     lang: str = Field(default="ru", max_length=4)
     website: str = Field(default="", max_length=255)  # honeypot
 
@@ -69,7 +70,8 @@ def join_waitlist(request: Request, payload: WaitlistIn, background_tasks: Backg
         db.commit()
         return {"ok": True}
 
-    db.add(WaitlistEntry(email=email, full_name=full_name, phone=phone, role=role, lang=lang))
+    db.add(WaitlistEntry(email=email, full_name=full_name, phone=phone, role=role, lang=lang,
+                         plan=(payload.plan or None)))
     db.commit()
     # Log the domain only — full addresses stay out of the log stream.
     log.info("waitlist: +1 %s (@%s, %s)", role, email.split("@")[-1], lang)
@@ -97,7 +99,7 @@ def export_waitlist(
         "total": len(rows),
         "entries": [
             {"email": r.email, "full_name": r.full_name or "", "phone": r.phone or "",
-             "role": r.role, "lang": r.lang, "created_at": r.created_at.isoformat()}
+             "role": r.role, "plan": r.plan, "lang": r.lang, "created_at": r.created_at.isoformat()}
             for r in rows
         ],
     }

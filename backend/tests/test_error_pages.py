@@ -28,6 +28,26 @@ class TestNotFound:
         assert "detail" in r.json()
 
 
+class TestPricing:
+    def test_pricing_page_is_public(self, client):
+        """Ссылку на тарифы мы кладём в письма клиникам: она не должна
+        зависеть ни от авторизации, ни от переключателя лендинга."""
+        r = client.get("/pricing")
+        assert r.status_code == 200
+        assert r.headers["content-type"].startswith("text/html")
+        assert "$39" in r.text and "$79" in r.text and "$199" in r.text
+
+    def test_pricing_has_a_russian_alias(self, client):
+        assert client.get("/tarify").status_code == 200
+
+    def test_request_form_posts_to_the_existing_intake(self, client):
+        """Форма не заводит свой эндпоинт: заявки идут туда же, куда с
+        лендинга, вместе с тарифом, который человек смотрел."""
+        html = client.get("/pricing").text
+        assert "/api/waitlist" in html
+        assert '"plan"' in html or "plan:" in html
+
+
 class TestDeepLinks:
     @pytest.mark.parametrize("path", ["/app", "/app/", "/app/consultation", "/app/patients/7"])
     def test_any_app_subpath_serves_the_shell(self, client, path):

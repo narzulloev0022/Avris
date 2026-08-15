@@ -534,6 +534,9 @@ class WaitlistEntry(Base):
     full_name = Column(String(120), nullable=True)
     phone = Column(String(32), nullable=True)
     role = Column(String(16), nullable=False, default="doctor")   # doctor|clinic|investor
+    # Какой тариф человек смотрел, когда решил написать. Разговор с тем,
+    # кто нажал на Pro, и с тем, кто пришёл за пилотом, — разные разговоры.
+    plan = Column(String(16), nullable=True)                      # starter|plus|pro|pilot
     lang = Column(String(4), nullable=False, default="ru")
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 

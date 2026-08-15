@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Тарифы — Avris AI</title>
+<meta name="description" content="Avris AI для врачей и клиник: тарифы по числу приёмов. Первый месяц бесплатно для 10 врачей.">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080B14; --bg-2:#0A0F1C; --card:#0D1322; --card-2:#111931;
+  --line:rgba(149,174,248,.10); --line-2:rgba(149,174,248,.22);
+  --txt:#E8EDFA; --txt-2:#9AA7C4;
+  /* Приглушённый — но всё-таки читаемый: тем же токеном на лендинге
+     набраны подписи в .76rem, а #64718F даёт на карточке 3.79:1 при
+     норме 4.5. Оттенок сохранён, светлота поднята. */
+  --txt-3:#8290B4;
+  --acc:#95AEF8; --acc-2:#C5D0FB; --acc-mid:#6E86E0; --acc-deep:#4659B5; --acc-ink:#0A0F1E;
+  --ok:#5FD3A6;
+  --shadow-card:0 40px 110px rgba(4,6,14,.6);
+  --grad-x:linear-gradient(90deg,#C5D0FB,#95AEF8,#6E86E0,#4659B5);
+  --r-card:16px; --r-ctl:10px;
+  --font-ui:'Inter',system-ui,-apple-system,sans-serif;
+  --font-display:'Inter Tight',var(--font-ui);
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+}
+html[data-theme="light"]{
+  --bg:#F7F9FF; --bg-2:#EFF3FD; --card:#FFFFFF; --card-2:#F3F6FF;
+  --line:rgba(70,89,181,.14); --line-2:rgba(70,89,181,.3);
+  --txt:#111730; --txt-2:#414D73; --txt-3:#66718F;
+  --acc:#4C5FC0; --acc-2:#4659B5; --acc-ink:#FFFFFF;
+  --ok:#177A57;
+  --shadow-card:0 30px 80px rgba(70,89,181,.16);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--font-ui);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+::selection{background:var(--acc);color:var(--acc-ink)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:4px}
+*{scrollbar-color:var(--line-2) transparent}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:99px}
+::-webkit-scrollbar-track{background:transparent}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* nav */
+.nav{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.nav-in{max-width:1120px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:20px}
+.brand{display:flex;align-items:center;gap:10px;white-space:nowrap;font-family:var(--font-display);font-weight:700;letter-spacing:-.02em;font-size:1.05rem}
+.brand img{height:26px;width:auto}
+.nav-sp{flex:1}
+.nav a.nav-l{color:var(--txt-2);font-size:.9rem;font-weight:500;transition:color .18s}
+.nav a.nav-l:hover{color:var(--txt)}
+.theme-b{background:none;border:1px solid var(--line);color:var(--txt-2);width:34px;height:34px;border-radius:99px;cursor:pointer;display:grid;place-items:center;transition:border-color .18s,color .18s}
+.theme-b:hover{border-color:var(--line-2);color:var(--txt)}
+
+/* hero + calculator */
+.hero{padding:76px 0 64px}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+h1{font-family:var(--font-display);font-weight:800;font-size:clamp(2.3rem,4.6vw,3.5rem);line-height:1.04;letter-spacing:-.035em;text-wrap:balance}
+h1 em{font-style:normal;color:var(--acc)}
+.hero-sub{margin-top:20px;color:var(--txt-2);font-size:1.05rem;max-width:46ch}
+.hero-note{margin-top:26px;display:flex;align-items:center;gap:10px;color:var(--txt-3);font-size:.88rem}
+.hero-note svg{flex-shrink:0;color:var(--acc)}
+
+.calc{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:30px;box-shadow:var(--shadow-card)}
+.calc-q{font-size:.82rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--txt-3)}
+.calc-val{margin-top:14px;display:flex;align-items:baseline;gap:12px}
+.calc-n{font-family:var(--font-mono);font-weight:700;font-size:3.4rem;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--txt)}
+.calc-u{color:var(--txt-2);font-size:.95rem}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:34px;background:transparent;margin-top:18px;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:99px;background:linear-gradient(90deg,var(--acc) var(--fill,30%),var(--line-2) var(--fill,30%))}
+input[type=range]::-moz-range-track{height:4px;border-radius:99px;background:var(--line-2)}
+input[type=range]::-moz-range-progress{height:4px;border-radius:99px;background:var(--acc)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:99px;background:var(--acc);border:4px solid var(--bg);margin-top:-9px;transition:transform .16s cubic-bezier(.16,1,.3,1)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:99px;background:var(--acc);border:4px solid var(--bg)}
+input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.14)}
+.calc-scale{display:flex;justify-content:space-between;color:var(--txt-3);font-size:.76rem;font-family:var(--font-mono)}
+.calc-out{margin-top:24px;padding-top:22px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end}
+.calc-lab{color:var(--txt-3);font-size:.78rem;letter-spacing:.04em;text-transform:uppercase}
+.calc-plan{font-family:var(--font-display);font-weight:700;font-size:1.6rem;letter-spacing:-.02em;margin-top:4px;color:var(--acc)}
+.calc-meta{color:var(--txt-2);font-size:.85rem;margin-top:5px;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.calc-price{font-family:var(--font-mono);font-weight:700;font-size:2.1rem;letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.calc-price span{font-size:.9rem;color:var(--txt-3);font-weight:500}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:14px 26px;border-radius:99px;font-family:var(--font-ui);font-weight:600;font-size:.95rem;cursor:pointer;border:1px solid transparent;transition:transform .16s cubic-bezier(.16,1,.3,1),background .18s,border-color .18s,color .18s}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(0)}
+.btn-p{background:var(--acc);color:var(--acc-ink)}
+.btn-p:hover{background:var(--acc-2)}
+.btn-g{border-color:var(--line-2);color:var(--txt)}
+.btn-g:hover{border-color:var(--acc);color:var(--acc)}
+.calc-cta{margin-top:22px;display:flex;gap:12px;flex-wrap:wrap}
+
+/* sections */
+section{padding:72px 0;border-top:1px solid var(--line);scroll-margin-top:72px}
+h2{font-family:var(--font-display);font-weight:700;font-size:clamp(1.6rem,2.8vw,2.15rem);letter-spacing:-.03em;line-height:1.12;text-wrap:balance}
+.sec-sub{margin-top:14px;color:var(--txt-2);max-width:62ch}
+
+/* plans */
+.plans{margin-top:40px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.plan{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:28px;display:flex;flex-direction:column;transition:border-color .2s,transform .2s cubic-bezier(.16,1,.3,1)}
+.plan:hover{border-color:var(--line-2);transform:translateY(-3px)}
+.plan.on{border-color:var(--acc);background:var(--card-2)}
+.plan-n{font-family:var(--font-display);font-weight:700;font-size:1.25rem;letter-spacing:-.02em}
+.plan-p{margin-top:16px;font-family:var(--font-mono);font-weight:700;font-size:2.6rem;letter-spacing:-.04em;font-variant-numeric:tabular-nums;line-height:1}
+.plan-p span{font-size:.85rem;font-weight:500;color:var(--txt-3);letter-spacing:0}
+.plan-lim{margin-top:12px;color:var(--txt-2);font-size:.92rem;min-height:3em}
+.plan-per{margin-top:auto;padding-top:20px;color:var(--txt-3);font-size:.8rem;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.plan-badge{align-self:flex-start;margin-top:14px;padding:4px 11px;border-radius:99px;background:color-mix(in srgb,var(--acc) 16%,transparent);color:var(--acc);font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+
+/* included */
+.incl{margin-top:36px;border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden}
+.incl-h{padding:18px 24px;background:var(--card);border-bottom:1px solid var(--line);font-weight:600;font-size:.95rem;display:flex;align-items:center;gap:10px}
+.incl-h svg{color:var(--ok);flex-shrink:0}
+.incl-l{list-style:none;display:grid;grid-template-columns:1fr 1fr}
+.incl-l li{padding:15px 24px;border-bottom:1px solid var(--line);color:var(--txt-2);font-size:.93rem;display:flex;gap:11px;align-items:flex-start}
+.incl-l li:nth-child(odd){border-right:1px solid var(--line)}
+.incl-l li svg{color:var(--acc);flex-shrink:0;margin-top:4px}
+.incl-l li b{color:var(--txt);font-weight:600}
+
+/* pilot */
+.pilot{background:var(--card);border:1px solid var(--line-2);border-radius:var(--r-card);padding:38px;display:grid;grid-template-columns:1.15fr .85fr;gap:44px;align-items:start}
+.pilot-n{font-family:var(--font-mono);font-weight:700;font-size:clamp(3rem,7vw,4.6rem);line-height:.92;letter-spacing:-.05em;color:var(--acc);font-variant-numeric:tabular-nums}
+.pilot-nl{color:var(--txt-2);font-size:.95rem;margin-top:8px}
+.pilot ul{list-style:none;margin-top:22px;display:grid;gap:13px}
+.pilot li{color:var(--txt-2);font-size:.94rem;display:flex;gap:11px;align-items:flex-start}
+.pilot li svg{color:var(--acc);flex-shrink:0;margin-top:4px}
+.pilot-ask{border-left:2px solid var(--acc);padding-left:18px}
+.pilot-ask h3{font-family:var(--font-display);font-weight:700;font-size:1.05rem;letter-spacing:-.02em}
+.pilot-ask p{margin-top:10px;color:var(--txt-2);font-size:.92rem}
+
+/* faq */
+.faq{margin-top:34px;display:grid;gap:0;border-top:1px solid var(--line)}
+details{border-bottom:1px solid var(--line)}
+summary{padding:20px 0;cursor:pointer;font-weight:600;font-size:1rem;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:20px;transition:color .18s}
+summary:hover{color:var(--acc)}
+summary::-webkit-details-marker{display:none}
+summary .pl{position:relative;width:14px;height:14px;flex-shrink:0}
+summary .pl::before,summary .pl::after{content:"";position:absolute;background:var(--acc);transition:transform .24s cubic-bezier(.16,1,.3,1)}
+summary .pl::before{left:0;top:6px;width:14px;height:2px}
+summary .pl::after{left:6px;top:0;width:2px;height:14px}
+details[open] summary .pl::after{transform:rotate(90deg)}
+details p{padding:0 0 22px;color:var(--txt-2);max-width:70ch}
+
+/* form */
+.form-card{margin-top:36px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:34px;max-width:620px}
+.f-row{display:grid;gap:16px;grid-template-columns:1fr 1fr}
+label{display:block;font-size:.8rem;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--txt-3);margin-bottom:7px}
+input[type=text],input[type=email],input[type=tel],select{width:100%;caret-color:var(--acc);padding:13px 15px;border-radius:var(--r-ctl);border:1px solid var(--line-2);background:var(--bg-2);color:var(--txt);font-family:var(--font-ui);font-size:.95rem;transition:border-color .18s}
+input:focus,select:focus{outline:none;border-color:var(--acc)}
+input::placeholder{color:var(--txt-3)}
+.f-full{margin-top:16px}
+.f-hp{position:absolute;left:-9999px;opacity:0;pointer-events:none}
+.f-sub{margin-top:24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.f-legal{color:var(--txt-3);font-size:.8rem;max-width:38ch}
+.f-msg{margin-top:16px;font-size:.9rem;display:none}
+.f-msg.on{display:block}
+.f-msg.err{color:#FF8080}
+.f-ok{display:none;text-align:center;padding:26px 0}
+.f-ok.on{display:block}
+.f-ok-i{width:52px;height:52px;border-radius:99px;background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);display:grid;place-items:center;margin:0 auto 18px}
+.f-ok h3{font-family:var(--font-display);font-weight:700;font-size:1.3rem;letter-spacing:-.02em}
+.f-ok p{margin-top:10px;color:var(--txt-2);font-size:.94rem}
+
+footer{border-top:1px solid var(--line);padding:34px 0;color:var(--txt-3);font-size:.85rem;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+
+@media(max-width:560px){.nav a.nav-l{display:none}
+  .calc-out{grid-template-columns:1fr;gap:10px}
+  .calc-price{order:-1;font-size:2.4rem}
+  .calc-meta{font-size:.8rem}}
+@media(max-width:900px){
+  .hero-grid{grid-template-columns:1fr;gap:40px}
+  .plans{grid-template-columns:1fr}
+  .pilot{grid-template-columns:1fr;gap:30px;padding:28px}
+  .incl-l{grid-template-columns:1fr}
+  .incl-l li:nth-child(odd){border-right:none}
+  .f-row{grid-template-columns:1fr}
+  .hero{padding:52px 0 44px}
+  section{padding:56px 0}
+  .calc{padding:24px}
+  .calc-n{font-size:2.8rem}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<!--
+  THESIS: цена — это объём приёмов, а не список галочек. Отказ от структуры
+  «три одинаковые колонки с птичками»: первый экран считает нагрузку врача и
+  сам называет тариф, а функции честно одинаковы во всех.
+  OWN-WORLD: тёмная синь #080B14, единственный акцент periwinkle #95AEF8,
+  Inter Tight на дисплее, JetBrains Mono с tabular-nums на КАЖДОМ числе,
+  волосяные линии rgba(149,174,248,.10), плоские панели без ореолов.
+  STORY: заведующий видит свою цифру приёмов → понимает, за что платит →
+  узнаёт, что первый месяц бесплатен для десяти врачей → оставляет заявку.
+  FIRST VIEWPORT: слева заголовок в две строки, справа панель расчёта —
+  слайдер приёмов в день, крупное моно-число визитов, имя тарифа и цена;
+  первичное действие «Оставить заявку» сразу под расчётом.
+  FORM: калькулятор нагрузки, вторая позиция из семи; первая (классическая
+  таблица тарифов) исключена как категорийный рут. Концепт-раунд не
+  запускался: расширение установленного мира лендинга по узкому ТЗ.
+  FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+-->
+
+<nav class="nav">
+  <div class="nav-in">
+    <a class="brand" href="/"><img src="/assets/logo.svg" alt=""><span>Avris AI</span></a>
+    <div class="nav-sp"></div>
+    <a class="nav-l" href="/#how">Как работает</a>
+    <a class="nav-l" href="#faq">Вопросы</a>
+    <button class="theme-b" id="themeB" type="button" aria-label="Переключить тему">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <h1>Вы платите за <em>приёмы</em>, а не за галочки в таблице</h1>
+      <p class="hero-sub">Все возможности Avris входят в любой тариф. Отличается только то, сколько осмотров вы проводите за месяц. Скажите, сколько принимаете в день — увидите свой тариф.</p>
+      <div class="hero-note">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+        <span>Первый месяц бесплатно для десяти врачей клиники</span>
+      </div>
+    </div>
+
+    <div class="calc">
+      <label class="calc-q" for="perDay">Приёмов в день</label>
+      <div class="calc-val">
+        <span class="calc-n" id="pdOut">12</span>
+        <span class="calc-u">пациентов за смену</span>
+      </div>
+      <input type="range" id="perDay" min="1" max="30" value="12" step="1"
+             aria-describedby="calcSummary">
+      <div class="calc-scale"><span>1</span><span>30</span></div>
+
+      <div class="calc-out">
+        <div>
+          <div class="calc-lab">Ваш тариф</div>
+          <div class="calc-plan" id="planOut">Plus</div>
+          <div class="calc-meta" id="calcSummary">264 приёма в месяц · лимит тарифа 300</div>
+        </div>
+        <div class="calc-price" id="priceOut">$79<span>/мес</span></div>
+      </div>
+
+      <div class="calc-cta">
+        <a class="btn btn-p" href="#request" id="ctaMain">Оставить заявку</a>
+        <a class="btn btn-g" href="#pilot">Сначала пилот</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="plans">
+  <div class="wrap">
+    <h2>Три тарифа, одна разница — объём</h2>
+    <p class="sec-sub">Расчёт исходит из 22 рабочих дней в месяц. Если нагрузка меняется от месяца к месяцу, тариф можно менять вместе с ней.</p>
+
+    <div class="plans">
+      <article class="plan" data-plan="starter">
+        <div class="plan-n">Starter</div>
+        <div class="plan-p">$39<span> /мес</span></div>
+        <div class="plan-lim">До 100 приёмов в месяц. Один врач с обычным амбулаторным приёмом.</div>
+        <div class="plan-per">$0.39 за приём при полной загрузке</div>
+      </article>
+      <article class="plan" data-plan="plus">
+        <div class="plan-n">Plus</div>
+        <div class="plan-p">$79<span> /мес</span></div>
+        <div class="plan-lim">До 300 приёмов в месяц. Плотный приём или врач со стационарными больными.</div>
+        <div class="plan-badge">Чаще всего берут</div>
+        <div class="plan-per">$0.26 за приём при полной загрузке</div>
+      </article>
+      <article class="plan" data-plan="pro">
+        <div class="plan-n">Pro</div>
+        <div class="plan-p">$199<span> /мес</span></div>
+        <div class="plan-lim">Без лимита приёмов. Заведующий отделением, ночные обходы, реанимация.</div>
+        <div class="plan-per">Сколько бы ни было — цена та же</div>
+      </article>
+    </div>
+
+    <div class="incl">
+      <div class="incl-h">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+        Входит в каждый тариф, включая Starter
+      </div>
+      <ul class="incl-l">
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><span><b>Запись осмотра голосом</b> — врач говорит, документ собирается в структуру S/O/A/P</span></li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><span><b>Направления по QR-коду</b> — шесть групп, около 38 видов анализов</span></li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><span><b>Ночной обход голосом</b> — палата, витальные и статус из непрерывной речи</span></li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><span><b>Стационар</b> — дневники, история болезни, черновик эпикриза</span></li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><span><b>Печать и PDF</b>: осмотр, направление и эпикриз с ФИО, датой и номером карты</span></li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><span><b>Три языка интерфейса</b>: русский, тоҷикӣ, английский</span></li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><span><b>Работа без интернета</b>: черновики остаются на устройстве, записи уходят сами, когда связь вернётся</span></li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><span><b>Данные врача изолированы</b>: чужую карту не открыть даже по прямой ссылке</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="pilot">
+  <div class="wrap">
+    <h2>Пилот — прежде чем платить</h2>
+    <p class="sec-sub">Мы не просим клинику поверить на слово. Месяц работы в вашем отделении, на ваших пациентах, без счёта.</p>
+
+    <div class="pilot" style="margin-top:32px">
+      <div>
+        <div class="pilot-n">10</div>
+        <div class="pilot-nl">врачей клиники — бесплатно, один месяц</div>
+        <ul>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><span>Полный доступ ко всем возможностям, без урезанного «демо»</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><span>Заводим врачей и обучаем работе сами, силы вашего IT не нужны</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><span>Связь напрямую с нами всё время пилота</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg><span>Не подошло, расходимся без счёта и без обязательств</span></li>
+        </ul>
+      </div>
+      <div class="pilot-ask">
+        <h3>Что просим взамен</h3>
+        <p>Честную обратную связь: где мешает, где ошибается, чего не хватает. Первые клиники формируют продукт сильнее любого исследования рынка, поэтому пилот и бесплатный.</p>
+        <a class="btn btn-p" href="#request" style="margin-top:22px" data-plan-cta="pilot">Записаться на пилот</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <h2>Вопросы, которые задают первыми</h2>
+    <div class="faq">
+      <details>
+        <summary>Как платить? <span class="pl" aria-hidden="true"></span></summary>
+        <p>Клинике выставляем счёт на юридическое лицо, оплата переводом. Приём карт мы пока не подключали — до пилота в этом нет смысла, а клиники в Таджикистане и так платят по счёту. Отдельному врачу договоримся по удобному способу при подключении.</p>
+      </details>
+      <details>
+        <summary>Что будет с данными пациентов? <span class="pl" aria-hidden="true"></span></summary>
+        <p>Записи привязаны к врачу, который их создал: чужую карту не открыть даже по прямой ссылке. Медицинские данные не попадают в кэш браузера. Запись голоса, не доехавшая до распознавания, хранится на устройстве врача не дольше суток и стирается при выходе из системы.</p>
+      </details>
+      <details>
+        <summary>А если в отделении пропадает интернет? <span class="pl" aria-hidden="true"></span></summary>
+        <p>Приложение продолжает работать. Черновик осмотра сохраняется на устройстве, запись голоса тоже, а готовые осмотры встают в очередь и уходят на сервер сами, когда связь вернётся. Врач видит это полосой сверху, а не догадывается по пустому экрану.</p>
+      </details>
+      <details>
+        <summary>Можно начать с одного врача? <span class="pl" aria-hidden="true"></span></summary>
+        <p>Да. Starter рассчитан ровно на это: один врач с обычным амбулаторным приёмом. Пилот на десять врачей — предложение для клиники, но начать можно и вдвоём.</p>
+      </details>
+      <details>
+        <summary>Что если врач превысит лимит приёмов? <span class="pl" aria-hidden="true"></span></summary>
+        <p>Мы не отключаем работу посреди смены: это медицинская документация, а не подписка на музыку. Предупредим заранее и предложим перейти на следующий тариф со следующего месяца.</p>
+      </details>
+      <details>
+        <summary>Нужно ли менять нашу систему учёта? <span class="pl" aria-hidden="true"></span></summary>
+        <p>Нет. Avris работает рядом: врач диктует осмотр, получает готовый документ и печатает или сохраняет PDF. Интеграция с существующей МИС возможна, но обсуждается отдельно и в стоимость тарифа не входит.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section id="request">
+  <div class="wrap">
+    <h2>Оставьте заявку</h2>
+    <p class="sec-sub">Свяжемся в течение рабочего дня, ответим на вопросы и договоримся о запуске. Никаких автоматических списаний: счёт выставляем только после разговора.</p>
+
+    <div class="form-card">
+      <form id="reqForm" novalidate>
+        <div class="f-row">
+          <div>
+            <label for="rName">Имя и фамилия</label>
+            <input type="text" id="rName" name="name" placeholder="Каримов Далер" autocomplete="name" required>
+          </div>
+          <div>
+            <label for="rPhone">Телефон</label>
+            <input type="tel" id="rPhone" name="phone" placeholder="+992 90 000 00 00" autocomplete="tel" required>
+          </div>
+        </div>
+        <div class="f-full">
+          <label for="rEmail">Почта</label>
+          <input type="email" id="rEmail" name="email" placeholder="doctor@clinic.tj" autocomplete="email" required>
+        </div>
+        <div class="f-row f-full">
+          <div>
+            <label for="rRole">Кто вы</label>
+            <select id="rRole">
+              <option value="clinic">Клиника</option>
+              <option value="doctor">Врач</option>
+            </select>
+          </div>
+          <div>
+            <label for="rPlan">Что интересует</label>
+            <select id="rPlan">
+              <option value="pilot">Бесплатный пилот</option>
+              <option value="starter">Starter — $39</option>
+              <option value="plus">Plus — $79</option>
+              <option value="pro">Pro — $199</option>
+            </select>
+          </div>
+        </div>
+        <input class="f-hp" type="text" id="rHoney" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+        <div class="f-sub">
+          <button class="btn btn-p" type="submit" id="rSubmit">Отправить заявку</button>
+          <span class="f-legal">Данные нужны только для связи. Никому не передаём.</span>
+        </div>
+        <div class="f-msg err" id="rErr" role="alert"></div>
+      </form>
+
+      <div class="f-ok" id="rOk" role="status">
+        <div class="f-ok-i">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <h3>Заявка у нас</h3>
+        <p id="rOkTxt">Свяжемся в течение рабочего дня.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" style="display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;width:100%">
+    <span>Avris AI · Hyperion Labs · 2026</span>
+    <span><a href="/" style="color:var(--txt-2)">На главную</a></span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* ---------- тема: тот же ключ, что у приложения и лендинга ---------- */
+  var root = document.documentElement;
+  try {
+    var pref = localStorage.getItem("avris-theme") || "system";
+    var eff = pref === "system"
+      ? (matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light")
+      : pref;
+    root.dataset.theme = eff;
+  } catch(e){}
+  $("themeB").addEventListener("click", function(){
+    var next = root.dataset.theme === "dark" ? "light" : "dark";
+    root.dataset.theme = next;
+    try { localStorage.setItem("avris-theme", next); } catch(e){}
+  });
+
+  /* ---------- расчёт ----------
+     Тарифы различаются числом приёмов, поэтому и калькулятор считает приёмы,
+     а не «пользователей» и не «рабочие места». 22 рабочих дня — обычный
+     месяц врача на ставке; цифра показана рядом, чтобы её можно было
+     проверить, а не принимать на веру. */
+  var WORKDAYS = 22;
+  var PLANS = [
+    { key:"starter", name:"Starter", price:39,  cap:100 },
+    { key:"plus",    name:"Plus",    price:79,  cap:300 },
+    { key:"pro",     name:"Pro",     price:199, cap:Infinity }
+  ];
+  var slider = $("perDay");
+
+  function planFor(visits){
+    for (var i = 0; i < PLANS.length; i++) if (visits <= PLANS[i].cap) return PLANS[i];
+    return PLANS[PLANS.length - 1];
+  }
+  function render(){
+    var perDay = parseInt(slider.value, 10);
+    var visits = perDay * WORKDAYS;
+    var plan = planFor(visits);
+
+    slider.style.setProperty("--fill", ((perDay - 1) / 29 * 100) + "%");
+    $("pdOut").textContent = perDay;
+    $("planOut").textContent = plan.name;
+    $("priceOut").innerHTML = "$" + plan.price + "<span>/мес</span>";
+    /* Цену за приём здесь не показываем: на границе тарифов она подскакивает
+       (88 приёмов на Starter — $0.44, 110 на Plus — $0.72) и читается как
+       штраф за рост, хотя это обычная арифметика ступеней. Врачу полезнее
+       видеть запас: сколько приёмов тариф ещё держит. */
+    $("calcSummary").textContent = visits + " " + plural(visits) + " в месяц · "
+      + (plan.cap === Infinity ? "без лимита" : "лимит тарифа " + plan.cap);
+
+    var cards = document.querySelectorAll(".plan");
+    for (var i = 0; i < cards.length; i++)
+      cards[i].classList.toggle("on", cards[i].dataset.plan === plan.key);
+
+    var sel = $("rPlan");
+    if (sel && !sel.dataset.touched) sel.value = plan.key;
+    slider.setAttribute("aria-valuetext", perDay + " приёмов в день, тариф " + plan.name);
+  }
+  function plural(n){
+    var d = n % 10, h = n % 100;
+    if (d === 1 && h !== 11) return "приём";
+    if (d >= 2 && d <= 4 && (h < 10 || h >= 20)) return "приёма";
+    return "приёмов";
+  }
+  slider.addEventListener("input", render);
+  $("rPlan").addEventListener("change", function(){ this.dataset.touched = "1"; });
+
+  /* Карточка тарифа тоже двигает слайдер: клик по Pro должен показывать
+     нагрузку, при которой Pro имеет смысл, а не молча подсвечивать карточку. */
+  var TO_DAY = { starter: 4, plus: 12, pro: 20 };
+  document.querySelectorAll(".plan").forEach(function(card){
+    card.addEventListener("click", function(){
+      slider.value = TO_DAY[card.dataset.plan];
+      render();
+      $("rPlan").value = card.dataset.plan;
+      $("rPlan").dataset.touched = "1";
+    });
+  });
+  document.querySelectorAll("[data-plan-cta]").forEach(function(a){
+    a.addEventListener("click", function(){
+      $("rPlan").value = a.dataset.planCta;
+      $("rPlan").dataset.touched = "1";
+    });
+  });
+
+  render();
+
+  /* ---------- заявка ---------- */
+  var form = $("reqForm"), btn = $("rSubmit"), err = $("rErr");
+  function fail(msg){ err.textContent = msg; err.classList.add("on"); }
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    err.classList.remove("on");
+
+    var name = $("rName").value.trim();
+    var phone = $("rPhone").value.trim();
+    var email = $("rEmail").value.trim();
+
+    if (name.length < 2)  { fail("Напишите, как к вам обращаться."); $("rName").focus(); return; }
+    if (phone.length < 7) { fail("Нужен телефон: по нему быстрее всего свяжемся."); $("rPhone").focus(); return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { fail("Проверьте адрес почты."); $("rEmail").focus(); return; }
+
+    var label = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "Отправляем…";
+
+    fetch("/api/waitlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: email, full_name: name, phone: phone,
+        role: $("rRole").value, plan: $("rPlan").value,
+        lang: "ru", website: $("rHoney").value
+      })
+    }).then(function(r){
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      form.style.display = "none";
+      $("rOkTxt").textContent = $("rPlan").value === "pilot"
+        ? "Свяжемся в течение рабочего дня и договоримся о запуске пилота."
+        : "Свяжемся в течение рабочего дня, ответим на вопросы и выставим счёт после разговора.";
+      $("rOk").classList.add("on");
+    }).catch(function(){
+      fail("Не удалось отправить. Проверьте связь и попробуйте ещё раз или напишите на info@theavris.ai.");
+    }).finally(function(){
+      btn.disabled = false;
+      btn.textContent = label;
+    });
+  });
+})();
+</script>
+</body>
+</html>
