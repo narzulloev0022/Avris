@@ -94,6 +94,12 @@ h2{font-family:var(--font-display);font-weight:800;letter-spacing:-.03em;line-he
   border-bottom:1px solid var(--line);
 }
 .nav .wrap{width:100%;display:flex;align-items:center;justify-content:space-between;gap:24px}
+/* Тарифы в шапке: текстовая ссылка, а не вторая кнопка — призыв на лендинге
+   один, и делить его внимание нельзя. На узком экране уходит, там место
+   нужно переключателям и кнопке. */
+.nav-price{flex:none;color:var(--txt-2);font-size:.92rem;font-weight:600;letter-spacing:-.01em;padding:6px 2px;border-bottom:1px solid transparent;transition:color .18s,border-color .18s}
+.nav-price:hover{color:var(--acc);border-bottom-color:var(--acc)}
+
 .brand{display:flex;align-items:center;gap:11px;font:700 1.05rem var(--font-display);letter-spacing:-.01em}
 /* ---------- tubelight nav (vanilla port of the 21st.dev NavBar) ---------- */
 .tube-nav{
@@ -601,6 +607,7 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
           <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
         </span>
       </button>
+      <a class="nav-price" href="/pricing">Тарифы</a>
       <a class="btn btn-primary" href="#waitlist" data-anchor>В лист ожидания</a>
     </div>
   </div>
@@ -933,6 +940,7 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
         <a href="/app">Вход для врачей</a>
         <a href="#how" data-anchor>Как работает</a>
         <a href="#features" data-anchor>Возможности</a>
+        <a href="/pricing">Тарифы</a>
         <a href="#waitlist" data-anchor>Лист ожидания</a>
       </div>
     </div>
@@ -1097,6 +1105,7 @@ try{if(localStorage.getItem("avris-wl-lang")==="en")document.documentElement.set
       "Как работает": "How it works",
       "Возможности": "Features",
       "Сравнение": "Comparison",
+      "Тарифы": "Pricing",
       "В лист ожидания": "Join the waitlist",
       "Записаться на демо": "Book a demo",
       "Врач говорит.": "The doctor speaks.",

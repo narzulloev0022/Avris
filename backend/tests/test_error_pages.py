@@ -40,6 +40,15 @@ class TestPricing:
     def test_pricing_has_a_russian_alias(self, client):
         assert client.get("/tarify").status_code == 200
 
+    def test_landing_links_to_pricing(self, client, monkeypatch):
+        """Страница тарифов бесполезна, если на неё неоткуда попасть:
+        письмо клинике ведёт на лендинг, а дальше человек ищет цену."""
+        monkeypatch.setenv("WAITLIST_LIVE", "1")
+        html = client.get("/waitlist").text
+        assert 'href="/pricing"' in html
+        # и в шапке, и в подвале: один заход сверху, один для тех, кто дочитал
+        assert html.count('href="/pricing"') >= 2
+
     def test_request_form_posts_to_the_existing_intake(self, client):
         """Форма не заводит свой эндпоинт: заявки идут туда же, куда с
         лендинга, вместе с тарифом, который человек смотрел."""
