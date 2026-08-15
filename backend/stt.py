@@ -18,10 +18,21 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_TRANSCRIBE_URL = "https://api.openai.com/v1/audio/transcriptions"
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "whisper-1")
 
-# Short prompt — biases Whisper toward the medical register without
-# locking it into a specific language. Whisper-1 auto-detects per phrase,
-# which handles RU/EN well; TJ falls back to Cyrillic via Russian.
-WHISPER_PROMPT = "Medical appointment between doctor and patient."
+# Подсказка задаёт распознаванию медицинский регистр И письменность.
+# Английская подсказка на всех языках тянула вывод в латиницу: таджикская
+# речь возвращалась транслитом («si afta bos» вместо «се ҳафта боз»), и
+# врачу доставался нечитаемый текст. Подсказка на языке приёма снимает это.
+WHISPER_PROMPTS = {
+    "ru": "Приём врача. Жалобы, осмотр, диагноз, назначения.",
+    "tg": "Қабули духтур. Шикоят, муоина, ташхис, таъинот.",
+    "en": "Medical appointment between doctor and patient.",
+}
+WHISPER_PROMPT = WHISPER_PROMPTS["en"]  # исторический дефолт
+
+# В интерфейсе таджикский помечен «tj» — так его называют пользователи.
+# У распознавания код по ISO 639-1 — «tg». Разошлись бы молча: неизвестный
+# код просто игнорируется, и язык снова угадывался бы.
+STT_LANG = {"ru": "ru", "tj": "tg", "tg": "tg", "en": "en"}
 
 # Hard cap on per-request audio size. OpenAI's own limit is 25 MB; we mirror
 # that here so a runaway client (or a malicious one) can't push gigabyte
@@ -36,7 +47,7 @@ router = APIRouter(prefix="/api/stt", tags=["stt"])
 async def transcribe(
     request: Request,
     file: UploadFile = File(...),
-    language: str = Form("ru"),  # accepted for API compat; not forwarded — Whisper auto-detects
+    language: str = Form("ru"),  # ru | tj | en — доходит до распознавания (см. STT_LANG)
     current_user: User = Depends(get_current_user),
 ):
     if not OPENAI_API_KEY:
@@ -52,12 +63,17 @@ async def transcribe(
             detail=f"Аудио файл слишком большой (максимум {MAX_AUDIO_BYTES // (1024*1024)} МБ)",
         )
 
+    # Язык врач выбирает сам в интерфейсе. Раньше выбор до модели не доходил,
+    # и она угадывала — на таджикском ошибалась вплоть до «языка latin».
+    stt_lang = STT_LANG.get((language or "").lower())
     files = {"file": (file.filename or "audio.webm", audio, file.content_type or "audio/webm")}
     data = {
         "model": WHISPER_MODEL,
-        "prompt": WHISPER_PROMPT,
+        "prompt": WHISPER_PROMPTS.get(stt_lang, WHISPER_PROMPT),
         "response_format": "verbose_json",
     }
+    if stt_lang:
+        data["language"] = stt_lang
     headers = {"Authorization": f"Bearer {OPENAI_API_KEY}"}
 
     async with httpx.AsyncClient(timeout=120) as client:
