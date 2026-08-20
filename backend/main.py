@@ -72,6 +72,7 @@ from icd10 import router as icd10_router
 from drugs import router as drugs_router
 from stats import router as stats_router
 from waitlist import router as waitlist_router
+from health import router as health_router
 from patient_auth import router as patient_auth_router
 from patient_api import router as patient_api_router
 from patient_links import patient_router as patient_links_patient_router, doctor_router as patient_links_doctor_router
@@ -215,6 +216,7 @@ app.include_router(icd10_router)
 app.include_router(drugs_router)
 app.include_router(stats_router)
 app.include_router(waitlist_router)
+app.include_router(health_router)
 app.include_router(patient_auth_router)
 app.include_router(patient_api_router)
 app.include_router(patient_links_patient_router)

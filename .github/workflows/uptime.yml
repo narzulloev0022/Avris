@@ -1,0 +1,49 @@
+# Наблюдатель живёт вне Railway намеренно: если ляжет Railway, вместе с ним
+# ляжет и проверка, которая на нём стоит. GitHub Actions бесплатны для
+# публичного репозитория и падают отдельно от прода.
+name: Uptime
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"      # раз в пять минут — минимальный шаг у GitHub
+    - cron: "17 * * * *"       # раз в час — дорогая проверка живости ключей
+  workflow_dispatch:            # и вручную, когда что-то подозреваем
+
+concurrency:
+  group: uptime
+  cancel-in-progress: false
+
+permissions:
+  issues: write                 # инцидент заводится как issue: это и есть состояние
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Проверка
+        id: probe
+        env:
+          HEALTH_TOKEN: ${{ secrets.HEALTH_TOKEN }}
+          DEEP: ${{ github.event.schedule == '17 * * * *' && 'live' || '' }}
+        run: bash scripts/uptime-check.sh
+
+      - name: Открыть инцидент и написать в Telegram
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: bash scripts/uptime-alert.sh open
+
+      - name: Закрыть инцидент, если он был открыт
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: bash scripts/uptime-alert.sh close
