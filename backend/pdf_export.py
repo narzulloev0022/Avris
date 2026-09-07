@@ -106,6 +106,15 @@ def _styles():
                              spaceBefore=6, spaceAfter=6),
         "lang_badge": ParagraphStyle("lang_badge", parent=base, fontName=_FONT_BOLD, fontSize=8,
                                      textColor=white, leading=10, alignment=TA_CENTER),
+        # Шапка бланка: название организации крупно, реквизиты под ним мелко.
+        "clinic": ParagraphStyle("clinic", parent=base, fontName=_FONT_BOLD, fontSize=13,
+                                 textColor=TEXT, leading=16, spaceAfter=1),
+        "clinic_sub": ParagraphStyle("clinic_sub", parent=base, fontName=_FONT_NAME, fontSize=8.5,
+                                     textColor=MUTED, leading=11, spaceAfter=0),
+        "sign": ParagraphStyle("sign", parent=base, fontName=_FONT_NAME, fontSize=9.5,
+                               textColor=TEXT, leading=13),
+        "sign_cap": ParagraphStyle("sign_cap", parent=base, fontName=_FONT_NAME, fontSize=7.5,
+                                   textColor=MUTED, leading=9),
     }
 
 
@@ -129,6 +138,100 @@ def _esc(s) -> str:
         if char in s:
             s = s.replace(char, f"<super>{digit}</super>")
     return s
+
+
+def _clinic_block(styles, doctor, lang: Optional[str] = None):
+    """Шапка бланка — реквизиты медицинской организации, а не наши.
+
+    Документ, который врач подшивает в карту или отдаёт пациенту, выпускает
+    клиника: по формам 003/у, 025/у и 027/у сверху стоит название и адрес
+    учреждения. Наш знак уходит в подвал мелкой строкой — он говорит, чем
+    документ сформирован, а не кем выдан.
+
+    Реквизитов нет — печатаем пустую линованную строку: бланк на чистой
+    бумаге дозаполняется от руки или штампом, и это лучше, чем чужое имя
+    в шапке.
+    """
+    name = (getattr(doctor, "hospital_name", None) or "").strip() if doctor else ""
+    if name:
+        head = [Paragraph(_esc(name), styles["clinic"])]
+        details = " · ".join(x for x in (
+            (getattr(doctor, "hospital_address", None) or "").strip(),
+            (getattr(doctor, "hospital_phone", None) or "").strip(),
+        ) if x)
+        if details:
+            head.append(Paragraph(_esc(details), styles["clinic_sub"]))
+    else:
+        head = [
+            Paragraph('<font color="#C5D0FB">' + "_" * 46 + "</font>", styles["clinic"]),
+            Paragraph("медицинская организация", styles["clinic_sub"]),
+        ]
+
+    left = head
+    if lang:
+        lang_para = Paragraph(
+            f'<para alignment="right"><font name="{_FONT_BOLD}" size="9" color="#ffffff" '
+            f'backColor="#4659B5"> &nbsp;{lang.upper()}&nbsp; </font></para>',
+            styles["body"],
+        )
+        t = Table([[left, lang_para]], colWidths=[14 * cm, 3 * cm])
+    else:
+        t = Table([[left]], colWidths=[17 * cm])
+    t.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("ALIGN", (-1, 0), (-1, 0), "RIGHT"),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING", (0, 0), (-1, -1), 0),
+        ("LEFTPADDING", (0, 0), (0, 0), 0),
+    ]))
+    return t
+
+
+def _signature_block(styles, entries, stamp: bool = False):
+    """Строки подписи под документом.
+
+    Без подписи медицинский документ — черновик: юридическую силу ему даёт
+    подпись лечащего врача, а выписному эпикризу — ещё и заведующего
+    отделением. Электронная подпись Кодексом здравоохранения РТ не описана,
+    поэтому строка остаётся под ручку.
+
+    ``entries`` — пары (должность, фамилия). Фамилия печатается рядом с
+    линией: подпись без расшифровки не читается.
+    """
+    rows = []
+    for role, name in entries:
+        rows.append([
+            Paragraph(_esc(role), styles["sign"]),
+            Paragraph("&nbsp;", styles["sign"]),
+            Paragraph(_esc(name) if name else "&nbsp;", styles["sign"]),
+        ])
+    t = Table(rows, colWidths=[5.4 * cm, 5.0 * cm, 6.6 * cm])
+    # Линия чертой таблицы, а не подчёркиваниями: строка из «_» переносится
+    # по ширине колонки и разваливается на два обрубка.
+    style = [
+        ("VALIGN", (0, 0), (-1, -1), "BOTTOM"),
+        ("LEFTPADDING", (0, 0), (0, -1), 0),
+        ("TOPPADDING", (0, 0), (-1, -1), 14),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
+        ("LINEBELOW", (1, 0), (2, -1), 0.6, TEXT),
+    ]
+    t.setStyle(TableStyle(style))
+    caps = Table(
+        [[Paragraph("должность", styles["sign_cap"]),
+          Paragraph("подпись", styles["sign_cap"]),
+          Paragraph("фамилия, инициалы", styles["sign_cap"])]],
+        colWidths=[5.4 * cm, 5.0 * cm, 6.6 * cm],
+    )
+    caps.setStyle(TableStyle([
+        ("LEFTPADDING", (0, 0), (0, -1), 0),
+        ("TOPPADDING", (0, 0), (-1, -1), 1),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+    ]))
+    out = [t, caps]
+    if stamp:
+        out.append(Spacer(0, 0.5 * cm))
+        out.append(Paragraph("М.П.", styles["sign"]))
+    return out
 
 
 def _brand_block(styles, lang: Optional[str] = None):
@@ -155,6 +258,33 @@ def _brand_block(styles, lang: Optional[str] = None):
         ("TOPPADDING", (0, 0), (-1, -1), 0),
     ]))
     return t
+
+
+# Специальность в карточке врача хранится ключом (therapist, surgeon…).
+# В печатный документ он попадал как есть: «Каримов Д. А. · therapist».
+_SPECIALTY_RU = {
+    "therapist": "Терапевт", "cardiologist": "Кардиолог", "surgeon": "Хирург",
+    "neurologist": "Невролог", "pulmonologist": "Пульмонолог",
+    "endocrinologist": "Эндокринолог", "pediatrician": "Педиатр",
+    "gynecologist": "Гинеколог", "urologist": "Уролог",
+    "traumatologist": "Травматолог", "ophthalmologist": "Офтальмолог",
+    "dermatologist": "Дерматолог", "psychiatrist": "Психиатр",
+    "oncologist": "Онколог", "anesthesiologist": "Анестезиолог",
+    "radiologist": "Рентгенолог", "dentist": "Стоматолог", "other": "",
+}
+
+
+def _specialty_ru(value) -> str:
+    """Незнакомый ключ печатаем как есть: клиника могла вписать своё."""
+    if not value:
+        return ""
+    return _SPECIALTY_RU.get(str(value).strip().lower(), str(value))
+
+
+def _doctor_line(doctor) -> str:
+    name = (getattr(doctor, "full_name", None) or "").strip()
+    spec = _specialty_ru(getattr(doctor, "specialty", None))
+    return f"{name} · {spec}" if (name and spec) else (name or spec)
 
 
 def _meta_table(items):
@@ -194,7 +324,7 @@ def _hr(color=BORDER):
 
 def _footer(styles):
     return Paragraph(
-        f"Сгенерировано Avris AI · Hyperion Labs · {datetime.utcnow().year}",
+        f"Сформировано в Avris AI · theavris.ai · {datetime.utcnow().year}",
         styles["footer"],
     )
 
@@ -247,8 +377,7 @@ def render_consultation_pdf(consultation, patient, doctor) -> bytes:
     story = []
 
     # Header
-    story.append(_brand_block(styles, lang=consultation.language))
-    story.append(Paragraph("Hyperion Labs · Голосовая медицинская документация", styles["subtitle"]))
+    story.append(_clinic_block(styles, doctor, lang=consultation.language))
     story.append(_hr(ACCENT))
     story.append(Spacer(0, 0.5 * cm))
 
@@ -259,7 +388,7 @@ def render_consultation_pdf(consultation, patient, doctor) -> bytes:
     # Doctor + Patient meta
     meta = []
     if doctor:
-        meta.append(("Врач", f"{doctor.full_name or ''}{(' · ' + doctor.specialty) if getattr(doctor, 'specialty', None) else ''}"))
+        meta.append(("Врач", _doctor_line(doctor)))
     if patient:
         meta.append(("Пациент", patient.full_name or "—"))
         sub_parts = []
@@ -336,6 +465,12 @@ def render_consultation_pdf(consultation, patient, doctor) -> bytes:
         ))
         story.append(Spacer(0, 0.3 * cm))
 
+    # Запись осмотра без подписи врача — черновик, а не документ карты.
+    story.append(Spacer(0, 0.6 * cm))
+    story.append(_hr())
+    for el in _signature_block(styles, [("Врач", (doctor.full_name or "") if doctor else "")]):
+        story.append(el)
+
     story.append(Spacer(0, 0.6 * cm))
     story.append(_footer(styles))
 
@@ -366,8 +501,7 @@ def render_epicrisis_pdf(epicrisis, patient, doctor) -> bytes:
     )
 
     story = []
-    story.append(_brand_block(styles, lang=epicrisis.language))
-    story.append(Paragraph("Hyperion Labs · Голосовая медицинская документация", styles["subtitle"]))
+    story.append(_clinic_block(styles, doctor, lang=epicrisis.language))
     story.append(_hr(ACCENT))
     story.append(Spacer(0, 0.5 * cm))
 
@@ -377,7 +511,7 @@ def render_epicrisis_pdf(epicrisis, patient, doctor) -> bytes:
     # Паспортная шапка — с ДР и № карты (официальные поля)
     meta = []
     if doctor:
-        meta.append(("Врач", f"{doctor.full_name or ''}{(' · ' + doctor.specialty) if getattr(doctor, 'specialty', None) else ''}"))
+        meta.append(("Врач", _doctor_line(doctor)))
     if patient:
         meta.append(("Пациент", patient.full_name or "—"))
         sub_parts = []
@@ -428,11 +562,14 @@ def render_epicrisis_pdf(epicrisis, patient, doctor) -> bytes:
     story.append(Spacer(0, 0.8 * cm))
     story.append(_hr())
     story.append(Spacer(0, 0.4 * cm))
+    # Выписной эпикриз подписывают двое: лечащий врач и заведующий
+    # отделением, который согласует заключительный диагноз.
     sign_name = (doctor.full_name or "") if doctor else ""
-    story.append(Paragraph(
-        f"Лечащий врач: {_esc(sign_name)} ____________________",
-        styles["body"],
-    ))
+    for el in _signature_block(styles, [
+        ("Лечащий врач", sign_name),
+        ("Заведующий отделением", ""),
+    ], stamp=True):
+        story.append(el)
     story.append(Spacer(0, 0.6 * cm))
     story.append(_footer(styles))
 
@@ -453,8 +590,7 @@ def render_lab_order_pdf(order, patient, doctor) -> bytes:
     )
 
     story = []
-    story.append(_brand_block(styles))
-    story.append(Paragraph("Hyperion Labs · Lab Connect", styles["subtitle"]))
+    story.append(_clinic_block(styles, doctor))
     story.append(_hr(ACCENT))
     story.append(Spacer(0, 0.5 * cm))
 
@@ -467,7 +603,7 @@ def render_lab_order_pdf(order, patient, doctor) -> bytes:
 
     meta = []
     if doctor:
-        meta.append(("Врач", f"{doctor.full_name or ''}{(' · ' + doctor.specialty) if getattr(doctor, 'specialty', None) else ''}"))
+        meta.append(("Врач", _doctor_line(doctor)))
     if patient:
         meta.append(("Пациент", patient.full_name or "—"))
         sub_parts = []
@@ -560,6 +696,12 @@ def render_lab_order_pdf(order, patient, doctor) -> bytes:
         else:
             story.append(Paragraph("Тесты не выбраны", styles["body"]))
         story.append(Spacer(0, 0.4 * cm))
+
+    # Лаборатория принимает направление за подписью назначившего врача.
+    story.append(Spacer(0, 0.4 * cm))
+    story.append(_hr())
+    for el in _signature_block(styles, [("Направил врач", (doctor.full_name or "") if doctor else "")]):
+        story.append(el)
 
     story.append(Spacer(0, 0.4 * cm))
     story.append(_footer(styles))

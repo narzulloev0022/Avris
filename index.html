@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=64">
+<link rel="stylesheet" href="styles.css?v=65">
 </head>
 <body data-theme="light">
 <div class="login-screen" id="loginScreen">
@@ -97,6 +97,8 @@
 <div class="login-field"><label data-i18n="prof_specialty">Специальность *</label><select id="pfSpecialty" required></select></div>
 <div class="login-field"><label data-i18n="prof_position">Должность</label><select id="pfPosition"></select></div>
 <div class="login-field full"><label data-i18n="prof_facility">Медицинское учреждение</label><input id="pfHospital" type="text" autocomplete="organization" data-phk="ph_facility" placeholder="Название клиники или больницы"></div>
+<div class="login-field full"><label data-i18n="prof_facility_addr">Адрес учреждения</label><input id="pfHospitalAddr" type="text" autocomplete="street-address" data-phk="ph_facility_addr" placeholder="Город, улица, дом"></div>
+<div class="login-field full"><label data-i18n="prof_facility_phone">Телефон учреждения</label><input id="pfHospitalPhone" type="tel" data-phk="ph_facility_phone" placeholder="+992 ..."></div>
 <div class="login-field full"><label data-i18n="prof_facility_type">Тип учреждения</label>
 <div class="seg" id="pfFacilityType">
 <button type="button" class="seg-b" data-v="state" data-i18n="fac_state">Государственное</button>
@@ -392,6 +394,8 @@
 <div class="fgroup"><div class="fgroup-t" data-i18n="prof_g_place">Место работы</div>
 <div class="prof-grid">
 <div class="login-field full"><label data-i18n="prof_facility">Медицинское учреждение</label><input id="spHospital" type="text" autocomplete="organization" data-phk="ph_facility" placeholder="Название клиники или больницы"></div>
+<div class="login-field full"><label data-i18n="prof_facility_addr">Адрес учреждения</label><input id="spHospitalAddr" type="text" autocomplete="street-address" data-phk="ph_facility_addr" placeholder="Город, улица, дом"></div>
+<div class="login-field full"><label data-i18n="prof_facility_phone">Телефон учреждения</label><input id="spHospitalPhone" type="tel" data-phk="ph_facility_phone" placeholder="+992 ..."></div>
 <div class="login-field full"><label data-i18n="prof_facility_type">Тип учреждения</label>
 <div class="seg" id="spFacilityType">
 <button type="button" class="seg-b" data-v="state" data-i18n="fac_state">Государственное</button>
@@ -695,6 +699,6 @@
 <script src="assets/vendor/gsap/TextPlugin.min.js"></script>
 <script src="assets/vendor/anime.umd.min.js"></script>
 <script src="assets/vendor/motion.min.js"></script>
-<script src="app.js?v=64"></script>
+<script src="app.js?v=65"></script>
 </body>
 </html>

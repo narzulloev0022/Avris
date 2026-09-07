@@ -30,6 +30,7 @@ class UserResponse(BaseModel):
     specialty: Optional[str] = None
     hospital_name: Optional[str] = None
     hospital_address: Optional[str] = None
+    hospital_phone: Optional[str] = None
     facility_type: Optional[str] = None
     department: Optional[str] = None
     position: Optional[str] = None
@@ -103,6 +104,7 @@ class UpdateProfileRequest(BaseModel):
     specialty: Optional[str] = None
     hospital_name: Optional[str] = None
     hospital_address: Optional[str] = None
+    hospital_phone: Optional[str] = None
     facility_type: Optional[str] = None
     department: Optional[str] = None
     position: Optional[str] = None
