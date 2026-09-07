@@ -51,6 +51,17 @@ def _model_for(tier: str) -> str:
 
 LANG_LABEL = {"ru": "русский", "tj": "тоҷикӣ", "en": "English"}
 
+def _upstream_status(code: int) -> int:
+    """Код провайдера не должен доходить до клиента как есть.
+
+    401/403 от провайдера значат «наш ключ отозван или лимит исчерпан» —
+    а фронт читает 401 как «сессия истекла» и разлогинивает врача посреди
+    приёма. 429 — «подождите», это 503 с нашей стороны. Всё остальное —
+    502: сломан шлюз, а не пользователь.
+    """
+    return 503 if code == 429 else 502
+
+
 router = APIRouter(prefix="/api/llm", tags=["llm"])
 
 
@@ -163,7 +174,7 @@ async def _llm_call(system_prompt: str, user_msg: str, max_tokens: int = 1024,
             raise HTTPException(status_code=502, detail="ИИ недоступен")
     if r.status_code != 200:
         logger.warning("LLM %d (тело ответа скрыто — возможны PHI)", r.status_code)
-        raise HTTPException(status_code=r.status_code, detail=f"Ошибка ИИ ({r.status_code})")
+        raise HTTPException(status_code=_upstream_status(r.status_code), detail="Сервис ИИ временно недоступен — попробуйте позже")
     j = r.json()
     parts = j.get("content", []) or []
     return "".join(p.get("text", "") for p in parts if p.get("type") == "text").strip()
@@ -208,7 +219,7 @@ async def _llm_vision_call(system_prompt: str, user_msg: str, image_b64: str,
     if r.status_code != 200:
         # Тело не логируем: в нём может быть отражено содержимое фото.
         logger.warning("LLM vision %d", r.status_code)
-        raise HTTPException(status_code=r.status_code, detail=f"Ошибка ИИ ({r.status_code})")
+        raise HTTPException(status_code=_upstream_status(r.status_code), detail="Сервис ИИ временно недоступен — попробуйте позже")
     j = r.json()
     parts = j.get("content", []) or []
     return "".join(p.get("text", "") for p in parts if p.get("type") == "text").strip()

@@ -39,6 +39,17 @@ STT_LANG = {"ru": "ru", "tj": "tg", "tg": "tg", "en": "en"}
 # uploads through our backend before OpenAI rejects them.
 MAX_AUDIO_BYTES = 25 * 1024 * 1024
 
+def _upstream_status(code: int) -> int:
+    """Код провайдера не должен доходить до клиента как есть.
+
+    401/403 от провайдера значат «наш ключ отозван или лимит исчерпан» —
+    а фронт читает 401 как «сессия истекла» и разлогинивает врача посреди
+    приёма. 429 — «подождите», это 503 с нашей стороны. Всё остальное —
+    502: сломан шлюз, а не пользователь.
+    """
+    return 503 if code == 429 else 502
+
+
 router = APIRouter(prefix="/api/stt", tags=["stt"])
 
 
@@ -85,7 +96,7 @@ async def transcribe(
 
     if r.status_code != 200:
         logger.warning("Whisper returned %d (тело ответа скрыто — возможны PHI)", r.status_code)
-        raise HTTPException(status_code=r.status_code, detail=f"Ошибка Whisper ({r.status_code})")
+        raise HTTPException(status_code=_upstream_status(r.status_code), detail="Распознавание речи временно недоступно — попробуйте позже")
 
     j = r.json()
     return {

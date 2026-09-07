@@ -7,6 +7,13 @@ importing any backend module (``database.py`` reads the env at import time;
 ``load_dotenv()`` does not override variables that are already set).
 """
 import os
+
+# Тесты не должны ходить в настоящие API: локальный .env подтягивает живые
+# ключи, и тест «без ключа — 503» превращался в сетевой вызов.
+os.environ["ANTHROPIC_API_KEY"] = ""
+os.environ["OPENAI_API_KEY"] = ""
+os.environ["RESEND_API_KEY"] = ""
+
 import sys
 import tempfile
 
