@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from auth import get_current_user
 from database import get_db
+from access import require_own_patient
 from models import Notification, Patient, User
 
 logger = logging.getLogger(__name__)
@@ -122,9 +123,7 @@ def call_doctor(
     via Resend if it's configured. Returns the notification id and a
     summary of who was paged so the caller can show a confirmation toast.
     """
-    pat = db.query(Patient).filter(Patient.id == payload.patient_id).first()
-    if not pat:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Пациент не найден")
+    pat = require_own_patient(db, payload.patient_id, current_user)
 
     # The attending doctor is the patient's owner. Fall back to the caller
     # if for some reason the FK is dangling (shouldn't happen with FK in DB).

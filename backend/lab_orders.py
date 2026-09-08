@@ -15,6 +15,7 @@ from audit import audit
 from database import get_db
 from rate_limit import limiter
 from http_files import content_disposition
+from access import require_own_patient
 from models import LabOrder, LabFile, User, Patient
 from auth import get_current_user
 from llm import _llm_call, ANTHROPIC_API_KEY
@@ -145,6 +146,7 @@ def create_order(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    require_own_patient(db, payload.patient_id, current_user)
     o = LabOrder(
         doctor_id=current_user.id,
         patient_id=payload.patient_id,

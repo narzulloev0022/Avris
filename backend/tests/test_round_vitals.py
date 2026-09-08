@@ -50,13 +50,19 @@ def test_round_partial_and_garbage_vitals(client, doctor):
     assert "T°C" not in v
 
 
-def test_round_foreign_patient_vitals_ignored(client, doctor, second_doctor):
-    """Чужой patient_id: обход сохраняется, но чужая карта не тронута."""
+def test_round_with_a_foreign_patient_is_refused(client, doctor, second_doctor):
+    """Чужой patient_id: обход не сохраняется вовсе.
+
+    Раньше запись создавалась, а чужая карта просто не обновлялась. Так
+    в базе оставалась строка одного врача со ссылкой на карту другого —
+    та же дыра, что позволяла вытащить чужого пациента через публичную
+    ссылку направления. Ссылаться на чужую карту нельзя ничем.
+    """
     p = _mk_patient(client, doctor)
     r = client.post("/api/night-rounds/",
                     json={"patient_id": p["id"], "vitals": {"pulse": 55}},
                     headers=auth_headers(second_doctor))
-    assert r.status_code == 201
+    assert r.status_code == 404, r.text
     v = client.get(f"/api/patients/{p['id']}", headers=auth_headers(doctor)).json()["vitals"]
     assert not v or "ЧСС" not in (v or {})
 

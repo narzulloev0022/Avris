@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from audit import audit
 from database import get_db
+from access import require_own_patient
 from models import NightRound, Patient, User
 from auth import get_current_user
 
@@ -79,6 +80,7 @@ def create_round(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    require_own_patient(db, payload.patient_id, current_user)
     nr = NightRound(doctor_id=current_user.id, **payload.model_dump())
     db.add(nr)
     # Обход с витальными обновляет карту пациента (строго своего — чужой

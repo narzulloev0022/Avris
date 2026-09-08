@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from audit import audit
 from database import get_db
+from access import require_own_patient
 from models import Consultation, Patient, User
 from auth import get_current_user
 from pdf_export import render_consultation_pdf
@@ -60,6 +61,7 @@ def create_consultation(
 ):
     data = payload.model_dump()
     was_edited = data.pop("soap_was_edited", None)
+    require_own_patient(db, data.get("patient_id"), current_user)
     c = Consultation(doctor_id=current_user.id, **data)
     db.add(c)
     # Bump accuracy counters only when the frontend explicitly tagged this save.
