@@ -33,6 +33,16 @@ def init_db():
     # Postgres where create_all() won't add new columns to an existing table.
     from sqlalchemy import text, inspect
     insp = inspect(engine)
+    # Согласия появились позже остальных таблиц; create_all их создаст,
+    # а идемпотентность держится на индексе по (doctor_id, client_id).
+    if "consents" in insp.get_table_names():
+        existing_cs = {i["name"] for i in insp.get_indexes("consents")}
+        if "ix_consents_doctor_client" not in existing_cs:
+            with engine.begin() as conn:
+                conn.execute(text(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS ix_consents_doctor_client "
+                    "ON consents (doctor_id, client_id)"
+                ))
     if "waitlist" in insp.get_table_names():
         existing_wl = {c["name"] for c in insp.get_columns("waitlist")}
         with engine.begin() as conn:

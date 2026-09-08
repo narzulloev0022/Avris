@@ -522,6 +522,38 @@ class PatientPreVisitNote(Base):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
 
+class Consent(Base):
+    """Согласие пациента, зафиксированное врачом на приёме.
+
+    Раньше форма показывала «Сохранено» и закрывалась, не записав ничего:
+    для документа, которым обосновывают законность записи голоса, это хуже,
+    чем отсутствие формы вовсе — врач уверен, что согласие есть.
+
+    Виды согласия раздельны намеренно. Разрешение записать приём и
+    разрешение использовать данные для обучения моделей — разные решения
+    пациента: согласиться на первое и отказать во втором нормально, и
+    склеивать их в один флаг значит подменять волю пациента.
+
+    Хранится не только «да», но и то, с чем именно согласились: версия
+    текста и его хэш. Формулировка со временем меняется, а доказывать
+    придётся согласие на ту, что была показана в тот день.
+    """
+    __tablename__ = "consents"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id", ondelete="CASCADE"),
+                        nullable=False, index=True)
+    doctor_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    kind = Column(String(16), nullable=False)          # recording | training
+    granted = Column(Boolean, nullable=False, default=True)
+    text_version = Column(String(16), nullable=True)
+    text_hash = Column(String(64), nullable=True)
+    # Ключ идемпотентности: повтор после потерянного ответа обязан вернуть
+    # уже созданную запись, а не завести вторую.
+    client_id = Column(String(64), nullable=True, index=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
 class WaitlistEntry(Base):
     """Public waitlist signup from the marketing page (/waitlist).
 

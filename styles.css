@@ -1770,3 +1770,12 @@ body>.print-sheet{display:block!important}
 .print-sheet .ps-sign{margin-top:26pt;font-size:10.5pt}
 .print-sheet .ps-foot{margin-top:20pt;padding-top:8pt;border-top:1pt solid #999;font-size:9pt;color:#555;display:flex;justify-content:space-between}
 }
+
+/* Форма согласия: подсказка, состояние и ошибка. Ошибка остаётся на экране
+   вместе с введёнными данными — врач повторяет отправку, а не заполняет
+   заново. */
+.consent-hint{margin-top:6px;font-size:.76rem;color:var(--text-muted);line-height:1.4}
+.consent-status{margin-top:12px;padding:9px 12px;border-radius:var(--radius-input);background:var(--success-bg);color:var(--success);font-size:.82rem;line-height:1.4}
+.consent-status[hidden]{display:none}
+.consent-err{margin-top:12px;padding:9px 12px;border-radius:var(--radius-input);background:var(--danger-bg);color:var(--danger);font-size:.82rem;line-height:1.4}
+.consent-err[hidden]{display:none}
