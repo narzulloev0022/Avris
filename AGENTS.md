@@ -43,9 +43,9 @@ index.html (~1300 строк)
 │   ├── .login-screen    — экран входа (бренд AVRIS + teal dot)
 │   └── .app-shell
 │       ├── .sidebar     — навигация (5 пунктов)
-│       ├── .topbar      — гамбургер, часы, lang-switcher, уведомления, тема
+│       ├── .topbar      — гамбургер, lang-switcher, уведомления, тема (часы убраны в V2)
 │       └── .main
-│           ├── #dashboard     — дашборд (cmd-bar + 3 stat cards + список пациентов + Avris Score trend + Activity timeline)
+│           ├── #dashboard     — дашборд (3 плоские карточки .dash-stat + поиск/фильтры + список пациентов + FAB «Новый осмотр»)
 │           ├── #consultation  — 3 вкладки: Осмотр / Анализы / История
 │           ├── #nightRound    — ночной обход (6 палат, FAB голосового ввода)
 │           ├── #history       — история записей с группировкой Сегодня/Вчера/Ранее
@@ -164,10 +164,15 @@ Clinical (4) / Biochem (8) / Vitamins (4) / Infectious (7) / Hormones (6) / Inst
 ```
 
 ### Бренд / акцент (одинаков в обеих темах)
+
+> Смена бренда 08.08.2026: акцент переехал с teal на periwinkle.
+> Старый `#4AA391` выведен из обращения — не использовать нигде.
+
 ```css
---accent: #4AA391       /* основной teal */
---accent-bright: #5ab8a1
---accent-dim: #3d8a79
+--accent: #95AEF8       /* periwinkle — основной */
+--accent-bright: #C5D0FB
+--accent-dim: #6E86E0
+--accent-dark: #4659B5  /* текст и заголовки на светлом фоне */
 --ok/success: #10b981
 --warn/warning: #f59e0b
 --danger: #ef4444
@@ -182,9 +187,9 @@ Clinical (4) / Biochem (8) / Vitamins (4) / Infectious (7) / Hormones (6) / Inst
 - Muted labels: uppercase, letter-spacing, 0.72rem
 
 ### Градиенты
-- **Основной:** `linear-gradient(135deg, #1A4A3E 0%, #4AA391 100%)` — применяется к `.cmd-bar`, `.stat-card`, `.time-saved-banner`, `.lab-ai-title`, `.ai-badge` (light theme)
-- **Критический:** `linear-gradient(135deg, #8B2020, #C53030)` — `.cmd-stat.cmd-danger`
-- **Hero:** `linear-gradient(135deg, #060d18, #2d6b5e 50%, #4AA391)` (для login или hero-блоков)
+- **Основной:** `linear-gradient(135deg, #1a2a5e, #95AEF8)` — карточки, бейджи, `.ai-badge`
+- **Критический:** `linear-gradient(135deg, #8B2020, #C53030)` — критические состояния
+- **Hero (светлая):** `linear-gradient(135deg, #e8ecff, #b8ddd4 50%, #95AEF8)`
 - Направление: всегда 135deg, тёмный → светлый
 - Текст на градиентах: белый, подписи `rgba(255,255,255,0.8)`
 
@@ -201,8 +206,15 @@ Clinical (4) / Biochem (8) / Vitamins (4) / Infectious (7) / Hormones (6) / Inst
 |------------|--------------|
 | `≥1024px` | Sidebar постоянно открыт, content-area сдвинут |
 | `≤1023px` | Sidebar drawer; consult-split → column |
-| `≤768px` | Stats bar 2-col, lab-order-btn full-width, consult-tabs горизонтальный скролл, settings tabs горизонтальные, labs-table в скролл-контейнере |
-| `≤480px` | Cmd-bar grid 1fr+1fr с danger на всю строку; stat-row 3 col компактные с ellipsis; nr-grid 1 col; icu-vg 2 col; filter-bar grid с full-width reset |
+| `≤768px` | lab-order-btn full-width, consult-tabs горизонтальный скролл, settings tabs горизонтальные, labs-table в скролл-контейнере, ФИО пациента переносится |
+| `≤480px` | nr-grid 1 col; icu-vg 2 col; компактные pat-ctx и подвкладки осмотра |
+
+### Порядок правил в styles.css
+
+Мобильное переопределение объявляется **после** базового правила своего
+компонента. Медиазапрос не повышает специфичность: при равных селекторах
+побеждает то, что ниже в файле, — правило, стоящее выше базового, молча
+не работает. Так были мертвы семь правил (аудит 8 сентября).
 
 ### Компоненты
 `.btn` (primary/ghost/danger/sm), `.badge` (safe/warn/danger/info), `.card`, `.tag`, `.score-pill`, `.avatar`, `.modal`, `.toast` (типизированный ok/err/info с SVG иконкой), `.confirm-ov`, `.notif-panel`, `.sidebar`, `.topbar`, `.lab-modal-card`, `.pm-card`, `.nr-modal-card`.
