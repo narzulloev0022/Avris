@@ -431,7 +431,7 @@ body[data-theme="light"] .profile-setup-card{background:#FFFFFF}
 .pat-ctx{margin:0 10px;padding:12px 14px}
 .pat-ctx-top{flex-wrap:wrap;gap:10px}
 .pat-ctx-info{flex:1;min-width:0}
-.pat-ctx-name{font-size:.94rem;white-space:normal;word-break:break-word}
+.pat-ctx-name{overflow-wrap:anywhere}
 .pat-ctx-bottom{gap:6px;flex-wrap:wrap}
 .pat-ctx-meta{white-space:normal}
 .consult-tabs{margin-left:0;margin-right:0;padding-left:10px;padding-right:10px;gap:0}
@@ -495,6 +495,18 @@ body[data-theme="light"] .profile-setup-card{background:#FFFFFF}
 .pat-ctx-top{display:flex;align-items:center;gap:12px}
 .pat-ctx-info{flex:1;min-width:0}
 .pat-ctx-name{font-weight:600;font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* На узком экране ФИО переносится, а не обрезается: «Бе…» вместо фамилии
+   не говорит врачу, чью карту он открыл. Правило стоит здесь, а не в общем
+   мобильном блоке выше, — тот идёт до этой строки, и при равной
+   специфичности медиазапрос проигрывает более позднему базовому правилу. */
+@media(max-width:768px){
+/* Имя переносится по словам, а не по буквам: «Нос-иров-а» читается хуже
+   обрезанного. Полосе с именем даётся минимальная ширина, иначе пилюля
+   статуса выдавливает фамилию в столбик по букве вместо того, чтобы
+   перенестись самой. */
+.pat-ctx-name{font-size:.94rem;white-space:normal;overflow:visible;text-overflow:clip;word-break:normal;overflow-wrap:anywhere}
+.pat-ctx-info{min-width:150px}
+}
 .pat-ctx-meta{font-size:.78rem;color:var(--text-muted);margin-top:2px}
 .pat-ctx-score{font-family:var(--font-data);font-weight:700;font-size:.82rem;padding:4px 12px;border-radius:var(--radius-pill);white-space:nowrap;flex-shrink:0}
 .pat-ctx-score.safe{background:var(--success-bg);color:var(--success)}

@@ -164,3 +164,30 @@ class TestAppendixSheet:
         appendix = pages[-2] if len(pages) > 1 else pages[-1]
         assert "ПРИЛОЖЕНИЕ" in appendix
         assert "Уникальнов" not in appendix
+
+
+class TestPatientNameOnMobile:
+    """ФИО пациента на телефоне должно читаться целиком."""
+
+    def test_name_is_not_truncated_on_narrow_screens(self, client):
+        css = client.get("/styles.css").text
+        base = css.index(".pat-ctx-name{font-weight:600")
+        tail = css[base:base + 900]
+        assert "@media(max-width:768px)" in tail, "перенос объявлен до базового правила"
+        assert "white-space:normal" in tail
+
+    def test_the_override_comes_after_the_base_rule(self, client):
+        """Медиазапрос не повышает специфичность: правило, стоящее раньше
+        базового, проигрывает ему и молча ничего не делает."""
+        css = client.get("/styles.css").text
+        base = css.index(".pat-ctx-name{font-weight:600")
+        override = css.index("@media(max-width:768px){\n/* Имя переносится")
+        assert override > base
+
+    def test_name_wraps_by_words_not_letters(self, client):
+        """«Нос-иров-а» в столбик читается хуже обрезанной фамилии."""
+        css = client.get("/styles.css").text
+        i = css.index("@media(max-width:768px){\n/* Имя переносится")
+        block = css[i:i + 600]
+        assert "word-break:normal" in block
+        assert "min-width:150px" in block, "пилюля статуса снова сожмёт имя"
