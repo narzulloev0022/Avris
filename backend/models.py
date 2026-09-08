@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, date
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON, Float, Date, LargeBinary, Uuid, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON, Float, Date, LargeBinary, Uuid, UniqueConstraint, Index
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -108,6 +108,13 @@ class Patient(Base):
 
 class Consultation(Base):
     __tablename__ = "consultations"
+    # Ключ осмотра уникален внутри врача: он и есть защита от второй такой же
+    # записи в карте, если ответ на первую отправку не дошёл. Ограничение
+    # объявлено здесь, а не только в миграции, иначе чистая база поднимется
+    # без него — и защита исчезнет ровно там, где её никто не проверит.
+    __table_args__ = (
+        Index("ix_consultations_doctor_client", "doctor_id", "client_id", unique=True),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     patient_id = Column(Integer, ForeignKey("patients.id"), nullable=True, index=True)
@@ -122,6 +129,12 @@ class Consultation(Base):
     # visit — амбулаторный приём (default), primary — первичный осмотр при
     # поступлении, daily — ежедневный дневник стационара.
     visit_type = Column(String, nullable=False, default="visit")
+    # Идентификатор осмотра, выданный клиентом в момент начала записи.
+    # Связывает аудио, распознавание и документ и делает повтор безопасным:
+    # ответ потерялся в сети — повторная отправка вернёт уже созданную
+    # запись, а не заведёт вторую. Без него дубль осмотра в карте пациента
+    # появлялся молча, и заметить его было некому.
+    client_id = Column(String(64), nullable=True, index=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     patient = relationship("Patient", back_populates="consultations")

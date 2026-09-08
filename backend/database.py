@@ -35,6 +35,18 @@ def init_db():
     insp = inspect(engine)
     # Согласия появились позже остальных таблиц; create_all их создаст,
     # а идемпотентность держится на индексе по (doctor_id, client_id).
+    if "consultations" in insp.get_table_names():
+        existing_c = {c["name"] for c in insp.get_columns("consultations")}
+        with engine.begin() as conn:
+            if "client_id" not in existing_c:
+                conn.execute(text("ALTER TABLE consultations ADD COLUMN client_id VARCHAR(64)"))
+            # Индекс создаётся отдельно от колонки: база, где колонка уже
+            # появилась, а индекс — нет, осталась бы без защиты от дубля
+            # осмотра, и заметить это было бы нечем.
+            conn.execute(text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS ix_consultations_doctor_client "
+                "ON consultations (doctor_id, client_id)"
+            ))
     if "consents" in insp.get_table_names():
         existing_cs = {i["name"] for i in insp.get_indexes("consents")}
         if "ix_consents_doctor_client" not in existing_cs:

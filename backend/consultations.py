@@ -3,7 +3,8 @@ from io import BytesIO
 from typing import Optional, List
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, status
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from audit import audit
@@ -33,6 +34,8 @@ class ConsultationCreate(BaseModel):
     #   False → AI-generated, doctor saved without edits → accurate
     #   True  → AI-generated, doctor edited at least one field → edited
     soap_was_edited: Optional[bool] = None
+    # Ключ, выданный клиентом в начале осмотра: делает повтор безопасным.
+    client_id: Optional[str] = Field(default=None, max_length=64)
 
 
 class ConsultationResponse(BaseModel):
@@ -49,19 +52,42 @@ class ConsultationResponse(BaseModel):
     language: str
     duration_seconds: Optional[int] = None
     visit_type: str = "visit"
+    client_id: Optional[str] = None
     created_at: datetime
+
+
+def _find_twin(db: Session, doctor_id: int, client_id: str):
+    """Осмотр, уже созданный под этим ключом у этого врача."""
+    return (
+        db.query(Consultation)
+        .filter(Consultation.doctor_id == doctor_id,
+                Consultation.client_id == client_id)
+        .first()
+    )
 
 
 @router.post("/", response_model=ConsultationResponse, status_code=status.HTTP_201_CREATED)
 def create_consultation(
     payload: ConsultationCreate,
     background_tasks: BackgroundTasks,
+    response: Response,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     data = payload.model_dump()
     was_edited = data.pop("soap_was_edited", None)
     require_own_patient(db, data.get("patient_id"), current_user)
+
+    # Повтор после потерянного ответа обязан вернуть уже созданную запись.
+    # Одного идентификатора на клиенте мало: без этой проверки вторая
+    # отправка заводила второй осмотр в карте, и врач его не видел.
+    cid = data.get("client_id")
+    if cid:
+        existing = _find_twin(db, current_user.id, cid)
+        if existing:
+            response.status_code = status.HTTP_200_OK
+            return existing
+
     c = Consultation(doctor_id=current_user.id, **data)
     db.add(c)
     # Bump accuracy counters only when the frontend explicitly tagged this save.
@@ -70,7 +96,18 @@ def create_consultation(
         current_user.soap_edited_count = (current_user.soap_edited_count or 0) + 1
     elif was_edited is False:
         current_user.soap_accurate_count = (current_user.soap_accurate_count or 0) + 1
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # Две отправки, ушедшие одновременно: обе не нашли записи и обе пишут.
+        # Уникальный индекс останавливает вторую — и это успех, а не сбой:
+        # осмотр в карте уже есть, врачу надо вернуть его, а не ошибку 500.
+        db.rollback()
+        twin = _find_twin(db, current_user.id, cid)
+        if twin is None:
+            raise
+        response.status_code = status.HTTP_200_OK
+        return twin
     db.refresh(c)
     audit(db, action="create", entity="consultation", user_id=current_user.id,
           entity_id=c.id, meta={"patient_id": c.patient_id, "language": c.language})
