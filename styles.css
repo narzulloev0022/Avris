@@ -1634,6 +1634,10 @@ body[data-theme="light"] .nr-card{background:rgba(255,255,255,0.75);border:1px s
 .icu-score.safe{color:#10B981;border-color:rgba(16,185,129,.55);background:rgba(16,185,129,.12)}
 .icu-score.pending{font-size:1rem}
 .icu-c-key{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 18px 14px}
+/* Нет измерения: приглушённый прочерк, чтобы отсутствие данных не читалось
+   ни как норма, ни как тревога. */
+.icu-k.vnone .icu-kv,.icu-k.vnone .icu-kl{color:var(--text-muted)}
+.icu-k.vnone{opacity:.75}
 .icu-k{text-align:center}
 .icu-kv{font-family:var(--font-data);font-size:1.3rem;font-weight:700;color:var(--text-primary);line-height:1}
 .icu-kv small{font-size:.78rem;font-weight:600}
