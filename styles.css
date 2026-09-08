@@ -1638,6 +1638,14 @@ body[data-theme="light"] input,body[data-theme="light"] select,body[data-theme="
    показываем только собранный buildPrintSheet() документ. */
 .print-sheet{display:none}
 @page{margin:18mm 16mm}
+/* Атрибут hidden должен скрывать. Браузер задаёт его через display:none в
+   своей таблице, а любое авторское правило с display перебивает её — и
+   элемент, который код пометил скрытым, остаётся на экране. Так висела
+   кнопка «Отправить исправления» поверх пустой области записи и пять
+   пустых секций AI-рекомендаций. Печатный бланк не задет: у его правила
+   специфичность выше. */
+[hidden]{display:none!important}
+
 @media print{
 html,body{background:#fff!important}
 body>*{display:none!important}
