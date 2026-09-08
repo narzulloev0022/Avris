@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from audit import audit
 from database import get_db
 from access import require_own_patient
-from models import Consultation, Patient, User
+from models import Consent, Consultation, Patient, User
 from auth import get_current_user
 from pdf_export import render_consultation_pdf
 
@@ -151,12 +151,39 @@ def get_consultation(
     return c
 
 
+def _recording_consent_at(db: Session, c: Consultation, doctor_id: int):
+    """Дата согласия на запись, действовавшего на момент этого приёма.
+
+    Позднее согласие не задним числом узаконивает прошлую запись, поэтому
+    берётся последнее, данное не позже самого приёма.
+    """
+    if not c.patient_id:
+        return None
+    row = (
+        db.query(Consent)
+        .filter(Consent.patient_id == c.patient_id,
+                Consent.doctor_id == doctor_id,
+                Consent.kind == "recording",
+                Consent.granted.is_(True),
+                Consent.created_at <= c.created_at)
+        .order_by(Consent.created_at.desc())
+        .first()
+    )
+    return row.created_at if row else None
+
+
 @router.get("/{cid}/pdf")
 def consultation_pdf(
     cid: int,
+    transcript: bool = False,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Официальная копия — по умолчанию, без дословной речи.
+
+    `transcript=1` отдаёт ту же запись с рабочим приложением: врачу
+    расшифровка нужна, медицинской карте — нет.
+    """
     c = db.query(Consultation).filter(Consultation.id == cid).first()
     if not c:
         raise HTTPException(status_code=404, detail="Консультация не найдена")
@@ -165,7 +192,11 @@ def consultation_pdf(
     patient = None
     if c.patient_id:
         patient = db.query(Patient).filter(Patient.id == c.patient_id).first()
-    pdf_bytes = render_consultation_pdf(c, patient, current_user)
+    pdf_bytes = render_consultation_pdf(
+        c, patient, current_user,
+        with_transcript=transcript,
+        consent_date=_recording_consent_at(db, c, current_user.id),
+    )
     fname = f"avris-consultation-{cid}.pdf"
     return StreamingResponse(
         BytesIO(pdf_bytes),

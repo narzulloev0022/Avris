@@ -13,15 +13,15 @@
  */
 "use strict";
 
-var SW_VERSION = "v69";
+var SW_VERSION = "v70";
 var SHELL_CACHE = "avris-shell-" + SW_VERSION;
 var STATIC_CACHE = "avris-static-" + SW_VERSION;
 
 var SHELL_URLS = [
   "/",
   "/app",
-  "/styles.css?v=69",
-  "/app.js?v=69",
+  "/styles.css?v=70",
+  "/app.js?v=70",
   "/assets/favicon-hyperion.svg",
   "/assets/logo.svg",
   "/manifest.json",

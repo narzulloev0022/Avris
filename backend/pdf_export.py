@@ -12,7 +12,8 @@ from reportlab.lib.colors import HexColor, white, black, Color
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether,
+    PageBreak
 )
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -362,8 +363,17 @@ def _format_dt(dt) -> str:
 
 # ---------- Public render functions ----------
 
-def render_consultation_pdf(consultation, patient, doctor) -> bytes:
-    """Render consultation as PDF, returns bytes."""
+def render_consultation_pdf(consultation, patient, doctor,
+                            with_transcript: bool = False,
+                            consent_date=None) -> bytes:
+    """Запись осмотра в PDF.
+
+    Дословной речи в официальной копии нет: стандартные формы (025/у, 003/у)
+    её не содержат, и подшитый в карту документ с расшифровкой разговора —
+    это уже не форма, а стенограмма. Врачу транскрипт нужен, поэтому он
+    отдаётся отдельным приложением по явному запросу и печатается после
+    подписи, чтобы его нельзя было прочитать как часть заверенного текста.
+    """
     styles = _styles()
     buf = BytesIO()
     doc = SimpleDocTemplate(
@@ -413,6 +423,13 @@ def render_consultation_pdf(consultation, patient, doctor) -> bytes:
             meta.append(("Аллергии", ", ".join(patient.allergies)))
     if not patient and consultation.patient_id is None:
         meta.append(("Пациент", "—"))
+    # Ст. 49 Кодекса здравоохранения закрывает даже факт визита, а приём
+    # записывался голосом. Отметка о согласии — то, чем врач это обосновывает.
+    # Отсутствия на бумаге не печатаем: документ уходит в карту пациента,
+    # и пустая графа там читается как обвинение, а не как напоминание.
+    if consent_date is not None:
+        meta.append(("Запись приёма", "согласие пациента от "
+                     + consent_date.strftime("%d.%m.%Y")))
     story.append(_meta_table(meta))
     story.append(Spacer(0, 0.4 * cm))
     story.append(_hr())
@@ -437,26 +454,6 @@ def render_consultation_pdf(consultation, patient, doctor) -> bytes:
     story.append(_hr())
     story.append(Spacer(0, 0.4 * cm))
 
-    # Transcript
-    if consultation.transcript:
-        story.append(Paragraph("ТРАНСКРИПТ", styles["h2"]))
-        story.append(Spacer(0, 0.2 * cm))
-        # Transcript in a soft-bg box
-        tbl = Table(
-            [[Paragraph(_esc(consultation.transcript), styles["body"])]],
-            colWidths=[17 * cm],
-        )
-        tbl.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), BG_SOFT),
-            ("BOX", (0, 0), (-1, -1), 0.5, BORDER),
-            ("LEFTPADDING", (0, 0), (-1, -1), 12),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 12),
-            ("TOPPADDING", (0, 0), (-1, -1), 10),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
-        ]))
-        story.append(tbl)
-        story.append(Spacer(0, 0.4 * cm))
-
     if getattr(consultation, "duration_seconds", None):
         sec = consultation.duration_seconds or 0
         story.append(Paragraph(
@@ -473,6 +470,43 @@ def render_consultation_pdf(consultation, patient, doctor) -> bytes:
 
     story.append(Spacer(0, 0.6 * cm))
     story.append(_footer(styles))
+
+    # Приложение с дословной речью — отдельной страницей после подписи.
+    # Так его нельзя прочитать как часть заверенного документа, а лист
+    # можно не подшивать в карту.
+    if with_transcript and consultation.transcript:
+        story.append(PageBreak())
+        story.append(Paragraph("ПРИЛОЖЕНИЕ · РАБОЧАЯ КОПИЯ", styles["h2"]))
+        story.append(Spacer(0, 0.15 * cm))
+        # Лист велено не подшивать — значит, он останется отдельным.
+        # Номер и дата дают дорогу назад к записи; имени пациента здесь нет
+        # намеренно: ст. 49 закрывает даже факт визита, а потерянная
+        # страница с дословной речью не должна называть, чья она.
+        story.append(Paragraph(
+            _esc("К записи осмотра № {} от {}".format(
+                consultation.id, consultation.created_at.strftime("%d.%m.%Y"))),
+            styles["body"],
+        ))
+        story.append(Spacer(0, 0.1 * cm))
+        story.append(Paragraph(
+            "<i>Дословная запись приёма. Не является частью официальной "
+            "копии документа и в медицинскую карту не подшивается.</i>",
+            styles["body"],
+        ))
+        story.append(Spacer(0, 0.3 * cm))
+        tbl = Table(
+            [[Paragraph(_esc(consultation.transcript), styles["body"])]],
+            colWidths=[17 * cm],
+        )
+        tbl.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), BG_SOFT),
+            ("BOX", (0, 0), (-1, -1), 0.5, BORDER),
+            ("LEFTPADDING", (0, 0), (-1, -1), 12),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+            ("TOPPADDING", (0, 0), (-1, -1), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+        ]))
+        story.append(tbl)
 
     doc.build(story)
     return buf.getvalue()

@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=69">
+<link rel="stylesheet" href="styles.css?v=70">
 </head>
 <body data-theme="light">
 <div class="login-screen" id="loginScreen">
@@ -178,7 +178,7 @@
 </div>
 <div class="pat-ctx-bottom">
 <span id="patCtxDiag"></span>
-<span class="pat-ctx-allergy" id="patCtxAllergy" style="display:none"></span><span class="pat-ctx-ddi" id="patCtxDdi" style="display:none" title=""></span>
+<span class="pat-ctx-allergy" id="patCtxAllergy" style="display:none"></span><span class="pat-ctx-ddi" id="patCtxDdi" style="display:none" title=""></span><button class="pat-ctx-consent" id="patCtxConsent" type="button" hidden></button>
 <button class="lab-order-btn" id="labOrderBtn" type="button"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6l-5 9a3 3 0 003 4h10a3 3 0 003-4l-5-9V2"/><path d="M9 2h6"/><path d="M7 14h10"/></svg><span data-i18n="lab_order_btn">Направить на анализ</span></button>
 </div>
 <div class="pat-ctx-dropdown" id="patCtxDropdown"></div>
@@ -512,6 +512,7 @@
 <div id="hdBody" style="max-height:52vh;overflow-y:auto"></div>
 <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
 <button class="btn ghost" type="button" id="hdPatientBtn" data-i18n="hd_patient">Карточка пациента</button>
+<button class="btn ghost" type="button" id="hdPdfTrBtn" data-i18n="hd_pdf_tr" hidden>PDF с расшифровкой</button>
 <button class="btn primary" type="button" id="hdPdfBtn">PDF</button>
 </div>
 </div>
@@ -699,6 +700,6 @@
 <script src="assets/vendor/gsap/TextPlugin.min.js"></script>
 <script src="assets/vendor/anime.umd.min.js"></script>
 <script src="assets/vendor/motion.min.js"></script>
-<script src="app.js?v=69"></script>
+<script src="app.js?v=70"></script>
 </body>
 </html>
