@@ -548,6 +548,8 @@ body[data-theme="light"] .vc-card{background:#FFFFFF}
 .soap-ai-btn{cursor:pointer;border:none;font-family:var(--font-ui);font-size:.72rem;font-weight:700;letter-spacing:.04em;background:linear-gradient(135deg,#1a2a5e,#95AEF8);color:#fff;border-radius:6px;padding:6px 12px;min-height:32px;display:inline-flex;align-items:center;gap:4px;transition:filter .15s;white-space:nowrap}
 @media(max-width:480px){.soap-ai-btn{font-size:.66rem;padding:3px 7px}.soap-c{padding:14px}.soap-c .soap-hdr{flex-wrap:wrap;gap:6px}}
 .soap-ai-btn:hover{filter:brightness(1.1)}
+.ddx-empty{padding:18px 16px;color:var(--text-secondary);font-size:.88rem;line-height:1.5}
+.ddx-note{padding:10px 16px 0;color:var(--text-muted);font-size:.76rem;line-height:1.45}
 .ddx-panel{margin-top:14px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:14px;padding:18px;position:relative}
 .ddx-hdr{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
 .ddx-title{font-weight:700;font-size:.92rem;display:flex;align-items:center;gap:6px}
