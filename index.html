@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=75">
+<link rel="stylesheet" href="styles.css?v=76">
 </head>
 <body data-theme="light">
 <div class="login-screen" id="loginScreen">
@@ -153,6 +153,11 @@
 <div class="dash-stat" id="statCritCard"><div class="ds-v" id="statCrit">0</div><div class="ds-l" data-i18n="hero_crit">Критические</div></div>
 <div class="dash-stat"><div class="ds-v" id="statSoap">0</div><div class="ds-l" data-i18n="m_soap_today">Записей сегодня</div></div>
 </div>
+<button class="unfin-bar" id="unfinBar" type="button" hidden>
+<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z"/></svg>
+<span id="unfinBarText"></span>
+<svg aria-hidden="true" class="unfin-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+</button>
 <input id="patSearch" type="search" class="dash-search" data-phk="ph_search" placeholder="Поиск по ФИО или диагнозу...">
 <div class="dash-pills" id="dashPills" role="tablist">
 <button class="pill active" data-df="all" type="button" role="tab" aria-selected="true" data-i18n="hist_all">Все</button>
@@ -647,6 +652,13 @@
 </div>
 </div>
 </div>
+<div class="nr-modal-ov" id="unfinModal">
+<div class="nr-modal-card" style="max-width:640px">
+<div class="nr-modal-hdr"><h3 data-i18n="unfin_title">Незавершённые записи</h3><button class="icon-btn" id="unfinClose" aria-label="Close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<p class="unfin-hint" data-i18n="unfin_hint">Записи, которые вы начали и не подтвердили. Пациент их не видит.</p>
+<div id="unfinList"></div>
+</div>
+</div>
 <div class="confirm-ov" id="confirmOv"><div class="confirm-d"><h3 id="cTitle">—</h3><p id="cText"></p><div class="btn-row"><button class="btn ghost" id="cCancel" data-i18n="btn_cancel">Отмена</button><button class="btn danger" id="cOk" data-i18n="btn_yes">Да</button></div></div></div>
 <div class="vc-ov" id="vcOv"><div class="vc-card"><div class="vc-mic"><svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></div><div class="vc-state" id="vcState" data-i18n="vc_listening">Слушаю команду…</div><div class="vc-heard" id="vcHeard"></div><button class="btn ghost" id="vcCancel" data-i18n="btn_cancel">Отмена</button></div></div>
 <div class="memo-ov" id="consentOv"><div class="memo-d"><div class="memo-hdr"><h3 data-i18n="consent_title">Информированное согласие пациента</h3><button class="icon-btn" id="consentClose" aria-label="Close"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div><div id="consentText" style="font-size:.88rem;line-height:1.55;color:var(--text-secondary);max-height:280px;overflow-y:auto;padding:8px 0"></div><label class="chk-lbl" style="margin-top:12px"><input type="checkbox" id="consentChk"> <span data-i18n="consent_check">Пациент ознакомлен и согласен на запись приёма</span></label><label class="chk-lbl" style="margin-top:8px"><input type="checkbox" id="consentTrainChk"> <span data-i18n="consent_train">Разрешает использовать обезличенные данные для обучения моделей</span></label><div class="consent-hint" id="consentHint" data-i18n="consent_train_hint">Второе решение отдельное: отказ не мешает пользоваться Avris.</div><div class="consent-status" id="consentStatus" hidden></div><div class="consent-err" id="consentErr" role="alert" hidden></div><div id="consentSig" style="margin-top:12px;font-size:.78rem;color:var(--text-muted);font-family:var(--font-data)"></div><div class="btn-row"><button class="btn ghost" id="consentCancel" data-i18n="btn_cancel">Отмена</button><button class="btn primary" id="consentSave" data-i18n="btn_save">Сохранить</button></div></div></div>
@@ -700,6 +712,6 @@
 <script src="assets/vendor/gsap/TextPlugin.min.js"></script>
 <script src="assets/vendor/anime.umd.min.js"></script>
 <script src="assets/vendor/motion.min.js"></script>
-<script src="app.js?v=75"></script>
+<script src="app.js?v=76"></script>
 </body>
 </html>

@@ -1653,6 +1653,28 @@ body[data-theme="light"] input,body[data-theme="light"] select,body[data-theme="
 body[data-theme="dark"] .hist-mark.rev{color:var(--accent)}
 .hist-item.is-draft{border-left:3px solid var(--text-muted)}
 
+/* Полоса незавершённых. Появляется только когда есть что дописывать:
+   постоянный «0 не дописано» врач перестаёт замечать через день. Тон
+   приглушённо-акцентный, не тревожный — это напоминание, а не ошибка. */
+.unfin-bar{display:flex;align-items:center;gap:8px;width:100%;margin:0 0 12px;padding:11px 14px;border-radius:var(--radius-md);border:1px solid rgba(149,174,248,.3);background:var(--accent-glow);color:var(--accent-dark);font-family:inherit;font-size:.86rem;font-weight:600;cursor:pointer;text-align:left;transition:border-color var(--transition),filter var(--transition)}
+.unfin-bar:hover{border-color:var(--accent);filter:brightness(1.03)}
+.unfin-bar .unfin-chev{margin-left:auto;flex-shrink:0}
+body[data-theme="dark"] .unfin-bar{color:var(--accent)}
+.unfin-hint{margin:-4px 0 14px;font-size:.8rem;color:var(--text-muted);line-height:1.5}
+.unfin-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.unfin-row:last-child{border-bottom:none}
+.unfin-row-main{flex:1;min-width:0}
+.unfin-row-pat{font-weight:600;font-size:.9rem;color:var(--text-primary)}
+.unfin-row-sum{font-size:.8rem;color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.unfin-row-age{font-size:.75rem;color:var(--text-muted);font-family:var(--font-data);white-space:nowrap;flex-shrink:0}
+.unfin-row-acts{display:flex;gap:6px;flex-shrink:0}
+.unfin-empty{padding:24px 0;text-align:center;color:var(--text-muted);font-size:.86rem}
+@media(max-width:480px){
+.unfin-row{flex-wrap:wrap}
+.unfin-row-main{flex:1 1 100%}
+.unfin-row-acts{margin-left:auto}
+}
+
 [hidden]{display:none!important}
 
 @media print{

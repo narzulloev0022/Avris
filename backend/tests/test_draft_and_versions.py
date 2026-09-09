@@ -214,7 +214,9 @@ class TestDoctorFacingContract:
         """Повторный POST с тем же ключом вернул бы прежний черновик, и
         «Подтвердить» не изменило бы ничего."""
         js = client.get("/app.js").text
-        i = js.index("_exam.savedId")
+        # искать надо внутри сохранения: _exam.savedId встречается и в
+        # отказе от черновика, который объявлен выше по файлу
+        i = js.index("_exam.savedId", js.index("function saveConsult("))
         block = js[i:i + 900]
         assert 'method:"PATCH"' in block
         assert 'pbody.status="confirmed"' in block.replace(" ", "")
@@ -223,7 +225,7 @@ class TestDoctorFacingContract:
         """Очередь хранит только создание записи. Обещать «отправим позже»
         для правки — врать врачу."""
         js = client.get("/app.js").text
-        i = js.index("_exam.savedId")
+        i = js.index("_exam.savedId", js.index("function saveConsult("))
         block = js[i:i + 1400]
         assert "t_patch_err" in block
         assert "t_save_queued" not in block

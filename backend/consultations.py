@@ -165,6 +165,7 @@ def create_consultation(
 def list_consultations(
     response: Response,
     patient_id: Optional[int] = None,
+    status_: Optional[str] = Query(None, alias="status", pattern="^(draft|confirmed)$"),
     limit: Optional[int] = Query(None, ge=1, le=500),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
@@ -173,6 +174,9 @@ def list_consultations(
     q = db.query(Consultation).filter(Consultation.doctor_id == current_user.id)
     if patient_id is not None:
         q = q.filter(Consultation.patient_id == patient_id)
+    # ?status=draft — то, что врач начал и не заверил.
+    if status_ is not None:
+        q = q.filter(Consultation.status == status_)
     response.headers["X-Total-Count"] = str(q.count())
     q = q.order_by(Consultation.created_at.desc()).offset(offset)
     if limit is not None:
@@ -282,6 +286,34 @@ def update_consultation(
         from patient_visits import generate_visit_summary
         background_tasks.add_task(generate_visit_summary, c.id)
     return c
+
+
+@router.delete("/{cid}", status_code=status.HTTP_204_NO_CONTENT)
+def discard_draft(
+    cid: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Отказаться от незаконченной записи.
+
+    Только от черновика. Заверенная запись — документ медицинской карты, и
+    удалять её нельзя: ошибку в ней исправляют новой редакцией, а не
+    исчезновением. Поэтому здесь 409, а не 403: дело не в правах врача, а в
+    том, что такой операции над документом не существует.
+
+    Черновик же документом не является — это лист, который врач не подписал.
+    Без права от него отказаться очередь незавершённых росла бы вечно, и
+    врач перестал бы на неё смотреть.
+    """
+    c = _own_consultation(db, cid, current_user)
+    if c.status != "draft":
+        raise HTTPException(status.HTTP_409_CONFLICT,
+                            "Подтверждённую запись удалить нельзя")
+    db.delete(c)
+    db.commit()
+    audit(db, action="discard", entity="consultation", user_id=current_user.id,
+          entity_id=cid, meta={"patient_id": c.patient_id})
+    return None
 
 
 @router.get("/{cid}/versions", response_model=List[ConsultationVersionOut])

@@ -47,6 +47,10 @@ class DashboardStats(BaseModel):
     time_saved_minutes: int  # consultations_today × 15
     time_saved_per_consultation_min: int = TIME_SAVED_PER_CONSULTATION_MIN
 
+    # Сколько записей врач начал и не заверил. Считается здесь, а не
+    # отдельным запросом: дашборд и так тянет эту сводку при каждом входе.
+    drafts_open: int = 0
+
     recent_activity: list[ActivityItem]
 
 
@@ -83,6 +87,11 @@ def dashboard_stats(
     )
 
     # ----- AI accuracy -----
+    drafts_open = (
+        db.query(func.count(Consultation.id))
+        .filter(Consultation.doctor_id == me, Consultation.status == "draft")
+        .scalar() or 0
+    )
     soap_accurate = current_user.soap_accurate_count or 0
     soap_edited = current_user.soap_edited_count or 0
     soap_total = soap_accurate + soap_edited
@@ -149,4 +158,5 @@ def dashboard_stats(
         time_saved_minutes=consultations_today * TIME_SAVED_PER_CONSULTATION_MIN,
         time_saved_per_consultation_min=TIME_SAVED_PER_CONSULTATION_MIN,
         recent_activity=recent,
+        drafts_open=drafts_open,
     )
