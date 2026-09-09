@@ -16,6 +16,8 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, ConfigDict, Field
+
+from api_model import ApiModel
 from sqlalchemy.orm import Session
 
 from access import require_own_patient
@@ -42,7 +44,7 @@ class ConsentIn(BaseModel):
     client_id: Optional[str] = Field(default=None, max_length=64)
 
 
-class ConsentOut(BaseModel):
+class ConsentOut(ApiModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int

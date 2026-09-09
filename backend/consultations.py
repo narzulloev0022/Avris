@@ -4,6 +4,8 @@ from typing import Optional, List
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
+
+from api_model import ApiModel
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -56,7 +58,7 @@ class ConsultationPatch(BaseModel):
     status: Optional[str] = Field(default=None, pattern="^(confirmed)$")
 
 
-class ConsultationVersionOut(BaseModel):
+class ConsultationVersionOut(ApiModel):
     model_config = ConfigDict(from_attributes=True)
 
     no: int
@@ -67,7 +69,7 @@ class ConsultationVersionOut(BaseModel):
     created_at: datetime
 
 
-class ConsultationResponse(BaseModel):
+class ConsultationResponse(ApiModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int

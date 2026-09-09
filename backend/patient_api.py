@@ -13,6 +13,8 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile
 from pydantic import BaseModel, Field, field_validator
+
+from api_model import ApiModel
 from sqlalchemy.orm import Session
 
 from audit import audit
@@ -319,7 +321,7 @@ class PreVisitNoteBody(BaseModel):
         return v
 
 
-class PreVisitNoteOut(BaseModel):
+class PreVisitNoteOut(ApiModel):
     note_text: str
     created_at: datetime
 

@@ -23,6 +23,8 @@ from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
 from pydantic import BaseModel, ConfigDict, Field
+
+from api_model import ApiModel
 from sqlalchemy.orm import Session
 
 from audit import audit
@@ -203,7 +205,7 @@ class NutritionItemOut(BaseModel):
     kcal: Optional[int] = None
 
 
-class NutritionEntryOut(BaseModel):
+class NutritionEntryOut(ApiModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     eaten_at: datetime
@@ -227,7 +229,7 @@ class NutritionDayOut(BaseModel):
     entries: List[NutritionEntryOut]
 
 
-class ManualEntryIn(BaseModel):
+class ManualEntryIn(ApiModel):
     title: str = Field(min_length=1, max_length=200)
     kcal: int = Field(ge=0, le=20000)
     protein_g: Optional[float] = Field(default=None, ge=0, le=5000)

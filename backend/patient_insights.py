@@ -24,6 +24,8 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
+
+from api_model import ApiModel
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -199,7 +201,7 @@ def _user_message(db: Session, account: PatientAccount,
     return "\n\n".join(parts)
 
 
-class InsightOut(BaseModel):
+class InsightOut(ApiModel):
     picture: str
     watch: List[str]
     questions: List[str]

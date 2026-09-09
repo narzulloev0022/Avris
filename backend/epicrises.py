@@ -14,6 +14,8 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
+
+from api_model import ApiModel
 from sqlalchemy.orm import Session
 
 from audit import audit
@@ -55,7 +57,7 @@ class EpicrisisCreate(BaseModel):
     language: str = "ru"
 
 
-class EpicrisisResponse(BaseModel):
+class EpicrisisResponse(ApiModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int

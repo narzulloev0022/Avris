@@ -20,6 +20,8 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from jose import jwt
 from pydantic import BaseModel, ConfigDict
+
+from api_model import ApiModel
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -49,7 +51,7 @@ doctor_router = APIRouter(prefix="/api/patient-links", tags=["patient-links"])
 
 # ---------- schemas ----------
 
-class LinkCodeOut(BaseModel):
+class LinkCodeOut(ApiModel):
     code: str
     qr_payload: str
     expires_at: datetime

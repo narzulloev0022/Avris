@@ -2,6 +2,8 @@ from datetime import datetime, date
 from typing import List, Optional, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field
+
+from api_model import ApiModel
 from sqlalchemy.orm import Session
 
 from audit import audit
@@ -14,7 +16,7 @@ router = APIRouter(prefix="/api/patients", tags=["patients"])
 
 # ---------- Schemas ----------
 
-class PatientBase(BaseModel):
+class PatientBase(ApiModel):
     full_name: str = Field(min_length=1)
     full_name_en: Optional[str] = None
     age: Optional[int] = None
@@ -56,7 +58,7 @@ class PatientCreate(PatientBase):
     pass
 
 
-class PatientUpdate(BaseModel):
+class PatientUpdate(ApiModel):
     full_name: Optional[str] = None
     full_name_en: Optional[str] = None
     age: Optional[int] = None

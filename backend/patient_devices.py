@@ -25,6 +25,8 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from pydantic import BaseModel, Field
+
+from api_model import ApiModel
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -89,7 +91,7 @@ def device_from_token(
 
 # ---------- схемы ----------
 
-class PairCodeOut(BaseModel):
+class PairCodeOut(ApiModel):
     code: str
     expires_at: datetime
 
@@ -109,7 +111,7 @@ class ClaimOut(BaseModel):
     accepted_metrics: List[str]
 
 
-class DeviceOut(BaseModel):
+class DeviceOut(ApiModel):
     id: int
     vendor: str
     model: Optional[str] = None
@@ -118,7 +120,7 @@ class DeviceOut(BaseModel):
     last_sync_at: Optional[datetime] = None
 
 
-class MeasurementIn(BaseModel):
+class MeasurementIn(ApiModel):
     kind: str = Field(..., max_length=32)
     value: float
     taken_at: datetime
@@ -136,7 +138,7 @@ class IngestOut(BaseModel):
     rejected: int
 
 
-class MetricOut(BaseModel):
+class MetricOut(ApiModel):
     kind: str
     value: float
     unit: str

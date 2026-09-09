@@ -14,6 +14,8 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel
+
+from api_model import ApiModel
 from sqlalchemy.orm import Session
 
 from audit import audit
@@ -33,13 +35,13 @@ _KINDS = {KIND_ASSISTANT, KIND_INTAKE}
 TITLE_MAX = 60
 
 
-class MessageOut(BaseModel):
+class MessageOut(ApiModel):
     role: str
     text: str
     created_at: datetime
 
 
-class ConversationOut(BaseModel):
+class ConversationOut(ApiModel):
     id: int
     kind: str
     title: Optional[str] = None

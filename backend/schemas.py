@@ -3,6 +3,8 @@ from typing import Optional
 from uuid import UUID
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
+from api_model import ApiModel
+
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -16,7 +18,7 @@ class UserLogin(BaseModel):
     password: str
 
 
-class UserResponse(BaseModel):
+class UserResponse(ApiModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -129,7 +131,7 @@ class TrainingPairCreate(BaseModel):
     consent: bool = False
 
 
-class TrainingPairResponse(BaseModel):
+class TrainingPairResponse(ApiModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID

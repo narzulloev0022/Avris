@@ -18,6 +18,8 @@ from typing import List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
+
+from api_model import ApiModel
 from sqlalchemy.orm import Session
 
 from database import SessionLocal, get_db
@@ -162,7 +164,7 @@ async def generate_visit_summary(consultation_id: int) -> None:
 
 # ---------- patient-facing endpoints ----------
 
-class VisitListItem(BaseModel):
+class VisitListItem(ApiModel):
     consultation_id: int
     date: datetime
     doctor_name: Optional[str] = None
@@ -173,7 +175,7 @@ class VisitListItem(BaseModel):
     has_prescriptions: bool = False
 
 
-class VisitDetailOut(BaseModel):
+class VisitDetailOut(ApiModel):
     consultation_id: int
     date: datetime
     doctor_name: Optional[str] = None

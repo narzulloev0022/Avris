@@ -4,6 +4,8 @@ from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict
+
+from api_model import ApiModel
 from sqlalchemy.orm import Session
 
 from auth import get_current_user
@@ -17,7 +19,7 @@ router = APIRouter(prefix="/api/notifications", tags=["notifications"])
 
 # ---------- Schemas ----------
 
-class NotificationOut(BaseModel):
+class NotificationOut(ApiModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     type: str

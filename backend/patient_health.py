@@ -12,6 +12,8 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+
+from api_model import ApiModel
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -38,7 +40,7 @@ IN_RANGE_DAYS = 14
 SPARK_POINTS = 12
 
 
-class TopAlertOut(BaseModel):
+class TopAlertOut(ApiModel):
     """Самая важная активная находка — та, что поедет на главную.
 
     Счётчик «2 находки» на главной ничего не сообщает: чтобы узнать, что

@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import List, Optional, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, ConfigDict
+
+from api_model import ApiModel
 from sqlalchemy.orm import Session
 
 from audit import audit
@@ -58,7 +60,7 @@ class NightRoundCreate(BaseModel):
     language: str = "ru"
 
 
-class NightRoundResponse(BaseModel):
+class NightRoundResponse(ApiModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int

@@ -9,6 +9,8 @@ from fastapi import (APIRouter, Depends, File, Form, HTTPException, Query, Reque
                      UploadFile, status)
 from fastapi.responses import StreamingResponse, Response
 from pydantic import BaseModel, ConfigDict
+
+from api_model import ApiModel
 from sqlalchemy.orm import Session
 
 from audit import audit
@@ -42,7 +44,7 @@ class LabOrderResultsRequest(BaseModel):
     patient_context: Optional[dict[str, Any]] = None
 
 
-class LabOrderResponse(BaseModel):
+class LabOrderResponse(ApiModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -57,7 +59,7 @@ class LabOrderResponse(BaseModel):
     received_at: Optional[datetime] = None
 
 
-class LabOrderPublic(BaseModel):
+class LabOrderPublic(ApiModel):
     """Slim view for the lab portal — no auth needed."""
     id: int
     qr_token: str
@@ -284,7 +286,7 @@ ALLOWED_MIMES = {
 }
 
 
-class LabFileMeta(BaseModel):
+class LabFileMeta(ApiModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     filename: str

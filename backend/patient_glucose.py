@@ -15,6 +15,8 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
+
+from api_model import ApiModel
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -120,14 +122,14 @@ def summarize(readings: List[dict]) -> dict:
 
 # ---------- Schemas ----------
 
-class ReadingIn(BaseModel):
+class ReadingIn(ApiModel):
     mmol: float = Field(ge=MIN_MMOL, le=MAX_MMOL)
     context: str = "random"
     taken_at: Optional[datetime] = None
     note: Optional[str] = Field(default=None, max_length=300)
 
 
-class ReadingOut(BaseModel):
+class ReadingOut(ApiModel):
     id: int
     taken_at: datetime
     mmol: float

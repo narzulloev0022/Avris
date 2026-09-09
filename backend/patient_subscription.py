@@ -36,6 +36,8 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
+
+from api_model import ApiModel
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -219,7 +221,7 @@ def _min_tier_for(feature: str) -> str:
 
 # ---------- Schemas ----------
 
-class SubscriptionOut(BaseModel):
+class SubscriptionOut(ApiModel):
     tier: str
     expires_at: Optional[datetime] = None
     source: Optional[str] = None

@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+
+from api_model import ApiModel
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
@@ -23,7 +25,7 @@ router = APIRouter(prefix="/api/stats", tags=["stats"])
 TIME_SAVED_PER_CONSULTATION_MIN = 15
 
 
-class ActivityItem(BaseModel):
+class ActivityItem(ApiModel):
     type: str  # "soap" | "lab" | "patient"
     title: str
     patient: Optional[str] = None

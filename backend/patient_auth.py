@@ -20,6 +20,8 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from jose import JWTError, jwt
 from pydantic import BaseModel, ConfigDict
+
+from api_model import ApiModel
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -145,7 +147,7 @@ class VerifyOtpBody(BaseModel):
     code: str
 
 
-class PatientAccountOut(BaseModel):
+class PatientAccountOut(ApiModel):
     id: int
     avris_patient_id: str
     phone: Optional[str] = None

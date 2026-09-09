@@ -23,6 +23,8 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+
+from api_model import ApiModel
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -288,7 +290,7 @@ def run_all() -> int:
 
 # ---------- Schemas ----------
 
-class AlertOut(BaseModel):
+class AlertOut(ApiModel):
     id: int
     kind: str
     severity: str
@@ -297,7 +299,7 @@ class AlertOut(BaseModel):
     acknowledged: bool
 
 
-class MonitoringOut(BaseModel):
+class MonitoringOut(ApiModel):
     alerts: List[AlertOut]
     last_checked_at: Optional[datetime] = None
     interval_hours: int = CHECK_INTERVAL_SECONDS // 3600

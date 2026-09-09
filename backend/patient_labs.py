@@ -17,6 +17,8 @@ from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict
+
+from api_model import ApiModel
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -34,7 +36,7 @@ router = APIRouter(prefix="/api/patient/labs", tags=["patient"])
 
 # ---------- schemas ----------
 
-class LabFileMetaOut(BaseModel):
+class LabFileMetaOut(ApiModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -45,7 +47,7 @@ class LabFileMetaOut(BaseModel):
     uploaded_at: datetime
 
 
-class LabListItem(BaseModel):
+class LabListItem(ApiModel):
     id: int
     date: datetime
     status: str
@@ -59,7 +61,7 @@ class LabListItem(BaseModel):
     out_of_range: int = 0
 
 
-class LabDetailOut(BaseModel):
+class LabDetailOut(ApiModel):
     id: int
     date: datetime
     status: str
