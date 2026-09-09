@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import os
+from datetime import datetime
 from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 
@@ -241,6 +242,39 @@ app.include_router(patient_export_router)
 app.include_router(epicrises_router)
 
 
+def _build_sha() -> str:
+    """Коммит, из которого собран работающий контейнер.
+
+    Снаружи узнать, доехал ли выкат, было нечем: `version` в этом ответе
+    статична и одинакова для любого коммита, а файлы с `?v=` отдаёт кэш
+    Cloudflare. Дважды приводило к отчёту «выкачено» о выкате, которого не
+    было: приложение падало на старте, Railway оставлял работать прежний
+    контейнер, и всё выглядело живым.
+
+    Значение читается один раз при импорте: в контейнере оно не меняется, а
+    вызов git на каждый запрос к health — лишний процесс на ровном месте.
+    """
+    for var in ("RAILWAY_GIT_COMMIT_SHA", "GIT_COMMIT_SHA", "SOURCE_COMMIT"):
+        v = os.getenv(var)
+        if v:
+            return v[:7]
+    # Локальный запуск: .git рядом. В образе его нет, и это не ошибка.
+    try:
+        import subprocess
+        return subprocess.run(["git", "rev-parse", "--short=7", "HEAD"],
+                              capture_output=True, text=True, timeout=2,
+                              cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                              ).stdout.strip() or "unknown"
+    except Exception:
+        return "unknown"
+
+
+BUILD_SHA = _build_sha()
+# Время старта процесса. Совпадение коммита ещё не значит, что контейнер
+# перезапустился: Railway оставляет работать прежний, если новый упал.
+STARTED_AT = datetime.utcnow()
+
+
 @app.get("/api/health")
 def health():
     # pdf_font — ops-сигнал: "AvrisFont" = кириллический TTF зарегистрирован,
@@ -248,6 +282,7 @@ def health():
     import pdf_export
     pdf_export._register_fonts()
     return {"status": "ok", "service": "avris-backend", "version": "0.1.0",
+            "commit": BUILD_SHA, "started_at": STARTED_AT.isoformat(timespec="seconds") + "Z",
             "pdf_font": pdf_export._FONT_NAME}
 
 

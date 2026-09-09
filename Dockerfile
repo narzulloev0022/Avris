@@ -10,6 +10,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
+# Коммит, из которого собран образ. Railway передаёт свои метаданные
+# сборке аргументами; если аргумента нет, останется «unknown» — и это
+# видно в /api/health, а не прячется. .git в образ не копируется намеренно:
+# он не нужен работающему приложению и весит больше самого приложения.
+ARG RAILWAY_GIT_COMMIT_SHA=""
+ENV GIT_COMMIT_SHA=$RAILWAY_GIT_COMMIT_SHA
+
 WORKDIR /app
 
 # Cache the dependency layer separately from app source.
