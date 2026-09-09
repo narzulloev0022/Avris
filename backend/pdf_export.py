@@ -347,6 +347,21 @@ def _to_local(dt: datetime) -> datetime:
     return dt.astimezone(_DOC_TZ)
 
 
+def _format_d(dt) -> str:
+    """Только дата — но по местному времени клиники.
+
+    Наивный UTC из БД, напечатанный как есть, между 19:00 и полуночью по
+    Душанбе даёт вчерашнее число. Ночной обход идёт ровно в эти часы, и
+    документ с чужой датой в карте хуже, чем документ без даты.
+    """
+    if not dt:
+        return "—"
+    try:
+        return _to_local(dt).strftime("%d.%m.%Y")
+    except Exception:
+        return str(dt)
+
+
 def _format_dt(dt) -> str:
     if not dt:
         return "—"
@@ -429,7 +444,7 @@ def render_consultation_pdf(consultation, patient, doctor,
     # и пустая графа там читается как обвинение, а не как напоминание.
     if consent_date is not None:
         meta.append(("Запись приёма", "согласие пациента от "
-                     + consent_date.strftime("%d.%m.%Y")))
+                     + _format_d(consent_date)))
     # Метка стоит и сверху: врач печатает стопкой и разбирает её по шапкам,
     # а не по последней строке каждого листа.
     if getattr(consultation, "status", "confirmed") == "draft":
@@ -486,7 +501,7 @@ def render_consultation_pdf(consultation, patient, doctor,
             story.append(Spacer(0, 0.25 * cm))
             story.append(Paragraph(
                 _esc("Исправлено {} · редакция {}".format(
-                    consultation.updated_at.strftime("%d.%m.%Y"), rev + 1)),
+                    _format_d(consultation.updated_at), rev + 1)),
                 styles["body"]))
 
     story.append(Spacer(0, 0.6 * cm))
@@ -505,7 +520,7 @@ def render_consultation_pdf(consultation, patient, doctor,
         # страница с дословной речью не должна называть, чья она.
         story.append(Paragraph(
             _esc("К записи осмотра № {} от {}".format(
-                consultation.id, consultation.created_at.strftime("%d.%m.%Y"))),
+                consultation.id, _format_d(consultation.created_at))),
             styles["body"],
         ))
         story.append(Spacer(0, 0.1 * cm))
@@ -767,7 +782,10 @@ def render_lab_order_pdf(order, patient, doctor) -> bytes:
 
 # ---------- Patient-facing export ----------
 
-def _format_date_only(d) -> str:
+def _format_dob(d) -> str:
+    """Дата рождения. Часовой пояс к ней неприменим: это дата, а не момент
+    времени. Имя говорит об этом прямо — иначе следующий, кто увидит здесь
+    strftime без перевода, примет её за недосмотр."""
     if not d:
         return "—"
     try:
@@ -822,7 +840,7 @@ def render_patient_record_pdf(account, visits, labs) -> bytes:
     meta = [("Пациент", account.full_name or "—")]
     sub = []
     if account.date_of_birth:
-        sub.append("д.р. " + _format_date_only(account.date_of_birth))
+        sub.append("д.р. " + _format_dob(account.date_of_birth))
     if account.gender:
         sub.append(_gender_ru(account.gender))
     if account.blood_type:
