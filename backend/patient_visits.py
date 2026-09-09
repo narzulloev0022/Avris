@@ -90,7 +90,8 @@ async def generate_visit_summary(consultation_id: int) -> None:
     db = SessionLocal()
     try:
         consultation = db.query(Consultation).filter(
-            Consultation.id == consultation_id
+            Consultation.id == consultation_id,
+            Consultation.status == "confirmed",
         ).first()
         if not consultation or consultation.patient_id is None:
             return
@@ -221,7 +222,10 @@ def list_visits(
         db.query(Consultation, User.full_name, VisitSummary)
         .join(User, User.id == Consultation.doctor_id)
         .outerjoin(VisitSummary, VisitSummary.consultation_id == Consultation.id)
-        .filter(Consultation.patient_id.in_(patient_ids))
+        # Черновик в списке визитов пациента — это показанный ему документ,
+        # под которым врач не подписывался. Здесь отсечка важнее всего.
+        .filter(Consultation.patient_id.in_(patient_ids),
+                Consultation.status == "confirmed")
         .order_by(Consultation.created_at.desc())
         .all()
     )
@@ -248,6 +252,8 @@ def visit_detail(
     patient_ids = _linked_patient_ids(db, current.id)
     consultation = db.query(Consultation).filter(
         Consultation.id == consultation_id,
+        # Пациент видит запись только после подписи врача.
+        Consultation.status == "confirmed",
         Consultation.patient_id.in_(patient_ids) if patient_ids else False,
     ).first()
     if not consultation:

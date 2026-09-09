@@ -47,6 +47,27 @@ def init_db():
                 "CREATE UNIQUE INDEX IF NOT EXISTS ix_consultations_doctor_client "
                 "ON consultations (doctor_id, client_id)"
             ))
+            # Записи, сделанные до появления черновиков, врач подтверждал
+            # явным нажатием — они confirmed, а не draft.
+            if "status" not in existing_c:
+                conn.execute(text(
+                    "ALTER TABLE consultations ADD COLUMN status VARCHAR(16) "
+                    "NOT NULL DEFAULT 'confirmed'"
+                ))
+                conn.execute(text(
+                    "CREATE INDEX IF NOT EXISTS ix_consultations_status "
+                    "ON consultations (status)"
+                ))
+            if "confirmed_at" not in existing_c:
+                conn.execute(text("ALTER TABLE consultations ADD COLUMN confirmed_at DATETIME"))
+                # Время подписи у прошлых записей неизвестно; берём момент
+                # создания — он к истине ближе всего и не выдумывает данных.
+                conn.execute(text(
+                    "UPDATE consultations SET confirmed_at = created_at "
+                    "WHERE confirmed_at IS NULL AND status = 'confirmed'"
+                ))
+            if "updated_at" not in existing_c:
+                conn.execute(text("ALTER TABLE consultations ADD COLUMN updated_at DATETIME"))
     if "consents" in insp.get_table_names():
         existing_cs = {i["name"] for i in insp.get_indexes("consents")}
         if "ix_consents_doctor_client" not in existing_cs:

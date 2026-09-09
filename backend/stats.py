@@ -71,12 +71,14 @@ def dashboard_stats(
     # ----- Consultation counts -----
     consultations_today = (
         db.query(func.count(Consultation.id))
-        .filter(Consultation.doctor_id == me, Consultation.created_at >= today_start)
+        .filter(Consultation.doctor_id == me, Consultation.created_at >= today_start,
+                Consultation.status == "confirmed")
         .scalar() or 0
     )
     consultations_24h = (
         db.query(func.count(Consultation.id))
-        .filter(Consultation.doctor_id == me, Consultation.created_at >= day_ago)
+        .filter(Consultation.doctor_id == me, Consultation.created_at >= day_ago,
+                Consultation.status == "confirmed")
         .scalar() or 0
     )
 
@@ -91,7 +93,8 @@ def dashboard_stats(
 
     last_consults = (
         db.query(Consultation)
-        .filter(Consultation.doctor_id == me)
+        # Черновик — не сделанная работа: в счётчик дня и в ленту он не идёт.
+        .filter(Consultation.doctor_id == me, Consultation.status == "confirmed")
         .order_by(Consultation.created_at.desc())
         .limit(5)
         .all()

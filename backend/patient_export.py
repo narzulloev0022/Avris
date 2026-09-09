@@ -66,7 +66,10 @@ def export_medical_record(
             db.query(Consultation, User.full_name, VisitSummary)
             .join(User, User.id == Consultation.doctor_id)
             .outerjoin(VisitSummary, VisitSummary.consultation_id == Consultation.id)
-            .filter(Consultation.patient_id.in_(patient_ids))
+            # Выгрузка «мои данные» — то же, что пациент видит в приложении:
+            # заверенные записи, без черновиков врача.
+            .filter(Consultation.patient_id.in_(patient_ids),
+                    Consultation.status == "confirmed")
             .order_by(Consultation.created_at.desc())
             .all()
         )

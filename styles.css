@@ -1644,6 +1644,15 @@ body[data-theme="light"] input,body[data-theme="light"] select,body[data-theme="
    кнопка «Отправить исправления» поверх пустой области записи и пять
    пустых секций AI-рекомендаций. Печатный бланк не задет: у его правила
    специфичность выше. */
+/* Пометка записи в истории. Черновик приглушён, а не тревожен: это не
+   ошибка, а незаконченная работа. Исправленная запись помечена акцентом —
+   врач должен знать, что документ менялся после подписи. */
+.hist-mark{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:var(--radius-pill);font-size:.68rem;font-weight:700;letter-spacing:.02em;text-transform:uppercase;vertical-align:middle}
+.hist-mark.draft{background:var(--bg-elevated);color:var(--text-muted);border:1px solid var(--border)}
+.hist-mark.rev{background:var(--accent-glow);color:var(--accent-dark);border:1px solid rgba(149,174,248,.35)}
+body[data-theme="dark"] .hist-mark.rev{color:var(--accent)}
+.hist-item.is-draft{border-left:3px solid var(--text-muted)}
+
 [hidden]{display:none!important}
 
 @media print{

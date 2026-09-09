@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, date
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON, Float, Date, LargeBinary, Uuid, UniqueConstraint, Index
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text, JSON, Float, Date, LargeBinary, Uuid, UniqueConstraint, Index, select, func
+from sqlalchemy.orm import relationship, column_property
 from database import Base
 
 
@@ -135,10 +135,51 @@ class Consultation(Base):
     # запись, а не заведёт вторую. Без него дубль осмотра в карте пациента
     # появлялся молча, и заметить его было некому.
     client_id = Column(String(64), nullable=True, index=True)
+    # draft — запись существует, но врач её не заверил: она не документ.
+    # confirmed — врач нажал «Подтвердить запись», и это его подпись под
+    # содержанием. Значение по умолчанию именно confirmed: все записи,
+    # сделанные до появления черновиков, врач подтверждал явным нажатием,
+    # и задним числом переводить их в черновики было бы ложью о прошлом.
+    status = Column(String(16), nullable=False, default="confirmed",
+                    server_default="confirmed", index=True)
+    confirmed_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     patient = relationship("Patient", back_populates="consultations")
     doctor = relationship("User", back_populates="consultations")
+    versions = relationship("ConsultationVersion", back_populates="consultation",
+                            cascade="all, delete-orphan",
+                            order_by="ConsultationVersion.no")
+
+
+class ConsultationVersion(Base):
+    """Текст записи до очередного исправления.
+
+    В карте не стирают: исправление оговаривают, а прежняя запись остаётся
+    читаемой. Врач может ошибиться и поправить себя — это нормально; ненормально,
+    когда заверенный документ меняется бесследно и никто не может сказать, что
+    там стояло вчера.
+
+    Хранится состояние ДО правки, а не после: текущее и так лежит в самой
+    записи, а восстанавливать прошлое из разниц — лишний способ ошибиться.
+    """
+    __tablename__ = "consultation_versions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    consultation_id = Column(Integer, ForeignKey("consultations.id", ondelete="CASCADE"),
+                             nullable=False, index=True)
+    no = Column(Integer, nullable=False)          # 1 — самая первая редакция
+    soap_s = Column(Text, nullable=True)
+    soap_o = Column(Text, nullable=True)
+    soap_a = Column(Text, nullable=True)
+    soap_p = Column(Text, nullable=True)
+    # Кто правил. Пока это всегда лечащий врач, но модель уже готова к тому,
+    # что в карту заглянет заведующий отделением.
+    author_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    consultation = relationship("Consultation", back_populates="versions")
 
 
 class NightRound(Base):
@@ -956,3 +997,13 @@ class MonitoringRun(Base):
     patient_account_id = Column(Integer, ForeignKey("patient_accounts.id", ondelete="CASCADE"),
                                 nullable=False, unique=True, index=True)
     checked_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+
+# Счётчик правок считается подзапросом в том же SELECT: через связь это был бы
+# отдельный запрос на каждую строку, а список записей врача отдаётся сотнями.
+Consultation.revisions = column_property(
+    select(func.count(ConsultationVersion.id))
+    .where(ConsultationVersion.consultation_id == Consultation.id)
+    .correlate_except(ConsultationVersion)
+    .scalar_subquery()
+)

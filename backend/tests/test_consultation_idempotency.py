@@ -196,7 +196,7 @@ class TestExamSessionContract:
         но до тех пор повтор нажатия попадёт в ту же карточку."""
         js = client.get("/app.js").text
         i = js.index("function saveConsult(")
-        ok = js.index('t("t_save_ok")', i)
+        ok = js.index('"t_save_ok"', i)          # тост об успехе — конец пути
         assert "examSaved()" in js[i:ok]
         flat = js.replace(" ", "")
         assert "functionexamSaved(){if(_exam)_exam.saved=true}" in flat

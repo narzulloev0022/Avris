@@ -430,6 +430,10 @@ def render_consultation_pdf(consultation, patient, doctor,
     if consent_date is not None:
         meta.append(("Запись приёма", "согласие пациента от "
                      + consent_date.strftime("%d.%m.%Y")))
+    # Метка стоит и сверху: врач печатает стопкой и разбирает её по шапкам,
+    # а не по последней строке каждого листа.
+    if getattr(consultation, "status", "confirmed") == "draft":
+        meta.append(("Статус", "ЧЕРНОВИК — не подтверждено"))
     story.append(_meta_table(meta))
     story.append(Spacer(0, 0.4 * cm))
     story.append(_hr())
@@ -462,11 +466,28 @@ def render_consultation_pdf(consultation, patient, doctor,
         ))
         story.append(Spacer(0, 0.3 * cm))
 
-    # Запись осмотра без подписи врача — черновик, а не документ карты.
     story.append(Spacer(0, 0.6 * cm))
     story.append(_hr())
-    for el in _signature_block(styles, [("Врач", (doctor.full_name or "") if doctor else "")]):
-        story.append(el)
+    if getattr(consultation, "status", "confirmed") == "draft":
+        # Строки подписи у черновика нет намеренно. Пустая линия под неё —
+        # приглашение расписаться на том, что врач ещё не заверил; лист с
+        # такой линией подошьют в карту, и никто не отличит его от документа.
+        story.append(Paragraph(
+            "<b>ЧЕРНОВИК.</b> Запись не подтверждена врачом и документом "
+            "медицинской карты не является.", styles["body"]))
+    else:
+        # Запись осмотра без подписи врача — черновик, а не документ карты.
+        for el in _signature_block(styles, [("Врач", (doctor.full_name or "") if doctor else "")]):
+            story.append(el)
+        rev = getattr(consultation, "revisions", 0) or 0
+        if rev and getattr(consultation, "updated_at", None):
+            # Заверенный документ, изменённый позже, обязан говорить об этом
+            # сам: иначе исправление выглядит как исходная запись.
+            story.append(Spacer(0, 0.25 * cm))
+            story.append(Paragraph(
+                _esc("Исправлено {} · редакция {}".format(
+                    consultation.updated_at.strftime("%d.%m.%Y"), rev + 1)),
+                styles["body"]))
 
     story.append(Spacer(0, 0.6 * cm))
     story.append(_footer(styles))

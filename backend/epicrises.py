@@ -178,8 +178,11 @@ def _build_history(db: Session, p: Patient,
         parts.append("== ТЕКУЩИЕ ДАННЫЕ КАРТЫ ==\n" + "\n".join(cur))
 
     # Консультации по хронологии; первичный осмотр не должен вылетать при срезе
+    # Эпикриз собирается только из заверенных записей: черновик — не факт
+    # истории болезни, а незаконченная мысль врача.
     consults = (db.query(Consultation)
-                .filter(Consultation.patient_id == p.id)
+                .filter(Consultation.patient_id == p.id,
+                        Consultation.status == "confirmed")
                 .order_by(Consultation.created_at.asc()).all())
     primary = [c for c in consults if c.visit_type == "primary"]
     rest = [c for c in consults if c.visit_type != "primary"]

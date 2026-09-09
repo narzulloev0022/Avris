@@ -159,7 +159,8 @@ def _visit_block(v: Consultation, doctor: Optional[str], summary: Optional[Visit
 
 def _build_context(db: Session, account: PatientAccount, patient_ids: List[int]) -> tuple:
     visits = (db.query(Consultation)
-              .filter(Consultation.patient_id.in_(patient_ids))
+              .filter(Consultation.patient_id.in_(patient_ids),
+                      Consultation.status == "confirmed")
               .order_by(Consultation.created_at.desc())
               .limit(MAX_VISITS)
               .all())
