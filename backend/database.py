@@ -59,7 +59,7 @@ def init_db():
                     "ON consultations (status)"
                 ))
             if "confirmed_at" not in existing_c:
-                conn.execute(text("ALTER TABLE consultations ADD COLUMN confirmed_at DATETIME"))
+                conn.execute(text("ALTER TABLE consultations ADD COLUMN confirmed_at TIMESTAMP"))
                 # Время подписи у прошлых записей неизвестно; берём момент
                 # создания — он к истине ближе всего и не выдумывает данных.
                 conn.execute(text(
@@ -67,7 +67,7 @@ def init_db():
                     "WHERE confirmed_at IS NULL AND status = 'confirmed'"
                 ))
             if "updated_at" not in existing_c:
-                conn.execute(text("ALTER TABLE consultations ADD COLUMN updated_at DATETIME"))
+                conn.execute(text("ALTER TABLE consultations ADD COLUMN updated_at TIMESTAMP"))
     if "consents" in insp.get_table_names():
         existing_cs = {i["name"] for i in insp.get_indexes("consents")}
         if "ix_consents_doctor_client" not in existing_cs:
